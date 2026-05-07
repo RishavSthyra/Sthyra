@@ -190,8 +190,8 @@ const APARTMENT_BOXES: ApartmentBox[] = [
       "High-emotion visual storytelling crafted to make unbuilt spaces feel desirable and real.",
       "These films are designed for launches, presentations, social campaigns, investor meetings, and premium website hero sections.",
     ],
-    tileBaseUrl: "/pixelstreaming_tiles_4x8",
-    tileFilePrefix: "pixelstreaming_tile",
+    tileBaseUrl: "/cinematic_tiles_4x8",
+    tileFilePrefix: "cinematic_tile",
     showPlus: true,
   },
   {
@@ -206,8 +206,8 @@ const APARTMENT_BOXES: ApartmentBox[] = [
       "Photorealistic imagery that removes doubt and elevates perceived project value.",
       "Every material, reflection, shadow, landscape layer, and atmosphere is shaped to feel believable.",
     ],
-    tileBaseUrl: "/pixelstreaming_tiles_4x8",
-    tileFilePrefix: "pixelstreaming_tile",
+    tileBaseUrl: "/unreal_tiles_4x8",
+    tileFilePrefix: "unreal_tile",
     showPlus: true,
   },
   {
