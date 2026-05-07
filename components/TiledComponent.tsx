@@ -4,6 +4,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import ApartmentSequenceLayer from "@/components/ApartmentSequenceLayer";
 
 interface TILECOMBININGTYPES {
   BASEURL: string;
@@ -72,12 +73,22 @@ const POST_SKYLINE_HEADLINE = [
 const POST_SKYLINE_PARAGRAPH =
   "Sthyra creates premium architectural visualization and 3D rendering for homes, interiors, and real estate, turning design ideas into cinematic, market-ready spatial stories.";
 
+const POST_SKYLINE_HEADLINE_PANEL = {
+  row: 1,
+  col: 0,
+  rowSpan: 2,
+  colSpan: 2,
+};
+
+const POST_SKYLINE_PARAGRAPH_PANEL = {
+  row: 3,
+  col: 6,
+  rowSpan: 1,
+  colSpan: 2,
+  cta: "SHOW MORE ++",
+};
+
 const POST_SKYLINE_TILES: PostSkylineTileConfig[] = [
-  {
-    row: 2,
-    col: 0,
-    mode: "white",
-  },
   {
     row: 1,
     col: 3,
@@ -102,18 +113,7 @@ const POST_SKYLINE_TILES: PostSkylineTileConfig[] = [
       "https://cdn.sthyra.com/sthyra-labs/Images/create_me_an_interior_of_202604300851.jpeg",
     imageAlt: "Luxury stone interior corridor",
   },
-  {
-    row: 3,
-    col: 7,
-    mode: "white",
-    label: "Show More ++",
-    align: "end",
-  },
 ];
-
-const POST_SKYLINE_TILE_MAP = new Map(
-  POST_SKYLINE_TILES.map((tile) => [`${tile.row}_${tile.col}`, tile]),
-);
 
 function getTileWaveDelay(row: number, col: number) {
   const rowBias = row * 0.055;
@@ -141,10 +141,6 @@ function getPostSkylineDelay(row: number, col: number) {
   const variance = ((((row + 2) * 13 + (col + 4) * 17) % 6) + 1) * 0.022;
 
   return distance * 0.05 + variance;
-}
-
-function getPostSkylineTile(row: number, col: number) {
-  return POST_SKYLINE_TILE_MAP.get(`${row}_${col}`);
 }
 
 export default function CreateImageFromTiles({
@@ -197,6 +193,8 @@ export default function CreateImageFromTiles({
 
   useLayoutEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
+    let apartmentExpansionTimeline: gsap.core.Timeline | null = null;
+    let apartmentSequenceVisible = false;
 
     const ctx = gsap.context(() => {
       const stage = stageRef.current;
@@ -206,6 +204,44 @@ export default function CreateImageFromTiles({
       if (!stage) {
         return;
       }
+
+      const setLenisLocked = (locked: boolean) => {
+        window.dispatchEvent(
+          new CustomEvent("sthyra:lenis-lock", {
+            detail: { locked },
+          }),
+        );
+      };
+
+      const playApartmentExpansion = () => {
+        if (
+          !stage ||
+          !apartmentExpansionTimeline ||
+          apartmentExpansionTimeline.isActive() ||
+          apartmentSequenceVisible
+        ) {
+          return;
+        }
+
+        apartmentSequenceVisible = true;
+        setLenisLocked(true);
+
+        apartmentExpansionTimeline.play();
+      };
+
+      const reverseApartmentExpansion = () => {
+        if (
+          !apartmentExpansionTimeline ||
+          apartmentExpansionTimeline.isActive() ||
+          !apartmentSequenceVisible
+        ) {
+          return;
+        }
+
+        apartmentSequenceVisible = false;
+        setLenisLocked(true);
+        apartmentExpansionTimeline.reverse();
+      };
 
       gsap.set(stage, {
         transformOrigin: "50% 100%",
@@ -270,6 +306,24 @@ export default function CreateImageFromTiles({
         scale: 1.08,
         filter: "brightness(0.94) saturate(0.88)",
       });
+      gsap.set(".apartment-sequence", {
+        opacity: 0,
+      });
+      gsap.set(".apartment-sequence-tile", {
+        opacity: 0,
+        yPercent: 112,
+        filter: "brightness(0.96) saturate(0.95)",
+      });
+      gsap.set(".apartment-sequence-box", {
+        opacity: 0,
+        y: 56,
+        scale: 0.96,
+        clipPath: "inset(100% 0% 0% 0%)",
+      });
+      gsap.set(".apartment-sequence-box-copy", {
+        opacity: 0,
+        y: 18,
+      });
       gsap.set(".headline-block", {
         opacity: 0,
         x: 0,
@@ -326,10 +380,20 @@ export default function CreateImageFromTiles({
         scrollTrigger: {
           trigger: sectionRef.current,
           start: "top top",
-          end: "+=5600",
+          end: "+=7600",
           scrub: 1.25,
           pin: true,
           anticipatePin: 1,
+          onUpdate: (self) => {
+            if (self.direction > 0 && self.progress >= 0.9) {
+              playApartmentExpansion();
+              return;
+            }
+
+            if (self.direction < 0 && self.progress <= 0.86) {
+              reverseApartmentExpansion();
+            }
+          },
         },
       });
 
@@ -643,6 +707,17 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
+        ".non-feature-panel",
+        {
+          backgroundColor: "#ffffff",
+          borderColor: "rgba(0,0,0,0.08)",
+          duration: 0.82,
+          ease: "power2.inOut",
+        },
+        5.14,
+      );
+
+      tl.to(
         ".skyline-tile",
         {
           opacity: 0,
@@ -732,9 +807,115 @@ export default function CreateImageFromTiles({
         },
         5.66,
       );
+
+      apartmentExpansionTimeline = gsap.timeline({
+        paused: true,
+        defaults: {
+          ease: "power3.inOut",
+        },
+        onComplete: () => {
+          setLenisLocked(false);
+        },
+        onReverseComplete: () => {
+          setLenisLocked(false);
+        },
+      });
+
+      apartmentExpansionTimeline
+        .to(
+          ".post-global-headline, .post-global-paragraph",
+          {
+            opacity: 0,
+            duration: 0.28,
+            ease: "power2.out",
+          },
+          0,
+        )
+        .to(
+          ".post-skyline-image-frame",
+          {
+            opacity: 0,
+            duration: 0.32,
+            ease: "power2.out",
+          },
+          0.06,
+        )
+        .to(
+          ".apartment-sequence",
+          {
+            opacity: 1,
+            duration: 0.14,
+            ease: "none",
+          },
+          0.08,
+        )
+        .to(
+          ".apartment-sequence-tile",
+          {
+            opacity: 1,
+            yPercent: 0,
+            filter: "brightness(1) saturate(1)",
+            duration: 0.82,
+            stagger: (index, target) =>
+              Number((target as HTMLElement).dataset.apartmentDelay ?? 0),
+            ease: "power3.out",
+          },
+          0.14,
+        )
+        .to(
+          ".post-skyline-panel, .module-panel",
+          {
+            opacity: 0,
+            duration: 0.3,
+            ease: "power2.out",
+          },
+          0.16,
+        )
+        .to(
+          {},
+          {
+            duration: 2,
+          },
+          1.18,
+        )
+        .to(
+          ".apartment-sequence-box",
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            clipPath: "inset(0% 0% 0% 0%)",
+            duration: 0.7,
+            stagger: {
+              amount: 0.32,
+              from: "center",
+            },
+            ease: "power4.out",
+          },
+          3.18,
+        )
+        .to(
+          ".apartment-sequence-box-copy",
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.42,
+            stagger: 0.05,
+            ease: "power2.out",
+          },
+          3.32,
+        );
     }, sectionRef);
 
-    return () => ctx.revert();
+    return () => {
+      apartmentExpansionTimeline?.kill();
+      window.dispatchEvent(
+        new CustomEvent("sthyra:lenis-lock", {
+          detail: { locked: false },
+        }),
+      );
+      ctx.revert();
+    };
   }, [NO_OF_COLUMNS, NO_OF_ROWS]);
 
   const imageAspect = imageWidth / imageHeight;
@@ -743,16 +924,22 @@ export default function CreateImageFromTiles({
       ? viewport.width / viewport.height
       : imageAspect;
 
-  const coverWidth =
-    viewportAspect > imageAspect
+  const frameWidth =
+    viewportAspect < imageAspect
       ? viewport.width
       : viewport.height * imageAspect;
-  const coverHeight =
-    viewportAspect > imageAspect
+  const frameHeight =
+    viewportAspect < imageAspect
       ? viewport.width / imageAspect
       : viewport.height;
-  const offsetX = (viewport.width - coverWidth) / 2;
-  const offsetY = (viewport.height - coverHeight) / 2;
+  const offsetX = (viewport.width - frameWidth) / 2;
+  const offsetY = (viewport.height - frameHeight) / 2;
+  const gridFrameStyle = {
+    left: `${offsetX}px`,
+    top: `${offsetY}px`,
+    width: `${frameWidth}px`,
+    height: `${frameHeight}px`,
+  };
 
   return (
     <section
@@ -784,20 +971,12 @@ export default function CreateImageFromTiles({
             />
             <div
               className="absolute"
-              style={{
-                left: `${offsetX}px`,
-                top: `${offsetY}px`,
-                width: `${coverWidth}px`,
-                height: `${coverHeight}px`,
-              }}
+              style={gridFrameStyle}
             >
               {Array.from({ length: NO_OF_ROWS }).map((_, row) =>
                 Array.from({ length: NO_OF_COLUMNS }).map((_, col) => {
                   const featureTile = isFeatureTile(row, col);
                   const featureColumnTile = isFeatureColumnTile(row, col);
-                  const postSkylineTile = getPostSkylineTile(row, col);
-                  const postSkylineIsImage = postSkylineTile?.mode === "image";
-                  const postSkylinePanelClass = "bg-white text-black";
                   const skylineColumnClass =
                     row < FEATURE_TILE.row
                       ? "skyline-column-top"
@@ -862,53 +1041,65 @@ export default function CreateImageFromTiles({
                         data-cover-duration={getTileCoverDuration(row, col).toFixed(3)}
                       />
                     ) : null}
-                      <div
-                        className={[
-                        "post-skyline-panel absolute -inset-px z-[4] overflow-hidden",
-                        postSkylinePanelClass,
-                      ].join(" ")}
-                      data-post-delay={getPostSkylineDelay(row, col).toFixed(3)}
-                    >
-                      {postSkylineTile?.label || postSkylineTile?.title ? (
-                        <div
-                          className={[
-                            "post-skyline-copy absolute inset-0 flex flex-col",
-                            postSkylineTile.align === "end"
-                              ? "items-end justify-end p-2 text-right md:p-3"
-                              : postSkylineTile.title
-                                ? "items-start justify-center p-3 text-left md:p-4"
-                                : "items-start justify-start p-3 text-left md:p-4",
-                          ].join(" ")}
-                        >
-                          {postSkylineTile.label ? (
-                            <p className="m-0 text-[9px] font-semibold uppercase leading-none tracking-[-0.03em] md:text-[10px]">
-                              {postSkylineTile.label}
-                            </p>
-                          ) : null}
-                          {postSkylineTile.title ? (
-                            <h3 className="m-0 max-w-[6ch] text-[clamp(1.75rem,2vw,2.6rem)] font-semibold uppercase leading-[0.9] tracking-[-0.06em]">
-                              {postSkylineTile.title}
-                            </h3>
-                          ) : null}
-                        </div>
-                      ) : null}
-                      {postSkylineIsImage && postSkylineTile.imageSrc ? (
-                        <div className="post-skyline-image-frame absolute -inset-px overflow-hidden">
-                          <Image
-                            src={postSkylineTile.imageSrc}
-                            alt={postSkylineTile.imageAlt ?? ""}
-                            fill
-                            unoptimized
-                            sizes="(max-width: 768px) 50vw, 16vw"
-                            className="post-skyline-image object-cover"
-                          />
-                        </div>
-                      ) : null}
-                    </div>
                   </div>
                   );
                 }),
               )}
+            </div>
+            <div className="absolute" style={gridFrameStyle}>
+              {POST_SKYLINE_TILES.map((tile) => {
+                const postSkylineIsImage = tile.mode === "image";
+
+                return (
+                  <div
+                    key={`post-skyline-${tile.row}-${tile.col}`}
+                    className="post-skyline-panel absolute z-[4] overflow-hidden bg-white text-black"
+                    data-post-delay={getPostSkylineDelay(tile.row, tile.col).toFixed(3)}
+                    style={{
+                      left: `${(tile.col / NO_OF_COLUMNS) * 100}%`,
+                      top: `${(tile.row / NO_OF_ROWS) * 100}%`,
+                      width: `${100 / NO_OF_COLUMNS}%`,
+                      height: `${100 / NO_OF_ROWS}%`,
+                    }}
+                  >
+                    {tile.label || tile.title ? (
+                      <div
+                        className={[
+                          "post-skyline-copy absolute inset-0 flex flex-col",
+                          tile.align === "end"
+                            ? "items-end justify-end p-2 text-right md:p-3"
+                            : tile.title
+                              ? "items-start justify-center p-3 text-left md:p-4"
+                              : "items-start justify-start p-3 text-left md:p-4",
+                        ].join(" ")}
+                      >
+                        {tile.label ? (
+                          <p className="m-0 text-[9px] font-semibold uppercase leading-none tracking-[-0.03em] md:text-[10px]">
+                            {tile.label}
+                          </p>
+                        ) : null}
+                        {tile.title ? (
+                          <h3 className="m-0 max-w-[6ch] text-[clamp(1.75rem,2vw,2.6rem)] font-semibold uppercase leading-[0.9] tracking-[-0.06em]">
+                            {tile.title}
+                          </h3>
+                        ) : null}
+                      </div>
+                    ) : null}
+                    {postSkylineIsImage && tile.imageSrc ? (
+                      <div className="post-skyline-image-frame absolute inset-0 overflow-hidden">
+                        <Image
+                          src={tile.imageSrc}
+                          alt={tile.imageAlt ?? ""}
+                          fill
+                          unoptimized
+                          sizes="(max-width: 768px) 50vw, 16vw"
+                          className="post-skyline-image object-cover"
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
 
               <div
                 className="module-panel absolute z-[4] flex flex-col justify-between border border-black/12 bg-white p-5 text-black md:p-6"
@@ -948,7 +1139,10 @@ export default function CreateImageFromTiles({
               </div>
 
               <div className="pointer-events-none absolute inset-0 z-[5]">
-                <div className="headline-block absolute top-1/2 right-4 w-[min(calc(100vw-1.5rem),44rem)] -translate-y-1/2 overflow-visible mix-blend-screen sm:right-5 sm:w-[min(calc(100vw-2.5rem),50rem)] md:right-[3.2vw] md:w-[min(calc(100vw-4rem),56rem)] lg:w-[min(calc(100vw-6rem),62rem)]">
+                <div
+                  className="headline-block absolute top-1/2 w-[min(calc(100vw-1.5rem),44rem)] -translate-y-1/2 overflow-visible mix-blend-screen sm:w-[min(calc(100vw-2.5rem),50rem)] md:w-[min(calc(100vw-4rem),56rem)] lg:w-[min(calc(100vw-6rem),62rem)]"
+                  style={{ right: "var(--sthyra-safe-gutter)" }}
+                >
                   {ARCHVIZ_HEADLINE.map((line, lineIndex) => (
                     <div key={line} className={lineIndex === 0 ? "overflow-hidden" : "mt-2 overflow-hidden"}>
                       <div
@@ -971,35 +1165,93 @@ export default function CreateImageFromTiles({
                     </div>
                   ))}
                 </div>
-                <div className="post-global-headline absolute top-1/2 left-4 w-[min(calc(100vw-1.5rem),44rem)] -translate-y-1/2 overflow-visible sm:left-5 sm:w-[min(calc(100vw-2.5rem),50rem)] md:left-[3.2vw] md:w-[min(calc(100vw-4rem),56rem)] lg:w-[min(calc(100vw-6rem),62rem)]">
-                  {POST_SKYLINE_HEADLINE.map((line, lineIndex) => (
-                    <div key={line} className={lineIndex === 0 ? "overflow-hidden" : "mt-2 overflow-hidden"}>
-                      <div
-                        className={[
-                          "flex flex-nowrap justify-start gap-x-[0.02em] whitespace-nowrap text-black",
-                          lineIndex === 0
-                            ? "text-[clamp(2rem,5vw,5.3rem)] font-semibold uppercase leading-[0.92] tracking-[-0.065em] md:text-[clamp(2.4rem,4.7vw,5.85rem)]"
-                            : "text-[clamp(1.7rem,4.3vw,4.5rem)] font-semibold uppercase leading-[0.94] tracking-[-0.06em] md:text-[clamp(2rem,4vw,4.95rem)]",
-                        ].join(" ")}
-                      >
-                        {Array.from(line).map((character, charIndex) => (
-                          <span
-                            key={`${line}-${charIndex}`}
-                            className="post-global-headline-char inline-block whitespace-pre"
-                          >
-                            {character}
-                          </span>
-                        ))}
+                <div
+                  className="post-global-headline post-skyline-panel absolute overflow-hidden bg-white text-black"
+                  data-post-delay={getPostSkylineDelay(
+                    POST_SKYLINE_HEADLINE_PANEL.row,
+                    POST_SKYLINE_HEADLINE_PANEL.col,
+                  ).toFixed(3)}
+                  style={{
+                    left: `${(POST_SKYLINE_HEADLINE_PANEL.col / NO_OF_COLUMNS) * 100}%`,
+                    top: `${(POST_SKYLINE_HEADLINE_PANEL.row / NO_OF_ROWS) * 100}%`,
+                    width: `${(POST_SKYLINE_HEADLINE_PANEL.colSpan / NO_OF_COLUMNS) * 100}%`,
+                    height: `${(POST_SKYLINE_HEADLINE_PANEL.rowSpan / NO_OF_ROWS) * 100}%`,
+                  }}
+                >
+                  <div
+                    className="flex h-full flex-col justify-center"
+                    style={{
+                      paddingTop: "max(18px, calc(22px * var(--sthyra-compact-scale)))",
+                      paddingRight: "max(18px, calc(22px * var(--sthyra-compact-scale)))",
+                      paddingBottom: "max(18px, calc(22px * var(--sthyra-compact-scale)))",
+                      paddingLeft:
+                        "max(var(--sthyra-safe-gutter), 18px, calc(22px * var(--sthyra-compact-scale)))",
+                    }}
+                  >
+                    {POST_SKYLINE_HEADLINE.map((line, lineIndex) => (
+                      <div key={line} className={lineIndex === 0 ? "overflow-hidden" : "mt-2 overflow-hidden"}>
+                        <div
+                          className={[
+                            "flex flex-nowrap justify-start gap-x-[0.02em] whitespace-nowrap text-black",
+                            lineIndex === 0
+                              ? "text-[clamp(1.55rem,2.35vw,3.35rem)] font-semibold uppercase leading-[0.92] tracking-[-0.06em]"
+                              : "text-[clamp(1.45rem,2.15vw,3.1rem)] font-semibold uppercase leading-[0.94] tracking-[-0.055em]",
+                          ].join(" ")}
+                        >
+                          {Array.from(line).map((character, charIndex) => (
+                            <span
+                              key={`${line}-${charIndex}`}
+                              className="post-global-headline-char inline-block whitespace-pre"
+                            >
+                              {character}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-                <div className="pointer-events-none absolute right-4 bottom-6 w-[min(calc(100vw-2rem),34rem)] overflow-hidden sm:right-5 sm:bottom-8 sm:w-[min(calc(100vw-3rem),36rem)] md:right-[3.2vw] md:bottom-[3.4vw] md:w-[min(32vw,38rem)]">
-                  <p className="post-global-paragraph max-w-[42ch] text-[15px] font-semibold leading-[1.45] tracking-[-0.02em] text-black/78 md:text-[30px] md:leading-[1.5]">
-                    {POST_SKYLINE_PARAGRAPH}
-                  </p>
+                <div
+                  className="post-skyline-panel pointer-events-none absolute overflow-hidden bg-white text-black"
+                  data-post-delay={getPostSkylineDelay(
+                    POST_SKYLINE_PARAGRAPH_PANEL.row,
+                    POST_SKYLINE_PARAGRAPH_PANEL.col,
+                  ).toFixed(3)}
+                  style={{
+                    left: `${(POST_SKYLINE_PARAGRAPH_PANEL.col / NO_OF_COLUMNS) * 100}%`,
+                    top: `${(POST_SKYLINE_PARAGRAPH_PANEL.row / NO_OF_ROWS) * 100}%`,
+                    width: `${(POST_SKYLINE_PARAGRAPH_PANEL.colSpan / NO_OF_COLUMNS) * 100}%`,
+                    height: `${(POST_SKYLINE_PARAGRAPH_PANEL.rowSpan / NO_OF_ROWS) * 100}%`,
+                  }}
+                >
+                  <div
+                    className="post-global-paragraph flex h-full flex-col justify-between"
+                    style={{
+                      paddingTop: "max(16px, calc(20px * var(--sthyra-compact-scale)))",
+                      paddingRight:
+                        "max(var(--sthyra-safe-gutter), 16px, calc(20px * var(--sthyra-compact-scale)))",
+                      paddingBottom: "max(14px, calc(18px * var(--sthyra-compact-scale)))",
+                      paddingLeft: "max(16px, calc(20px * var(--sthyra-compact-scale)))",
+                    }}
+                  >
+                    <p className="m-0 max-w-[26ch] text-[clamp(0.95rem,1.15vw,1.35rem)] font-semibold leading-[1.45] tracking-[-0.02em] text-black/78">
+                      {POST_SKYLINE_PARAGRAPH}
+                    </p>
+                    <p className="m-0 text-right text-[10px] font-semibold uppercase tracking-[0.08em] text-black">
+                      {POST_SKYLINE_PARAGRAPH_PANEL.cta}
+                    </p>
+                  </div>
                 </div>
               </div>
+
+              <ApartmentSequenceLayer
+                rows={NO_OF_ROWS}
+                columns={NO_OF_COLUMNS}
+                tileWidth={TILE_WIDTH}
+                tileHeight={TILE_HEIGHT}
+                imageFrameStyle={gridFrameStyle}
+                contentFrameStyle={gridFrameStyle}
+              />
 
               {TEXT_CARDS.map((card, index) => (
                 <div

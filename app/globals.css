@@ -12,6 +12,9 @@
   --background: #020202;
   --foreground: #f2efe9;
   --muted: rgba(242, 239, 233, 0.58);
+  --sthyra-scale: 1;
+  --sthyra-compact-scale: 1;
+  --sthyra-safe-gutter: 24px;
 }
 
 @theme inline {
@@ -28,6 +31,10 @@
 html,
 body {
   min-height: 100%;
+}
+
+html {
+  font-size: calc(16px * var(--sthyra-scale));
 }
 
 body {
