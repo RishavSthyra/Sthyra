@@ -285,8 +285,6 @@ export default function CreateImageFromTiles({
 }: TILECOMBININGTYPES) {
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
-  const imageWidth = NO_OF_COLUMNS * TILE_WIDTH;
-  const imageHeight = NO_OF_ROWS * TILE_HEIGHT;
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
   const apartmentBoxPadding = "max(14px, calc(22px * var(--sthyra-compact-scale)))";
   const apartmentPlusOffset = "max(12px, calc(18px * var(--sthyra-compact-scale)))";
@@ -1087,29 +1085,7 @@ export default function CreateImageFromTiles({
     };
   }, [NO_OF_COLUMNS, NO_OF_ROWS]);
 
-  const imageAspect = imageWidth / imageHeight;
-  const viewportAspect =
-    viewport.width > 0 && viewport.height > 0
-      ? viewport.width / viewport.height
-      : imageAspect;
-
-  const frameWidth =
-    viewportAspect < imageAspect
-      ? viewport.width
-      : viewport.height * imageAspect;
-  const frameHeight =
-    viewportAspect < imageAspect
-      ? viewport.width / imageAspect
-      : viewport.height;
-  const offsetX = (viewport.width - frameWidth) / 2;
-  const offsetY = (viewport.height - frameHeight) / 2;
-  const gridFrameStyle = {
-    left: `${offsetX}px`,
-    top: `${offsetY}px`,
-    width: `${frameWidth}px`,
-    height: `${frameHeight}px`,
-  };
-  const apartmentFrameStyle = {
+  const tileFrameStyle = {
     inset: "0px",
   };
 
@@ -1143,7 +1119,7 @@ export default function CreateImageFromTiles({
             />
             <div
               className="absolute"
-              style={gridFrameStyle}
+              style={tileFrameStyle}
             >
               <div className="intro-copy pointer-events-none absolute inset-0 z-[7] flex items-center justify-center px-6">
                 <div className="intro-copy-panel relative flex max-w-[min(96vw,86vw)] flex-col items-center justify-center overflow-hidden px-6 py-8 text-center text-white md:px-10">
@@ -1258,7 +1234,7 @@ export default function CreateImageFromTiles({
                 }),
               )}
             </div>
-            <div className="absolute" style={gridFrameStyle}>
+            <div className="absolute" style={tileFrameStyle}>
               {POST_SKYLINE_TILES.map((tile) => {
                 const postSkylineIsImage = tile.mode === "image";
 
@@ -1457,7 +1433,7 @@ export default function CreateImageFromTiles({
               </div>
 
               <div className="apartment-sequence pointer-events-none absolute inset-0 z-[6]">
-                <div className="absolute" style={apartmentFrameStyle}>
+                <div className="absolute" style={tileFrameStyle}>
                   {Array.from({ length: NO_OF_ROWS }).map((_, row) =>
                     Array.from({ length: NO_OF_COLUMNS }).map((_, col) => (
                       <div
@@ -1471,7 +1447,7 @@ export default function CreateImageFromTiles({
                         }}
                       >
                         <Image
-                          src={`/apartmentno2/tile_${row}_${col}.jpg`}
+                          src={`/vr/tile_${row}_${col}.jpg`}
                           alt=""
                           width={TILE_WIDTH}
                           height={TILE_HEIGHT}
@@ -1489,7 +1465,7 @@ export default function CreateImageFromTiles({
                   )}
                 </div>
 
-                <div className="absolute" style={apartmentFrameStyle}>
+                <div className="absolute" style={tileFrameStyle}>
                   {APARTMENT_BOXES.map((box, index) => (
                     <div
                       key={`${box.titleLines.join("-")}-${index}`}
