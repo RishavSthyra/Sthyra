@@ -1,6 +1,11 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import {
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import Image from "next/image";
 import { Open_Sans } from "next/font/google";
 import gsap from "gsap";
@@ -34,6 +39,7 @@ type PostSkylineTileConfig = {
 };
 
 type ApartmentBox = {
+  id: string;
   row: number;
   col: number;
   rowSpan: number;
@@ -41,6 +47,8 @@ type ApartmentBox = {
   variant: "light" | "dark";
   titleLines: string[];
   descriptionLines?: string[];
+  tileBaseUrl?: string;
+  tileFilePrefix?: string;
   showPlus?: boolean;
 };
 
@@ -134,10 +142,19 @@ const POST_SKYLINE_TILES: PostSkylineTileConfig[] = [
       "https://cdn.sthyra.com/sthyra-labs/Images/create_me_an_interior_of_202604300851.jpeg",
     imageAlt: "Luxury stone interior corridor",
   },
+  {
+    row: 0,
+    col: 2,
+    mode: "image",
+    imageSrc:
+      "https://cdn.sthyra.com/sthyra-labs/Images/hf_20260507_102235_b69ea62f-63ce-42d0-9b85-0fe7870d5c4e.jpg",
+    imageAlt: "Luxury stone interior corridor",
+  },
 ];
 
 const APARTMENT_BOXES: ApartmentBox[] = [
   {
+    id: "empty-anchor",
     row: 0,
     col: 0,
     rowSpan: 1,
@@ -146,6 +163,7 @@ const APARTMENT_BOXES: ApartmentBox[] = [
     titleLines: [],
   },
   {
+    id: "interactive-web-experiences",
     row: 0,
     col: 2,
     rowSpan: 1,
@@ -156,9 +174,12 @@ const APARTMENT_BOXES: ApartmentBox[] = [
       "Browser-based immersion designed for modern buyers, investors, and sales teams.",
       "These experiences can include interactive masterplans, tower selectors, apartment highlights, amenities, cinematic transitions, hotspots, and project storytelling.",
     ],
+    tileBaseUrl: "/pixelstreaming_tiles_4x8",
+    tileFilePrefix: "pixelstreaming_tile",
     showPlus: true,
   },
   {
+    id: "cinematic-films",
     row: 1,
     col: 0,
     rowSpan: 1,
@@ -169,9 +190,12 @@ const APARTMENT_BOXES: ApartmentBox[] = [
       "High-emotion visual storytelling crafted to make unbuilt spaces feel desirable and real.",
       "These films are designed for launches, presentations, social campaigns, investor meetings, and premium website hero sections.",
     ],
+    tileBaseUrl: "/pixelstreaming_tiles_4x8",
+    tileFilePrefix: "pixelstreaming_tile",
     showPlus: true,
   },
   {
+    id: "ultra-real-renders",
     row: 1,
     col: 3,
     rowSpan: 1,
@@ -182,9 +206,12 @@ const APARTMENT_BOXES: ApartmentBox[] = [
       "Photorealistic imagery that removes doubt and elevates perceived project value.",
       "Every material, reflection, shadow, landscape layer, and atmosphere is shaped to feel believable.",
     ],
+    tileBaseUrl: "/pixelstreaming_tiles_4x8",
+    tileFilePrefix: "pixelstreaming_tile",
     showPlus: true,
   },
   {
+    id: "pixel-streaming",
     row: 1,
     col: 6,
     rowSpan: 1,
@@ -195,9 +222,12 @@ const APARTMENT_BOXES: ApartmentBox[] = [
       "Unreal Engine quality delivered through the cloud without requiring powerful local devices.",
       "This allows premium interactive experiences to run through a browser.",
     ],
+    tileBaseUrl: "/pixelstreaming_tiles_4x8",
+    tileFilePrefix: "pixelstreaming_tile",
     showPlus: true,
   },
   {
+    id: "vr-ar-immersion",
     row: 3,
     col: 5,
     rowSpan: 1,
@@ -207,9 +237,12 @@ const APARTMENT_BOXES: ApartmentBox[] = [
     descriptionLines: [
       "Immersive pre-construction sales tools that help buyers understand space, scale, views, amenities, interiors, and lifestyle before the project exists physically.",
     ],
+    tileBaseUrl: "/pixelstreaming_tiles_4x8",
+    tileFilePrefix: "pixelstreaming_tile",
     showPlus: true,
   },
   {
+    id: "lets-work",
     row: 3,
     col: 7,
     rowSpan: 1,
@@ -255,6 +288,10 @@ function getApartmentTileDelay(row: number, col: number, rows: number, columns: 
   return bottomBias + centerDrift + variance;
 }
 
+function buildTileImagePath(baseUrl: string, row: number, col: number, filePrefix = "tile") {
+  return `${baseUrl}/${filePrefix}_${row}_${col}.jpg`;
+}
+
 function getApartmentBoxTitleClass(box: ApartmentBox) {
   if (box.variant === "dark") {
     return "text-[clamp(0.76rem,0.9vw,0.98rem)]";
@@ -285,7 +322,13 @@ export default function CreateImageFromTiles({
 }: TILECOMBININGTYPES) {
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
+  const apartmentSequenceRef = useRef<HTMLDivElement | null>(null);
+  const hoverTileWaveRef = useRef<gsap.core.Tween | null>(null);
+  const hoverTileClearRef = useRef<number | null>(null);
+  const hoverOriginRef = useRef({ x: 0.5, y: 0.5 });
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
+  const [hoveredServiceId, setHoveredServiceId] = useState<string | null>(null);
+  const [activeHoverServiceId, setActiveHoverServiceId] = useState<string | null>(null);
   const apartmentBoxPadding = "max(14px, calc(22px * var(--sthyra-compact-scale)))";
   const apartmentPlusOffset = "max(12px, calc(18px * var(--sthyra-compact-scale)))";
   const apartmentEdgePadding =
@@ -306,10 +349,103 @@ export default function CreateImageFromTiles({
     title: "Urban frame",
     text: "A compressed archviz study for the next reveal.",
   };
+  const activeHoverService =
+    APARTMENT_BOXES.find((box) => box.id === activeHoverServiceId) ?? null;
   const isFeatureTile = (row: number, col: number) =>
     row === FEATURE_TILE.row && col === FEATURE_TILE.col;
   const isFeatureColumnTile = (row: number, col: number) =>
     col === FEATURE_TILE.col && row !== FEATURE_TILE.row;
+
+  const animateHoverTiles = (mode: "in" | "out", serviceId: string) => {
+    const sequence = apartmentSequenceRef.current;
+
+    if (!sequence) {
+      return;
+    }
+
+    const tiles = gsap.utils.toArray<HTMLElement>(
+      sequence.querySelectorAll(`[data-hover-service="${serviceId}"]`),
+    );
+
+    if (tiles.length === 0) {
+      return;
+    }
+
+    hoverTileWaveRef.current?.kill();
+
+    hoverTileWaveRef.current = gsap.to(tiles, {
+      opacity: mode === "in" ? 1 : 0,
+      duration: mode === "in" ? 0.56 : 0.42,
+      ease: mode === "in" ? "power2.out" : "power2.inOut",
+      delay: (index, target) => {
+        const element = target as HTMLElement;
+        const row = Number(element.dataset.hoverRow ?? 0);
+        const col = Number(element.dataset.hoverCol ?? 0);
+        const originX = hoverOriginRef.current.x * Math.max(NO_OF_COLUMNS - 1, 1);
+        const originY = hoverOriginRef.current.y * Math.max(NO_OF_ROWS - 1, 1);
+        const distance = Math.hypot(col - originX, row - originY);
+
+        return distance * 0.045;
+      },
+      overwrite: true,
+    });
+  };
+
+  const handleServiceHoverEnter = (
+    box: ApartmentBox,
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (!box.tileBaseUrl) {
+      return;
+    }
+
+    if (hoverTileClearRef.current !== null) {
+      window.clearTimeout(hoverTileClearRef.current);
+      hoverTileClearRef.current = null;
+    }
+
+    const bounds = apartmentSequenceRef.current?.getBoundingClientRect();
+
+    if (bounds) {
+      hoverOriginRef.current = {
+        x: (event.clientX - bounds.left) / Math.max(bounds.width, 1),
+        y: (event.clientY - bounds.top) / Math.max(bounds.height, 1),
+      };
+    }
+
+    setHoveredServiceId(box.id);
+    setActiveHoverServiceId(box.id);
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        animateHoverTiles("in", box.id);
+      });
+    });
+  };
+
+  const handleServiceHoverLeave = (
+    box: ApartmentBox,
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    const nextTarget = event.relatedTarget as HTMLElement | null;
+
+    if (nextTarget?.closest("[data-service-card='true']")) {
+      return;
+    }
+
+    setHoveredServiceId(null);
+
+    if (!box.tileBaseUrl) {
+      return;
+    }
+
+    animateHoverTiles("out", box.id);
+
+    hoverTileClearRef.current = window.setTimeout(() => {
+      setActiveHoverServiceId((current) => (current === box.id ? null : current));
+      hoverTileClearRef.current = null;
+    }, 440);
+  };
 
   useLayoutEffect(() => {
     const syncViewport = () => {
@@ -1081,6 +1217,12 @@ export default function CreateImageFromTiles({
     }, sectionRef);
 
     return () => {
+      if (hoverTileClearRef.current !== null) {
+        window.clearTimeout(hoverTileClearRef.current);
+        hoverTileClearRef.current = null;
+      }
+
+      hoverTileWaveRef.current?.kill();
       ctx.revert();
     };
   }, [NO_OF_COLUMNS, NO_OF_ROWS]);
@@ -1432,7 +1574,10 @@ export default function CreateImageFromTiles({
                 </div>
               </div>
 
-              <div className="apartment-sequence pointer-events-none absolute inset-0 z-[6]">
+              <div
+                ref={apartmentSequenceRef}
+                className="apartment-sequence pointer-events-none absolute inset-0 z-[6]"
+              >
                 <div className="absolute" style={tileFrameStyle}>
                   {Array.from({ length: NO_OF_ROWS }).map((_, row) =>
                     Array.from({ length: NO_OF_COLUMNS }).map((_, col) => (
@@ -1465,19 +1610,61 @@ export default function CreateImageFromTiles({
                   )}
                 </div>
 
+                {activeHoverService?.tileBaseUrl ? (
+                  <div className="pointer-events-none absolute inset-0" style={tileFrameStyle}>
+                    {Array.from({ length: NO_OF_ROWS }).map((_, row) =>
+                      Array.from({ length: NO_OF_COLUMNS }).map((_, col) => (
+                        <div
+                          key={`${activeHoverService.id}-${row}-${col}`}
+                          className="absolute overflow-hidden"
+                          style={{
+                            left: `${(col / NO_OF_COLUMNS) * 100}%`,
+                            top: `${(row / NO_OF_ROWS) * 100}%`,
+                            width: `${100 / NO_OF_COLUMNS}%`,
+                            height: `${100 / NO_OF_ROWS}%`,
+                          }}
+                        >
+                          <Image
+                            src={buildTileImagePath(
+                              activeHoverService.tileBaseUrl!,
+                              row,
+                              col,
+                              activeHoverService.tileFilePrefix,
+                            )}
+                            alt=""
+                            width={TILE_WIDTH}
+                            height={TILE_HEIGHT}
+                            unoptimized
+                            data-hover-service={activeHoverService.id}
+                            data-hover-row={row}
+                            data-hover-col={col}
+                            className="service-hover-tile absolute inset-0 h-full w-full object-fill opacity-0"
+                          />
+                        </div>
+                      )),
+                    )}
+                  </div>
+                ) : null}
+
                 <div className="absolute" style={tileFrameStyle}>
                   {APARTMENT_BOXES.map((box, index) => (
                     <div
-                      key={`${box.titleLines.join("-")}-${index}`}
+                      key={`${box.id}-${index}`}
                       className={[
                         "apartment-sequence-box group/service-card pointer-events-auto absolute overflow-hidden",
                         box.variant === "light" ? "bg-white text-black" : "bg-black text-white",
                       ].join(" ")}
+                      data-service-card="true"
+                      onPointerEnter={(event) => handleServiceHoverEnter(box, event)}
+                      onPointerLeave={(event) => handleServiceHoverLeave(box, event)}
                       style={{
                         left: `${(box.col / NO_OF_COLUMNS) * 100}%`,
                         top: `${(box.row / NO_OF_ROWS) * 100}%`,
                         width: `${(box.colSpan / NO_OF_COLUMNS) * 100}%`,
                         height: `${(box.rowSpan / NO_OF_ROWS) * 100}%`,
+                        opacity:
+                          hoveredServiceId && hoveredServiceId !== box.id ? 0.28 : 1,
+                        transition: "opacity 280ms ease",
                       }}
                     >
                       <div
