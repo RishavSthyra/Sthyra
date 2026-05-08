@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useLayoutEffect,
   useRef,
   useState,
@@ -50,6 +51,10 @@ type ApartmentBox = {
   tileBaseUrl?: string;
   tileFilePrefix?: string;
   showPlus?: boolean;
+};
+
+type HoverableApartmentBox = ApartmentBox & {
+  tileBaseUrl: string;
 };
 
 type ReasonCard = {
@@ -269,6 +274,14 @@ const POST_SKYLINE_TILES: PostSkylineTileConfig[] = [
       "https://cdn.sthyra.com/sthyra-labs/Images/hf_20260507_102235_b69ea62f-63ce-42d0-9b85-0fe7870d5c4e.jpg",
     imageAlt: "Luxury stone interior corridor",
   },
+  {
+    row: 3,
+    col: 3,
+    mode: "image",
+    imageSrc:
+      "https://cdn.sthyra.com/sthyra-labs/Images/hf_20260508_043934_d5a4a4f1-1642-4244-9566-9709780d939e.jpg",
+    imageAlt: "Luxury stone interior corridor",
+  },
 ];
 
 const APARTMENT_BOXES: ApartmentBox[] = [
@@ -371,6 +384,10 @@ const APARTMENT_BOXES: ApartmentBox[] = [
   },
 ];
 
+const HOVERABLE_APARTMENT_BOXES = APARTMENT_BOXES.filter(
+  (box): box is HoverableApartmentBox => Boolean(box.tileBaseUrl),
+);
+
 function getTileWaveDelay(row: number, col: number) {
   const rowBias = row * 0.055;
   const colDrift = col * 0.016;
@@ -449,10 +466,14 @@ export default function CreateImageFromTiles({
   const reasonsSectionRef = useRef<HTMLElement | null>(null);
   const hoverTileWaveRef = useRef<gsap.core.Tween | null>(null);
   const hoverTileClearRef = useRef<number | null>(null);
+  const hoverPreloadStartedRef = useRef(false);
+  const hoverPreloadTimerRef = useRef<number | null>(null);
+  const hoverIdleCallbackRef = useRef<number | null>(null);
+  const mountedHoverServiceIdsRef = useRef(new Set<string>());
   const hoverOriginRef = useRef({ x: 0.5, y: 0.5 });
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
   const [hoveredServiceId, setHoveredServiceId] = useState<string | null>(null);
-  const [activeHoverServiceId, setActiveHoverServiceId] = useState<string | null>(null);
+  const [mountedHoverServiceIds, setMountedHoverServiceIds] = useState<string[]>([]);
   const apartmentBoxPadding = "max(14px, calc(22px * var(--sthyra-compact-scale)))";
   const apartmentPlusOffset = "max(12px, calc(18px * var(--sthyra-compact-scale)))";
   const apartmentEdgePadding =
@@ -473,12 +494,70 @@ export default function CreateImageFromTiles({
     title: "Urban frame",
     text: "A compressed archviz study for the next reveal.",
   };
-  const activeHoverService =
-    APARTMENT_BOXES.find((box) => box.id === activeHoverServiceId) ?? null;
+  const mountedHoverServices = HOVERABLE_APARTMENT_BOXES.filter((box) =>
+    mountedHoverServiceIds.includes(box.id),
+  );
   const isFeatureTile = (row: number, col: number) =>
     row === FEATURE_TILE.row && col === FEATURE_TILE.col;
   const isFeatureColumnTile = (row: number, col: number) =>
     col === FEATURE_TILE.col && row !== FEATURE_TILE.row;
+
+  function ensureHoverServiceMounted(serviceId: string) {
+    if (mountedHoverServiceIdsRef.current.has(serviceId)) {
+      return;
+    }
+
+    mountedHoverServiceIdsRef.current.add(serviceId);
+    setMountedHoverServiceIds((current) => [...current, serviceId]);
+  }
+
+  const scheduleHoverServiceWarmup = useCallback(() => {
+    if (hoverPreloadStartedRef.current) {
+      return;
+    }
+
+    hoverPreloadStartedRef.current = true;
+
+    let serviceIndex = 0;
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (
+        callback: IdleRequestCallback,
+        options?: IdleRequestOptions,
+      ) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+
+    const warmNextService = () => {
+      const nextService = HOVERABLE_APARTMENT_BOXES[serviceIndex];
+
+      if (!nextService) {
+        return;
+      }
+
+      ensureHoverServiceMounted(nextService.id);
+      serviceIndex += 1;
+
+      if (serviceIndex >= HOVERABLE_APARTMENT_BOXES.length) {
+        return;
+      }
+
+      if (idleWindow.requestIdleCallback) {
+        hoverIdleCallbackRef.current = idleWindow.requestIdleCallback(
+          () => {
+            warmNextService();
+          },
+          { timeout: 900 },
+        );
+        return;
+      }
+
+      hoverPreloadTimerRef.current = window.setTimeout(() => {
+        warmNextService();
+      }, 120);
+    };
+
+    warmNextService();
+  }, []);
 
   const animateHoverTiles = (mode: "in" | "out", serviceId: string) => {
     const sequence = apartmentSequenceRef.current;
@@ -523,6 +602,8 @@ export default function CreateImageFromTiles({
       return;
     }
 
+    ensureHoverServiceMounted(box.id);
+
     if (hoverTileClearRef.current !== null) {
       window.clearTimeout(hoverTileClearRef.current);
       hoverTileClearRef.current = null;
@@ -538,7 +619,6 @@ export default function CreateImageFromTiles({
     }
 
     setHoveredServiceId(box.id);
-    setActiveHoverServiceId(box.id);
 
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
@@ -566,7 +646,6 @@ export default function CreateImageFromTiles({
     animateHoverTiles("out", box.id);
 
     hoverTileClearRef.current = window.setTimeout(() => {
-      setActiveHoverServiceId((current) => (current === box.id ? null : current));
       hoverTileClearRef.current = null;
     }, 440);
   };
@@ -585,7 +664,49 @@ export default function CreateImageFromTiles({
     return () => {
       window.removeEventListener("resize", syncViewport);
     };
-  }, []);
+  }, [scheduleHoverServiceWarmup]);
+
+  useLayoutEffect(() => {
+    const section = sectionRef.current;
+
+    if (!section) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) {
+          return;
+        }
+
+        scheduleHoverServiceWarmup();
+        observer.disconnect();
+      },
+      {
+        rootMargin: "160% 0px",
+      },
+    );
+
+    observer.observe(section);
+
+    return () => {
+      observer.disconnect();
+
+      const idleWindow = window as Window & {
+        cancelIdleCallback?: (handle: number) => void;
+      };
+
+      if (hoverIdleCallbackRef.current !== null && idleWindow.cancelIdleCallback) {
+        idleWindow.cancelIdleCallback(hoverIdleCallbackRef.current);
+        hoverIdleCallbackRef.current = null;
+      }
+
+      if (hoverPreloadTimerRef.current !== null) {
+        window.clearTimeout(hoverPreloadTimerRef.current);
+        hoverPreloadTimerRef.current = null;
+      }
+    };
+  }, [scheduleHoverServiceWarmup]);
 
   useLayoutEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -1916,38 +2037,44 @@ export default function CreateImageFromTiles({
                     )}
                   </div>
 
-                  {activeHoverService?.tileBaseUrl ? (
+                  {mountedHoverServices.length > 0 ? (
                     <div className="pointer-events-none absolute inset-0" style={tileFrameStyle}>
-                      {Array.from({ length: NO_OF_ROWS }).map((_, row) =>
-                        Array.from({ length: NO_OF_COLUMNS }).map((_, col) => (
-                          <div
-                            key={`${activeHoverService.id}-${row}-${col}`}
-                            className="absolute overflow-hidden"
-                            style={{
-                              left: `${(col / NO_OF_COLUMNS) * 100}%`,
-                              top: `${(row / NO_OF_ROWS) * 100}%`,
-                              width: `${100 / NO_OF_COLUMNS}%`,
-                              height: `${100 / NO_OF_ROWS}%`,
-                            }}
-                          >
-                            <Image
-                              src={buildTileImagePath(
-                                activeHoverService.tileBaseUrl!,
-                                row,
-                                col,
-                                activeHoverService.tileFilePrefix,
-                              )}
-                              alt=""
-                              width={TILE_WIDTH}
-                              height={TILE_HEIGHT}
-                              unoptimized
-                              data-hover-service={activeHoverService.id}
-                              data-hover-row={row}
-                              data-hover-col={col}
-                              className="service-hover-tile absolute inset-0 h-full w-full object-fill opacity-0"
-                            />
-                          </div>
-                        )),
+                      {mountedHoverServices.map((service) =>
+                        Array.from({ length: NO_OF_ROWS }).map((_, row) =>
+                          Array.from({ length: NO_OF_COLUMNS }).map((_, col) => (
+                            <div
+                              key={`${service.id}-${row}-${col}`}
+                              className="absolute overflow-hidden"
+                              style={{
+                                left: `${(col / NO_OF_COLUMNS) * 100}%`,
+                                top: `${(row / NO_OF_ROWS) * 100}%`,
+                                width: `${100 / NO_OF_COLUMNS}%`,
+                                height: `${100 / NO_OF_ROWS}%`,
+                              }}
+                            >
+                              <Image
+                                src={buildTileImagePath(
+                                  service.tileBaseUrl,
+                                  row,
+                                  col,
+                                  service.tileFilePrefix,
+                                )}
+                                alt=""
+                                width={TILE_WIDTH}
+                                height={TILE_HEIGHT}
+                                unoptimized
+                                loading="eager"
+                                sizes="12.5vw"
+                                draggable={false}
+                                aria-hidden="true"
+                                data-hover-service={service.id}
+                                data-hover-row={row}
+                                data-hover-col={col}
+                                className="service-hover-tile absolute inset-0 h-full w-full object-fill opacity-0 [backface-visibility:hidden] [transform:translateZ(0)] [will-change:opacity]"
+                              />
+                            </div>
+                          )),
+                        ),
                       )}
                     </div>
                   ) : null}
