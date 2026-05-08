@@ -8,6 +8,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Open_Sans } from "next/font/google";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -202,6 +203,21 @@ const REASON_SCENES: Array<ReasonCard | ReasonCenterScene> = [
   REASON_CARDS[4],
   REASON_CARDS[5],
 ];
+
+const FOOTER_NAV_LINKS = [
+  { label: "Home", href: "/" },
+  { label: "Services", href: "#services" },
+  { label: "Reasons", href: "#reasons" },
+  { label: "Contact", href: "#contact" },
+];
+
+const FOOTER_SOCIAL_LINKS = [
+  { label: "Instagram", href: "https://instagram.com" },
+  { label: "X", href: "https://twitter.com" },
+  { label: "LinkedIn", href: "https://linkedin.com" },
+];
+
+const FOOTER_POLICY_LINKS = ["Privacy policy", "Terms & conditions"];
 
 const INTRO_HEADLINE = [
   "We bridge the gap between blueprint",
@@ -450,6 +466,40 @@ function getApartmentBoxDescriptionClass(box: ApartmentBox) {
   }
 
   return "text-[clamp(0.88rem,0.96vw,1.02rem)] leading-[1.58]";
+}
+
+function FooterWaveLabel({ label }: { label: string }) {
+  const characters = Array.from(label);
+
+  return (
+    <span className="relative inline-flex overflow-hidden align-top">
+      <span aria-hidden="true" className="inline-flex">
+        {characters.map((character, index) => (
+          <span
+            key={`top-${label}-${index}`}
+            className="inline-block transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] [will-change:transform] group-hover/footer-wave-link:-translate-y-[115%]"
+            style={{ transitionDelay: `${index * 18}ms` }}
+          >
+            {character === " " ? "\u00A0" : character}
+          </span>
+        ))}
+      </span>
+
+      <span aria-hidden="true" className="absolute left-0 top-0 inline-flex">
+        {characters.map((character, index) => (
+          <span
+            key={`bottom-${label}-${index}`}
+            className="inline-block translate-y-[115%] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] [will-change:transform] group-hover/footer-wave-link:translate-y-0"
+            style={{ transitionDelay: `${index * 18}ms` }}
+          >
+            {character === " " ? "\u00A0" : character}
+          </span>
+        ))}
+      </span>
+
+      <span className="sr-only">{label}</span>
+    </span>
+  );
 }
 
 export default function CreateImageFromTiles({
@@ -1524,7 +1574,8 @@ export default function CreateImageFromTiles({
       const textPlanes = gsap.utils.toArray<HTMLElement>(".reasons-text-plane");
       const centerPlanes = gsap.utils.toArray<HTMLElement>(".reasons-center-plane");
       const depthStep = 1820;
-      const maxTravel = Math.max((groups.length - 1) * depthStep + 1500, 7200);
+      const lastSceneDepth = (groups.length - 1) * depthStep;
+      const maxTravel = Math.max(lastSceneDepth + 1900, 7600);
 
       if (!stage || !world) {
         return;
@@ -1566,21 +1617,51 @@ export default function CreateImageFromTiles({
         force3D: true,
       });
 
-      const sceneData = groups.map((group) => ({
-        group,
-        image: group.querySelector<HTMLElement>(".reasons-image-plane"),
-        text: group.querySelector<HTMLElement>(".reasons-text-plane"),
-        center: group.querySelector<HTMLElement>(".reasons-center-plane"),
-        depth: Number(group.dataset.depth ?? 0),
-      }));
+      const worldSetZ = gsap.quickSetter(world, "z", "px");
+      const worldSetOpacity = gsap.quickSetter(world, "opacity");
+      const worldSetY = gsap.quickSetter(world, "y", "px");
+      const exitStartZ = Math.min(lastSceneDepth + 1480, maxTravel - 120);
+      const exitDistance = Math.max(maxTravel - exitStartZ, 1);
 
-      sceneData.forEach(({ group, image, text, center }) => {
+      const sceneData = groups.map((group) => {
+        const image = group.querySelector<HTMLElement>(".reasons-image-plane");
+        const text = group.querySelector<HTMLElement>(".reasons-text-plane");
+        const center = group.querySelector<HTMLElement>(".reasons-center-plane");
+
+        return {
+          group,
+          image,
+          text,
+          center,
+          depth: Number(group.dataset.depth ?? 0),
+          kind: group.dataset.sceneKind ?? "center",
+          align: group.dataset.align ?? "center",
+          setGroupOpacity: gsap.quickSetter(group, "opacity"),
+          setImageOpacity: image ? gsap.quickSetter(image, "opacity") : null,
+          setImageScale: image ? gsap.quickSetter(image, "scale") : null,
+          setTextOpacity: text ? gsap.quickSetter(text, "opacity") : null,
+          setTextScale: text ? gsap.quickSetter(text, "scale") : null,
+          setCenterOpacity: center ? gsap.quickSetter(center, "opacity") : null,
+          setCenterScale: center ? gsap.quickSetter(center, "scale") : null,
+          lastPointerEvents: "none" as "auto" | "none",
+        };
+      });
+
+      sceneData.forEach(({ group, image, text, center, align }) => {
         group.style.willChange = "transform, opacity";
         if (image) {
-          image.style.willChange = "transform, opacity, filter";
+          image.style.willChange = "transform, opacity";
+          gsap.set(image, {
+            transformOrigin:
+              align === "left" ? "100% 50%" : align === "right" ? "0% 50%" : "50% 50%",
+          });
         }
         if (text) {
           text.style.willChange = "transform, opacity";
+          gsap.set(text, {
+            transformOrigin:
+              align === "left" ? "0% 50%" : align === "right" ? "100% 50%" : "50% 50%",
+          });
         }
         if (center) {
           center.style.willChange = "transform, opacity";
@@ -1609,14 +1690,28 @@ export default function CreateImageFromTiles({
 
       const updateWorld = (progress: number) => {
         const cameraZ = progress * maxTravel;
+        const exitStrength = clamp((cameraZ - exitStartZ) / exitDistance, 0, 1);
+        const stageOpacity = 1 - exitStrength;
 
-        gsap.set(world, {
-          z: cameraZ,
-          rotationX: 0,
-          rotationY: 0,
-        });
+        worldSetZ(cameraZ);
+        worldSetOpacity(stageOpacity);
+        worldSetY(0);
 
-        sceneData.forEach(({ group, image, text, center, depth }) => {
+        sceneData.forEach((scene) => {
+          const {
+            group,
+            image,
+            text,
+            center,
+            depth,
+            setGroupOpacity,
+            setImageOpacity,
+            setImageScale,
+            setTextOpacity,
+            setTextScale,
+            setCenterOpacity,
+            setCenterScale,
+          } = scene;
           const relativeZ = cameraZ - depth;
           const distance = Math.abs(relativeZ);
           const closeness = clamp(1 - distance / 1320, 0, 1);
@@ -1624,33 +1719,28 @@ export default function CreateImageFromTiles({
           const imageScale = 0.965 + closeness * 0.035;
           const textScale = 0.975 + closeness * 0.025;
           const centerScale = 0.97 + closeness * 0.03;
+          const nextPointerEvents = closeness > 0.84 ? "auto" : "none";
 
-          gsap.set(group, {
-            opacity: visibleOpacity,
-            filter: "none",
-            pointerEvents: closeness > 0.84 ? "auto" : "none",
-          });
+          setGroupOpacity(visibleOpacity);
 
-          if (image) {
-            gsap.set(image, {
-              opacity: visibleOpacity,
-              scale: imageScale,
-              filter: `brightness(${0.9 + closeness * 0.1}) saturate(${0.94 + closeness * 0.06})`,
-            });
+          if (scene.lastPointerEvents !== nextPointerEvents) {
+            group.style.pointerEvents = nextPointerEvents;
+            scene.lastPointerEvents = nextPointerEvents;
           }
 
-          if (text) {
-            gsap.set(text, {
-              opacity: visibleOpacity,
-              scale: textScale,
-            });
+          if (image && setImageOpacity && setImageScale) {
+            setImageOpacity(visibleOpacity);
+            setImageScale(imageScale);
           }
 
-          if (center) {
-            gsap.set(center, {
-              opacity: visibleOpacity,
-              scale: centerScale,
-            });
+          if (text && setTextOpacity && setTextScale) {
+            setTextOpacity(visibleOpacity);
+            setTextScale(textScale);
+          }
+
+          if (center && setCenterOpacity && setCenterScale) {
+            setCenterOpacity(visibleOpacity);
+            setCenterScale(centerScale);
           }
         });
       };
@@ -1671,8 +1761,8 @@ export default function CreateImageFromTiles({
       ScrollTrigger.create({
         trigger: section,
         start: "top top",
-        end: `+=${Math.max(groups.length * 920, 5600)}`,
-        scrub: 0.9,
+        end: `+=${Math.max(groups.length * 960, 6000)}`,
+        scrub: true,
         pin: true,
         anticipatePin: 1,
         invalidateOnRefresh: true,
@@ -1695,6 +1785,7 @@ export default function CreateImageFromTiles({
   return (
     <>
       <section
+        id="services"
         ref={sectionRef}
         className="relative z-[8] -mt-[22vh] min-h-screen overflow-visible bg-transparent md:-mt-[24vh]"
       >
@@ -2239,6 +2330,7 @@ export default function CreateImageFromTiles({
       </section>
 
       <section
+        id="reasons"
         ref={reasonsSectionRef}
         className="relative z-[7] h-screen overflow-hidden bg-black text-[#f5efe4]"
       >
@@ -2265,6 +2357,8 @@ export default function CreateImageFromTiles({
                   key={scene.id}
                   className="reasons-group absolute left-1/2 top-1/2 h-[112vh] w-[112vw] [transform-style:preserve-3d]"
                   data-depth={depth}
+                  data-scene-kind={scene.kind}
+                  data-align={scene.kind === "reason" ? scene.align : "center"}
                 >
                   {scene.kind === "reason" ? (
                     <>
@@ -2355,6 +2449,158 @@ export default function CreateImageFromTiles({
           </div>
         </div>
       </section>
+
+      <footer
+        id="contact"
+        className={`${openSans.className} relative z-[5] bg-black text-[#f5efe4]`}
+      >
+        <div className="grid min-h-[100svh] grid-cols-1 border-t border-white/10 md:grid-cols-2 xl:grid-cols-5 xl:grid-rows-3">
+          <div className="min-h-[9rem] border-b border-r border-white/10 bg-black" aria-hidden="true" />
+
+          <div className="flex min-h-[9rem] flex-col justify-between gap-10 border-b border-r border-white/10 bg-black px-8 py-10 md:px-10 xl:px-11 xl:py-12">
+            <div className="space-y-2 text-[clamp(1.2rem,1.8vw,2rem)] font-semibold leading-[1.08] tracking-[-0.05em] text-[#f7f0e5]">
+              <p className="m-0">Sthyra,</p>
+              <p className="m-0">Bangalore, India</p>
+            </div>
+            <a
+              href="mailto:hello@sthyra.com"
+              className="text-[clamp(1rem,1.15vw,1.25rem)] font-semibold tracking-[-0.03em] text-white transition-colors duration-300 hover:text-white/72"
+            >
+              hello@sthyra.com
+            </a>
+          </div>
+
+          <div className="flex min-h-[9rem] items-center justify-center border-b border-r border-white/10 bg-black px-8 py-10 text-center">
+            <p className="m-0 text-[clamp(1.35rem,1.8vw,2.1rem)] font-semibold leading-[0.96] tracking-[-0.055em] text-[#f7f0e5]">
+              HAVE AN IDEA?
+            </p>
+          </div>
+
+          <div className="flex min-h-[9rem] flex-col justify-between border-b border-r border-white/10 bg-white px-8 py-10 text-black md:px-10 xl:px-11 xl:py-12">
+            <div>
+              <p className="m-0 text-[0.72rem] uppercase tracking-[0.28em] text-black/46">
+                STHYRA
+              </p>
+              <p className="mt-5 max-w-[12ch] text-[clamp(1.75rem,2.45vw,3rem)] font-semibold leading-[0.92] tracking-[-0.06em]">
+                Bangalore-based architectural immersion.
+              </p>
+            </div>
+            <p className="m-0 max-w-[30ch] text-[clamp(0.92rem,0.95vw,1rem)] leading-[1.65] tracking-[-0.012em] text-black/62">
+              Premium visualization, cinematic renders, and interactive spatial stories.
+            </p>
+          </div>
+
+          <div className="min-h-[9rem] border-b border-r border-white/10 bg-black" aria-hidden="true" />
+
+          <div className="border-b border-r border-white/10 bg-white px-8 py-10 text-black md:px-10 xl:px-11 xl:py-12">
+            <div className="flex flex-col gap-4 text-[clamp(1.05rem,1.3vw,1.45rem)] font-semibold leading-[1.02] tracking-[-0.04em]">
+              {FOOTER_NAV_LINKS.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="group/footer-wave-link inline-flex w-fit text-black transition-opacity duration-300 hover:opacity-80"
+                >
+                  <FooterWaveLabel label={item.label} />
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="min-h-[12rem] border-b border-r border-white/10 bg-black" aria-hidden="true" />
+
+          <div className="min-h-[12rem] border-b border-r border-white/10 bg-black" aria-hidden="true" />
+
+          <a
+            href="mailto:hello@sthyra.com?subject=Project%20Inquiry"
+            className="group/start-project relative flex min-h-[16rem] flex-col justify-between border-b border-r border-white/10 bg-white px-8 py-10 text-black transition-colors duration-300 hover:bg-[#f5eee1] md:px-10 xl:px-11 xl:py-12"
+          >
+            <div className="relative ml-auto h-12 w-12 overflow-hidden">
+              <svg
+                viewBox="0 0 64 64"
+                aria-hidden="true"
+                className="absolute inset-0 h-12 w-12 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/start-project:translate-x-5 group-hover/start-project:-translate-y-5"
+              >
+                <path
+                  d="M14 50L50 14M24 14H50V40"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="5"
+                  strokeLinecap="square"
+                />
+              </svg>
+              <svg
+                viewBox="0 0 64 64"
+                aria-hidden="true"
+                className="absolute inset-0 h-12 w-12 -translate-x-5 translate-y-5 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/start-project:translate-x-0 group-hover/start-project:translate-y-0"
+              >
+                <path
+                  d="M14 50L50 14M24 14H50V40"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="5"
+                  strokeLinecap="square"
+                />
+              </svg>
+            </div>
+            <div>
+              <p className="m-0 text-[0.72rem] uppercase tracking-[0.28em] text-black/46">
+                Start a project
+              </p>
+              <p className="mt-6 max-w-[7ch] text-[clamp(2.75rem,4.7vw,5rem)] font-semibold leading-[0.88] tracking-[-0.075em]">
+                LET&apos;S
+                <br />
+                TALK
+              </p>
+            </div>
+          </a>
+
+          <div className="min-h-[12rem] border-b border-r border-white/10 bg-black" aria-hidden="true" />
+
+          <div className="flex min-h-[9rem] items-end border-b border-r border-white/10 bg-black px-8 py-8 md:px-10 xl:px-11">
+            <p className="m-0 text-[clamp(1rem,1.1vw,1.15rem)] leading-[1.3] tracking-[-0.02em] text-white/90">
+              ©2026 Sthyra
+            </p>
+          </div>
+
+          <div className="border-b border-r border-white/10 bg-white px-8 py-10 text-black md:px-10 xl:px-11 xl:py-12">
+            <div className="flex flex-col gap-4 text-[clamp(1.05rem,1.25vw,1.35rem)] font-semibold leading-[1.02] tracking-[-0.04em]">
+              {FOOTER_SOCIAL_LINKS.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group/footer-wave-link inline-flex w-fit text-black transition-opacity duration-300 hover:opacity-80"
+                >
+                  <FooterWaveLabel label={item.label} />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex min-h-[9rem] items-end border-b border-r border-white/10 bg-black px-8 py-8 md:px-10 xl:px-11">
+            <p className="m-0 max-w-[18ch] text-[clamp(1rem,1.08vw,1.18rem)] leading-[1.3] tracking-[-0.02em] text-white/90">
+              Built for unbuilt spaces. Designed to help people see the future sooner.
+            </p>
+          </div>
+
+          <div className="flex min-h-[9rem] items-end border-b border-r border-white/10 bg-black px-8 py-8 md:px-10 xl:px-11">
+            <p className="m-0 text-[clamp(1rem,1.08vw,1.18rem)] leading-[1.3] tracking-[-0.02em] text-white/90">
+              Made in Bangalore
+            </p>
+          </div>
+
+          <div className="flex min-h-[9rem] items-end border-b border-r border-white/10 bg-black px-8 py-8 md:px-10 xl:px-11">
+            <div className="flex flex-col gap-3 text-[clamp(1rem,1.08vw,1.18rem)] leading-[1.25] tracking-[-0.02em] text-white/90">
+              {FOOTER_POLICY_LINKS.map((item) => (
+                <p key={item} className="m-0">
+                  {item}
+                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+      </footer>
     </>
   );
 }
