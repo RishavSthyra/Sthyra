@@ -1559,6 +1559,8 @@ export default function CreateImageFromTiles({
 
   useLayoutEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
+    let rafId: number | null = null;
+    let reasonsTrigger: ScrollTrigger | null = null;
 
     const ctx = gsap.context(() => {
       const section = reasonsSectionRef.current;
@@ -1649,8 +1651,10 @@ export default function CreateImageFromTiles({
 
       sceneData.forEach(({ group, image, text, center, align }) => {
         group.style.willChange = "transform, opacity";
+        group.style.backfaceVisibility = "hidden";
         if (image) {
           image.style.willChange = "transform, opacity";
+          image.style.backfaceVisibility = "hidden";
           gsap.set(image, {
             transformOrigin:
               align === "left" ? "100% 50%" : align === "right" ? "0% 50%" : "50% 50%",
@@ -1658,6 +1662,7 @@ export default function CreateImageFromTiles({
         }
         if (text) {
           text.style.willChange = "transform, opacity";
+          text.style.backfaceVisibility = "hidden";
           gsap.set(text, {
             transformOrigin:
               align === "left" ? "0% 50%" : align === "right" ? "100% 50%" : "50% 50%",
@@ -1665,6 +1670,7 @@ export default function CreateImageFromTiles({
         }
         if (center) {
           center.style.willChange = "transform, opacity";
+          center.style.backfaceVisibility = "hidden";
         }
       });
 
@@ -1692,10 +1698,11 @@ export default function CreateImageFromTiles({
         const cameraZ = progress * maxTravel;
         const exitStrength = clamp((cameraZ - exitStartZ) / exitDistance, 0, 1);
         const stageOpacity = 1 - exitStrength;
+        const worldY = 0;
 
         worldSetZ(cameraZ);
         worldSetOpacity(stageOpacity);
-        worldSetY(0);
+        worldSetY(worldY);
 
         sceneData.forEach((scene) => {
           const {
@@ -1722,6 +1729,12 @@ export default function CreateImageFromTiles({
           const nextPointerEvents = closeness > 0.84 ? "auto" : "none";
 
           setGroupOpacity(visibleOpacity);
+
+          if (visibleOpacity <= 0.04) {
+            group.style.visibility = "hidden";
+          } else {
+            group.style.visibility = "visible";
+          }
 
           if (scene.lastPointerEvents !== nextPointerEvents) {
             group.style.pointerEvents = nextPointerEvents;
@@ -1758,21 +1771,63 @@ export default function CreateImageFromTiles({
 
       updateWorld(0);
 
-      ScrollTrigger.create({
+      let latestProgress = 0;
+
+      const safeUpdateWorld = (progress: number) => {
+        latestProgress = clamp(progress, 0, 1);
+
+        if (rafId !== null) {
+          return;
+        }
+
+        rafId = window.requestAnimationFrame(() => {
+          updateWorld(latestProgress);
+          rafId = null;
+        });
+      };
+
+      reasonsTrigger = ScrollTrigger.create({
         trigger: section,
         start: "top top",
-        end: `+=${Math.max(groups.length * 960, 6000)}`,
-        scrub: true,
+        end: () => `+=${Math.max(groups.length * 960, 6000)}`,
+        scrub: 0.65,
         pin: true,
+        pinSpacing: true,
         anticipatePin: 1,
         invalidateOnRefresh: true,
+        fastScrollEnd: true,
         onUpdate: (self) => {
-          updateWorld(self.progress);
+          safeUpdateWorld(self.progress);
         },
+        onEnter: (self) => {
+          safeUpdateWorld(self.progress);
+        },
+        onEnterBack: (self) => {
+          safeUpdateWorld(self.progress);
+        },
+        onLeave: () => {
+          safeUpdateWorld(1);
+        },
+        onLeaveBack: () => {
+          safeUpdateWorld(0);
+        },
+        onRefresh: (self) => {
+          safeUpdateWorld(self.progress);
+        },
+      });
+
+      requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
       });
     }, reasonsSectionRef);
 
     return () => {
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+
+      reasonsTrigger?.kill();
       ctx.revert();
     };
   }, []);
@@ -1781,6 +1836,8 @@ export default function CreateImageFromTiles({
     inset: "0px",
   };
   const isCompactReasonLayout = viewport.width > 0 && viewport.width < 960;
+  const isMediumReasonLayout =
+    viewport.width >= 960 && viewport.width < 1480;
 
   return (
     <>
@@ -2335,17 +2392,25 @@ export default function CreateImageFromTiles({
         className="relative z-[7] h-screen overflow-hidden bg-black text-[#f5efe4]"
       >
         <div className="reasons-stage relative h-screen overflow-hidden bg-black">
-          <div className="reasons-world absolute left-1/2 top-1/2 h-[112vh] w-[112vw] [transform-style:preserve-3d]">
+          <div className="reasons-world absolute left-1/2 top-1/2 h-[126vh] w-[126vw] [transform-style:preserve-3d]">
             {REASON_SCENES.map((scene, sceneIndex) => {
               const imageOnLeft = scene.kind === "reason" && scene.align === "left";
               const depth = sceneIndex * 1820;
               const imageLeft = isCompactReasonLayout
                 ? "50%"
+                : isMediumReasonLayout
+                  ? imageOnLeft
+                    ? "37.5%"
+                    : "62.5%"
                 : imageOnLeft
                   ? "33.5%"
                   : "66.5%";
               const textLeft = isCompactReasonLayout
                 ? "50%"
+                : isMediumReasonLayout
+                  ? imageOnLeft
+                    ? "59.5%"
+                    : "40.5%"
                 : imageOnLeft
                   ? "64%"
                   : "36%";
@@ -2355,7 +2420,7 @@ export default function CreateImageFromTiles({
               return (
                 <article
                   key={scene.id}
-                  className="reasons-group absolute left-1/2 top-1/2 h-[112vh] w-[112vw] [transform-style:preserve-3d]"
+                  className="reasons-group absolute left-1/2 top-1/2 h-[126vh] w-[126vw] [transform-style:preserve-3d]"
                   data-depth={depth}
                   data-scene-kind={scene.kind}
                   data-align={scene.kind === "reason" ? scene.align : "center"}
@@ -2369,9 +2434,13 @@ export default function CreateImageFromTiles({
                           top: imageTop,
                           width: isCompactReasonLayout
                             ? "min(62vw, 22rem)"
+                            : isMediumReasonLayout
+                              ? "clamp(18rem, 26vw, 26rem)"
                             : "clamp(18rem, 30vw, 31rem)",
                           height: isCompactReasonLayout
                             ? "min(76vw, 26rem)"
+                            : isMediumReasonLayout
+                              ? "clamp(22rem, 32vw, 31rem)"
                             : "clamp(22rem, 40vw, 38rem)",
                         }}
                       >
@@ -2380,6 +2449,7 @@ export default function CreateImageFromTiles({
                           alt={scene.imageAlt}
                           fill
                           unoptimized
+                          loading="eager"
                           sizes="(max-width: 768px) 58vw, 30vw"
                           className="object-cover"
                         />
@@ -2392,6 +2462,8 @@ export default function CreateImageFromTiles({
                           top: textTop,
                           width: isCompactReasonLayout
                             ? "min(78vw, 26rem)"
+                            : isMediumReasonLayout
+                              ? "clamp(22rem, 27vw, 31rem)"
                             : "clamp(24rem, 34vw, 39rem)",
                           textAlign: isCompactReasonLayout
                             ? "center"
