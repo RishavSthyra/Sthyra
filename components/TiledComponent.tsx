@@ -466,6 +466,7 @@ export default function CreateImageFromTiles({
   const reasonsSectionRef = useRef<HTMLElement | null>(null);
   const hoverTileWaveRef = useRef<gsap.core.Tween | null>(null);
   const hoverTileClearRef = useRef<number | null>(null);
+  const visibleHoverServiceIdRef = useRef<string | null>(null);
   const hoverPreloadStartedRef = useRef(false);
   const hoverPreloadTimerRef = useRef<number | null>(null);
   const hoverIdleCallbackRef = useRef<number | null>(null);
@@ -501,6 +502,38 @@ export default function CreateImageFromTiles({
     row === FEATURE_TILE.row && col === FEATURE_TILE.col;
   const isFeatureColumnTile = (row: number, col: number) =>
     col === FEATURE_TILE.col && row !== FEATURE_TILE.row;
+
+  const getHoverTilesForService = (serviceId: string) => {
+    const sequence = apartmentSequenceRef.current;
+
+    if (!sequence) {
+      return [] as HTMLElement[];
+    }
+
+    return gsap.utils.toArray<HTMLElement>(
+      sequence.querySelectorAll(`[data-hover-service="${serviceId}"]`),
+    );
+  };
+
+  const hideHoverTilesExcept = (serviceId: string | null) => {
+    const sequence = apartmentSequenceRef.current;
+
+    if (!sequence) {
+      return;
+    }
+
+    const selector = serviceId
+      ? `.service-hover-tile:not([data-hover-service="${serviceId}"])`
+      : ".service-hover-tile";
+    const tiles = gsap.utils.toArray<HTMLElement>(sequence.querySelectorAll(selector));
+
+    if (tiles.length === 0) {
+      return;
+    }
+
+    gsap.killTweensOf(tiles);
+    gsap.set(tiles, { opacity: 0 });
+  };
 
   function ensureHoverServiceMounted(serviceId: string) {
     if (mountedHoverServiceIdsRef.current.has(serviceId)) {
@@ -560,20 +593,13 @@ export default function CreateImageFromTiles({
   }, []);
 
   const animateHoverTiles = (mode: "in" | "out", serviceId: string) => {
-    const sequence = apartmentSequenceRef.current;
-
-    if (!sequence) {
-      return;
-    }
-
-    const tiles = gsap.utils.toArray<HTMLElement>(
-      sequence.querySelectorAll(`[data-hover-service="${serviceId}"]`),
-    );
+    const tiles = getHoverTilesForService(serviceId);
 
     if (tiles.length === 0) {
       return;
     }
 
+    gsap.killTweensOf(tiles);
     hoverTileWaveRef.current?.kill();
 
     hoverTileWaveRef.current = gsap.to(tiles, {
@@ -618,6 +644,11 @@ export default function CreateImageFromTiles({
       };
     }
 
+    if (visibleHoverServiceIdRef.current !== box.id) {
+      hideHoverTilesExcept(box.id);
+      visibleHoverServiceIdRef.current = box.id;
+    }
+
     setHoveredServiceId(box.id);
 
     window.requestAnimationFrame(() => {
@@ -646,6 +677,10 @@ export default function CreateImageFromTiles({
     animateHoverTiles("out", box.id);
 
     hoverTileClearRef.current = window.setTimeout(() => {
+      if (visibleHoverServiceIdRef.current === box.id) {
+        visibleHoverServiceIdRef.current = null;
+      }
+
       hoverTileClearRef.current = null;
     }, 440);
   };
