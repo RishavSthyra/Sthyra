@@ -12,6 +12,8 @@ import Link from "next/link";
 import { Open_Sans } from "next/font/google";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import ProjectMapSection from "@/components/ProjectMapSection";
+import TiledComponentMobile from "@/components/TiledComponentMobile";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -26,6 +28,8 @@ interface TILECOMBININGTYPES {
   TILE_HEIGHT: number;
   TILE_WIDTH: number;
 }
+
+const PROJECT_SITE_COORDINATES: [number, number] = [77.5946, 12.9716];
 
 type PostSkylineTileMode = "black" | "white" | "image";
 
@@ -548,6 +552,8 @@ export default function CreateImageFromTiles({
   const mountedHoverServices = HOVERABLE_APARTMENT_BOXES.filter((box) =>
     mountedHoverServiceIds.includes(box.id),
   );
+  const hasViewport = viewport.width > 0 && viewport.height > 0;
+  const useMobileTabletLayout = viewport.width > 0 && viewport.width < 1100;
   const isFeatureTile = (row: number, col: number) =>
     row === FEATURE_TILE.row && col === FEATURE_TILE.col;
   const isFeatureColumnTile = (row: number, col: number) =>
@@ -752,6 +758,14 @@ export default function CreateImageFromTiles({
   }, [scheduleHoverServiceWarmup]);
 
   useLayoutEffect(() => {
+    if (!hasViewport) {
+      return;
+    }
+
+    if (useMobileTabletLayout) {
+      return;
+    }
+
     const section = sectionRef.current;
 
     if (!section) {
@@ -791,9 +805,17 @@ export default function CreateImageFromTiles({
         hoverPreloadTimerRef.current = null;
       }
     };
-  }, [scheduleHoverServiceWarmup]);
+  }, [scheduleHoverServiceWarmup, useMobileTabletLayout, hasViewport]);
 
   useLayoutEffect(() => {
+    if (!hasViewport) {
+      return;
+    }
+
+    if (useMobileTabletLayout) {
+      return;
+    }
+
     gsap.registerPlugin(ScrollTrigger);
     const introOffset = 2.7;
     const at = (time: number) => time + introOffset;
@@ -1555,9 +1577,17 @@ export default function CreateImageFromTiles({
       hoverTileWaveRef.current?.kill();
       ctx.revert();
     };
-  }, [NO_OF_COLUMNS, NO_OF_ROWS]);
+  }, [NO_OF_COLUMNS, NO_OF_ROWS, useMobileTabletLayout, hasViewport]);
 
   useLayoutEffect(() => {
+    if (!hasViewport) {
+      return;
+    }
+
+    if (useMobileTabletLayout) {
+      return;
+    }
+
     gsap.registerPlugin(ScrollTrigger);
     let rafId: number | null = null;
     let reasonsTrigger: ScrollTrigger | null = null;
@@ -1830,7 +1860,7 @@ export default function CreateImageFromTiles({
       reasonsTrigger?.kill();
       ctx.revert();
     };
-  }, []);
+  }, [useMobileTabletLayout, hasViewport]);
 
   const tileFrameStyle = {
     inset: "0px",
@@ -1838,6 +1868,16 @@ export default function CreateImageFromTiles({
   const isCompactReasonLayout = viewport.width > 0 && viewport.width < 960;
   const isMediumReasonLayout =
     viewport.width >= 960 && viewport.width < 1480;
+
+  if (useMobileTabletLayout) {
+    return (
+      <TiledComponentMobile
+        BASEURL={BASEURL}
+        SECONDARY_BASEURL={SECONDARY_BASEURL}
+        PROJECT_COORDINATES={PROJECT_SITE_COORDINATES}
+      />
+    );
+  }
 
   return (
     <>
@@ -2385,6 +2425,8 @@ export default function CreateImageFromTiles({
           </div>
         </div>
       </section>
+
+      <ProjectMapSection projectCoordinates={PROJECT_SITE_COORDINATES} />
 
       <section
         id="reasons"

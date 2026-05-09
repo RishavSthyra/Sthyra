@@ -385,6 +385,47 @@ export default function AsciiWordHero({
   const [modelMask, setModelMask] = useState<Awaited<
     ReturnType<typeof createModelMask>
   > | null>(null);
+  const isMobileHero = size.width > 0 && size.width < 768;
+  const isTabletHero = size.width >= 768 && size.width < 1100;
+  const responsiveConfig = useMemo(() => {
+    if (isMobileHero) {
+      return {
+        ...mergedConfig,
+        density: Math.max(mergedConfig.density, 1.52),
+        textScale: Math.max(mergedConfig.textScale, 1.03),
+        maxCells: Math.min(mergedConfig.maxCells, 24000),
+        maxParticles: Math.min(mergedConfig.maxParticles, 3000),
+        maskPadding: Math.min(mergedConfig.maskPadding, 0.006),
+        glitterSize: Math.min(mergedConfig.glitterSize, 1.7),
+        glitterDensity: Math.min(mergedConfig.glitterDensity, 0.12),
+        hoverRadius: mergedConfig.hoverRadius * 0.8,
+        hoverRepulsion: mergedConfig.hoverRepulsion * 0.82,
+        sweepStrength: mergedConfig.sweepStrength * 0.8,
+        ambientTwinkleStrength: mergedConfig.ambientTwinkleStrength * 0.82,
+        devicePixelRatioCap: Math.min(mergedConfig.devicePixelRatioCap, 1.1),
+      } satisfies AsciiWordHeroConfig;
+    }
+
+    if (isTabletHero) {
+      return {
+        ...mergedConfig,
+        density: Math.max(mergedConfig.density, 1.42),
+        textScale: Math.max(mergedConfig.textScale, 0.97),
+        maxCells: Math.min(mergedConfig.maxCells, 32000),
+        maxParticles: Math.min(mergedConfig.maxParticles, 4400),
+        maskPadding: Math.min(mergedConfig.maskPadding, 0.012),
+        glitterSize: Math.min(mergedConfig.glitterSize, 1.9),
+        glitterDensity: Math.min(mergedConfig.glitterDensity, 0.14),
+        hoverRadius: mergedConfig.hoverRadius * 0.88,
+        hoverRepulsion: mergedConfig.hoverRepulsion * 0.9,
+        sweepStrength: mergedConfig.sweepStrength * 0.88,
+        ambientTwinkleStrength: mergedConfig.ambientTwinkleStrength * 0.9,
+        devicePixelRatioCap: Math.min(mergedConfig.devicePixelRatioCap, 1.2),
+      } satisfies AsciiWordHeroConfig;
+    }
+
+    return mergedConfig;
+  }, [isMobileHero, isTabletHero, mergedConfig]);
 
   useEffect(() => {
     if (typeof document === "undefined" || !("fonts" in document)) {
@@ -483,7 +524,7 @@ export default function AsciiWordHero({
           width: size.width,
           height: size.height,
           characters,
-          config: mergedConfig,
+          config: responsiveConfig,
           mask: modelMask,
         });
       }
@@ -493,12 +534,12 @@ export default function AsciiWordHero({
         width: size.width,
         height: size.height,
         characters,
-        config: mergedConfig,
+        config: responsiveConfig,
         maskFontFamily: maskFontReady ? HERO_MASK_FONT_STACK : undefined,
         maskFontWeight: 600,
       });
     },
-    [characters, maskFontReady, mergedConfig, modelMask, size.height, size.width, word],
+    [characters, maskFontReady, modelMask, responsiveConfig, size.height, size.width, word],
   );
 
   const updatePointerPosition = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -536,8 +577,11 @@ export default function AsciiWordHero({
       const rawBreakProgress = reducedMotion
         ? sceneProgress
         : clamp(
-            (sceneProgress - mergedConfig.scrollBreakStart) /
-              Math.max(mergedConfig.scrollBreakEnd - mergedConfig.scrollBreakStart, 0.001),
+            (sceneProgress - responsiveConfig.scrollBreakStart) /
+              Math.max(
+                responsiveConfig.scrollBreakEnd - responsiveConfig.scrollBreakStart,
+                0.001,
+              ),
             0,
             1,
           );
@@ -593,7 +637,7 @@ export default function AsciiWordHero({
         window.cancelAnimationFrame(scheduledFrame);
       }
     };
-  }, [mergedConfig.scrollBreakEnd, mergedConfig.scrollBreakStart, reducedMotion]);
+  }, [reducedMotion, responsiveConfig.scrollBreakEnd, responsiveConfig.scrollBreakStart]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -610,40 +654,40 @@ export default function AsciiWordHero({
 
     const dpr = Math.min(
       window.devicePixelRatio || 1,
-      mergedConfig.devicePixelRatioCap,
+      responsiveConfig.devicePixelRatioCap,
     );
     canvas.width = Math.round(size.width * dpr);
     canvas.height = Math.round(size.height * dpr);
     canvas.style.width = `${size.width}px`;
     canvas.style.height = `${size.height}px`;
 
-    const runtime = createRuntimeFieldState(field, size, mergedConfig);
+    const runtime = createRuntimeFieldState(field, size, responsiveConfig);
     const baseHoverRadius = reducedMotion
-      ? mergedConfig.hoverRadius * 0.72
-      : mergedConfig.hoverRadius;
+      ? responsiveConfig.hoverRadius * 0.72
+      : responsiveConfig.hoverRadius;
     const baseHoverRepulsion = reducedMotion
-      ? mergedConfig.hoverRepulsion * 0.68
-      : mergedConfig.hoverRepulsion;
+      ? responsiveConfig.hoverRepulsion * 0.68
+      : responsiveConfig.hoverRepulsion;
     const logoWidth = Math.max(field.wordWidth, 1);
     const animationStart = performance.now();
     const font = `700 ${field.fontSize}px ${HERO_ASCII_FONT_STACK}`;
-    const glitterSeedThreshold = 1 - clamp(mergedConfig.glitterDensity, 0.01, 0.35);
+    const glitterSeedThreshold = 1 - clamp(responsiveConfig.glitterDensity, 0.01, 0.35);
     let animationFrame = 0;
     let previousTime = animationStart;
 
     const draw = (timestamp: number) => {
       const delta = Math.min((timestamp - previousTime) / 1000, 0.05);
       const elapsed = reducedMotion
-        ? mergedConfig.entryDuration + mergedConfig.entryStagger + 0.25
+        ? responsiveConfig.entryDuration + responsiveConfig.entryStagger + 0.25
         : (timestamp - animationStart) / 1000;
       const time = timestamp / 1000;
       const sceneProgress = scrollProgressRef.current;
       const rawBreakProgress = reducedMotion
         ? sceneProgress
         : clamp(
-            (sceneProgress - mergedConfig.scrollBreakStart) /
+            (sceneProgress - responsiveConfig.scrollBreakStart) /
               Math.max(
-                mergedConfig.scrollBreakEnd - mergedConfig.scrollBreakStart,
+                responsiveConfig.scrollBreakEnd - responsiveConfig.scrollBreakStart,
                 0.001,
               ),
             0,
@@ -658,10 +702,10 @@ export default function AsciiWordHero({
       context.font = font;
       context.textAlign = "center";
       context.textBaseline = "middle";
-      context.fillStyle = mergedConfig.glyphColor;
+      context.fillStyle = responsiveConfig.glyphColor;
       context.shadowBlur = 0;
 
-      if (breakProgress >= mergedConfig.scrollClearThreshold) {
+      if (breakProgress >= responsiveConfig.scrollClearThreshold) {
         animationFrame = window.requestAnimationFrame(draw);
         return;
       }
@@ -670,10 +714,10 @@ export default function AsciiWordHero({
         let hoverTargetX = 0;
         let hoverTargetY = 0;
         const hoverRadius = pointerRef.current.active
-          ? baseHoverRadius * mergedConfig.hoverActiveRadiusMultiplier
+          ? baseHoverRadius * responsiveConfig.hoverActiveRadiusMultiplier
           : baseHoverRadius;
         const hoverRepulsion = pointerRef.current.active
-          ? baseHoverRepulsion * mergedConfig.hoverActiveRepulsionMultiplier
+          ? baseHoverRepulsion * responsiveConfig.hoverActiveRepulsionMultiplier
           : baseHoverRepulsion;
         const radiusSquared = hoverRadius * hoverRadius;
         const localEntryProgress = reducedMotion
@@ -684,7 +728,7 @@ export default function AsciiWordHero({
               0,
               1,
             );
-        const settle = easeOutPower(localEntryProgress, mergedConfig.settleEase);
+        const settle = easeOutPower(localEntryProgress, responsiveConfig.settleEase);
 
         if (pointerRef.current.active && breakProgress < 0.52 && settle > 0.82) {
           const dx = field.originsX[index] - pointerRef.current.x;
@@ -700,7 +744,7 @@ export default function AsciiWordHero({
             const tangentY = dx / distance;
             const distortion =
               Math.sin(time * 7.2 + field.seeds[index] * 29) *
-              mergedConfig.hoverDistortion *
+              responsiveConfig.hoverDistortion *
               Math.pow(falloff, 1.35) *
               settle;
 
@@ -830,13 +874,13 @@ export default function AsciiWordHero({
         alpha *=
           1 -
           easeInOutCubic(
-            clamp(breakProgress / mergedConfig.scrollClearThreshold, 0, 1),
+            clamp(breakProgress / responsiveConfig.scrollClearThreshold, 0, 1),
           ) *
             0.12;
         alpha *=
           1 +
           Math.sin(time * 2.2 + field.seeds[index] * 18 + index * 0.035) *
-            mergedConfig.ambientTwinkleStrength;
+            responsiveConfig.ambientTwinkleStrength;
 
         if (alpha <= 0.015) {
           continue;
@@ -852,17 +896,17 @@ export default function AsciiWordHero({
         ) {
           context.globalAlpha =
             alpha *
-            mergedConfig.glowStrength *
+            responsiveConfig.glowStrength *
             (0.34 + settle * 0.44) *
             (1 - release * 0.55);
-          context.fillStyle = mergedConfig.glowColor;
+          context.fillStyle = responsiveConfig.glowColor;
           context.fillText(glyph, drawX, drawY);
         }
 
         if (!reducedMotion && release > 0.08 && release < 0.92 && index % 3 === 0) {
           context.globalAlpha =
             alpha * (0.12 + release * 0.22) * (1 - breakProgress * 0.18);
-          context.fillStyle = mergedConfig.glowColor;
+          context.fillStyle = responsiveConfig.glowColor;
           context.fillText(
             glyph,
             mix(drawX, formedX, 0.7),
@@ -877,11 +921,11 @@ export default function AsciiWordHero({
 
         if (
           !reducedMotion &&
-          index % mergedConfig.trailStride === 0 &&
+          index % responsiveConfig.trailStride === 0 &&
           moveDistance > field.cellSize * 0.9
         ) {
           context.globalAlpha = alpha * (0.16 + release * 0.2);
-          context.fillStyle = mergedConfig.glowColor;
+          context.fillStyle = responsiveConfig.glowColor;
           context.fillText(
             glyph,
             mix(drawX, formedX, 0.42),
@@ -900,7 +944,7 @@ export default function AsciiWordHero({
             field.cellSize *
             (1.2 + release * 3.2);
           context.globalAlpha = alpha * (0.08 + release * 0.16);
-          context.fillStyle = mergedConfig.glowColor;
+          context.fillStyle = responsiveConfig.glowColor;
           context.fillText(
             glyph,
             drawX + lateralSpread,
@@ -914,7 +958,7 @@ export default function AsciiWordHero({
         }
 
         context.globalAlpha = alpha;
-        context.fillStyle = mergedConfig.glyphColor;
+        context.fillStyle = responsiveConfig.glyphColor;
         context.fillText(glyph, drawX, drawY);
 
         if (
@@ -931,15 +975,15 @@ export default function AsciiWordHero({
 
           if (sparklePulse > 0.72) {
             const sparkleSize =
-              mergedConfig.glitterSize *
+              responsiveConfig.glitterSize *
               (0.8 + field.seeds[index] * 0.9 + sparklePulse * 0.65);
             const sparkleAlpha =
               alpha *
-              mergedConfig.glitterOpacity *
+              responsiveConfig.glitterOpacity *
               Math.pow((sparklePulse - 0.72) / 0.28, 1.1);
 
             context.globalAlpha = sparkleAlpha;
-            context.fillStyle = mergedConfig.glitterColor;
+            context.fillStyle = responsiveConfig.glitterColor;
             context.fillRect(drawX - sparkleSize, drawY - 0.45, sparkleSize * 2, 0.9);
             context.fillRect(drawX - 0.45, drawY - sparkleSize, 0.9, sparkleSize * 2);
             context.fillRect(drawX - 0.65, drawY - 0.65, 1.3, 1.3);
@@ -956,25 +1000,27 @@ export default function AsciiWordHero({
     return () => {
       window.cancelAnimationFrame(animationFrame);
     };
-  }, [characters, field, mergedConfig, reducedMotion, size, word]);
+  }, [characters, field, reducedMotion, responsiveConfig, size, word]);
 
   return (
     <section
       ref={sectionRef}
       className={[
-        "relative isolate min-h-[132vh] bg-[radial-gradient(circle_at_50%_18%,rgba(255,255,255,0.08),transparent_22%),radial-gradient(circle_at_50%_42%,rgba(255,255,255,0.05),transparent_34%),linear-gradient(180deg,#070707_0%,#010101_58%,#040404_100%)] [--hero-break:0] [--hero-overlay:1] [--hero-reveal:0] md:min-h-[140vh]",
+        "relative isolate min-h-screen min-h-[100svh] bg-black [--hero-break:0] [--hero-overlay:1] [--hero-reveal:0]",
         className,
       ]
         .filter(Boolean)
         .join(" ")}
       style={{
-        backgroundColor: mergedConfig.background,
+        backgroundColor: "#000000",
         fontFamily: HERO_UI_FONT_STACK,
       }}
     >
       <div
         ref={stickyRef}
-        className="sticky top-0 z-[3] h-screen overflow-hidden"
+        className={[
+          "sticky top-0 z-[3] h-screen min-h-[100svh] overflow-hidden",
+        ].join(" ")}
         onPointerMove={updatePointerPosition}
         onPointerEnter={updatePointerPosition}
         onPointerLeave={handlePointerLeave}
@@ -982,38 +1028,44 @@ export default function AsciiWordHero({
         <div
           className="pointer-events-none absolute inset-0 z-0 opacity-[var(--hero-overlay)]"
           style={{
-            background:
-              "radial-gradient(circle at 50% 47%, rgba(255, 255, 255, 0.08), transparent 14%), radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.04), transparent 26%), linear-gradient(180deg, rgba(8, 8, 8, 0.98) 0%, rgba(2, 2, 2, 0.98) 56%, rgba(5, 5, 5, 0.94) 100%)",
+            background: "#000000",
           }}
           aria-hidden="true"
         />
         <div
-          className="pointer-events-none absolute inset-0 z-[2] bg-[linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] opacity-[calc(0.03-var(--hero-reveal)*0.014)] [background-size:22px_22px] [mask-image:radial-gradient(circle_at_50%_48%,black_18%,transparent_78%)] md:[background-size:28px_28px] motion-reduce:opacity-[0.08]"
+          className="pointer-events-none absolute inset-0 z-[2] opacity-0"
           aria-hidden="true"
         />
         <div
-          className="pointer-events-none absolute inset-0 z-[3] bg-[radial-gradient(rgba(255,255,255,0.12)_0.55px,transparent_0.72px),radial-gradient(rgba(255,255,255,0.06)_0.45px,transparent_0.58px)] opacity-[calc(0.04-var(--hero-reveal)*0.016)] mix-blend-screen [background-position:0_0,11px_13px] [background-size:18px_18px,29px_29px] motion-reduce:opacity-[0.08]"
+          className="pointer-events-none absolute inset-0 z-[3] opacity-0"
           aria-hidden="true"
         />
         <div
-          className="pointer-events-none absolute inset-0 z-[3] opacity-[calc(0.26-var(--hero-reveal)*0.1)] motion-reduce:opacity-[0.08]"
+          className="pointer-events-none absolute inset-0 z-[3] opacity-0"
           style={{
-            background:
-              "radial-gradient(circle at 50% 48%, rgba(255, 255, 255, 0.14), transparent 12%), radial-gradient(circle at 50% 48%, rgba(255, 255, 255, 0.08), transparent 24%), radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.05), transparent 34%)",
+            background: "transparent",
           }}
           aria-hidden="true"
         />
         <canvas ref={canvasRef} className="absolute inset-0 z-[4] block" />
         <div
-          className="pointer-events-none absolute inset-0 z-[6]"
+          className="pointer-events-none absolute inset-0 z-[6] opacity-0"
           style={{
-            background:
-              "radial-gradient(circle at center, transparent 36%, rgba(255, 255, 255, 0.05) 64%, rgba(0, 0, 0, 0.52) 100%), linear-gradient(90deg, rgba(0, 0, 0, 0.42) 0%, transparent 14%, transparent 86%, rgba(0, 0, 0, 0.42) 100%), linear-gradient(180deg, rgba(0, 0, 0, 0.34) 0%, transparent 10%, transparent 90%, rgba(0, 0, 0, 0.42) 100%)",
+            background: "transparent",
           }}
           aria-hidden="true"
         />
       </div>
-      <div className="relative z-[1] mt-[84vh] flex min-h-[12vh] items-end px-4 pb-0 md:mt-[88vh] md:min-h-[10vh] md:px-[clamp(1.25rem,4vw,4rem)] md:pb-0">
+      <div
+        className={[
+          "relative z-[1] flex items-end px-4 pb-0",
+          isMobileHero
+            ? "mt-[48svh] min-h-[10svh] px-4"
+            : isTabletHero
+              ? "mt-[56svh] min-h-[10svh] px-6"
+              : "mt-[84vh] min-h-[12vh] md:mt-[88vh] md:min-h-[10vh] md:px-[clamp(1.25rem,4vw,4rem)]",
+        ].join(" ")}
+      >
         {nextSection ?? renderDefaultNextSection()}
       </div>
     </section>
