@@ -501,7 +501,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                 items.map((it, idx) => (
                   <li className="sm-panel-itemWrap relative overflow-hidden leading-none" key={it.label + idx}>
                     <a
-                      className="sm-panel-item relative font-semibold text-[3rem] cursor-pointer leading-none uppercase transition-[background,color,opacity] duration-200 ease-linear inline-block no-underline pr-[1.15em] md:text-[4.3rem]"
+                      className="sm-panel-item relative font-semibold text-[2.2rem] cursor-pointer leading-none uppercase transition-[background,color,opacity] duration-200 ease-linear inline-block no-underline pr-[1.15em] md:text-[3.15rem]"
                       href={it.link}
                       aria-label={it.ariaLabel}
                       data-index={idx + 1}
@@ -514,7 +514,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                 ))
               ) : (
                 <li className="sm-panel-itemWrap relative overflow-hidden leading-none" aria-hidden="true">
-                  <span className="sm-panel-item relative font-semibold text-[3rem] cursor-pointer leading-none uppercase transition-[background,color,opacity] duration-200 ease-linear inline-block no-underline pr-[1.15em] md:text-[4.3rem]">
+                  <span className="sm-panel-item relative font-semibold text-[2.2rem] cursor-pointer leading-none uppercase transition-[background,color,opacity] duration-200 ease-linear inline-block no-underline pr-[1.15em] md:text-[3.15rem]">
                     <span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">
                       No items
                     </span>
@@ -587,7 +587,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 .sm-scope .sm-socials-link:hover { color: #ffffff; }
 .sm-scope .sm-panel-title { margin: 0; font-size: 1rem; font-weight: 600; color: #fff; text-transform: uppercase; }
 .sm-scope .sm-panel-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
-.sm-scope .sm-panel-item { position: relative; color: rgba(255,255,255,0.92); font-weight: 600; font-size: 3rem; cursor: pointer; line-height: 0.94; letter-spacing: -0.04em; text-transform: uppercase; transition: background 0.25s, color 0.25s, opacity 0.25s; display: inline-block; text-decoration: none; padding-right: 2.6rem; }
+.sm-scope .sm-panel-item { position: relative; color: rgba(255,255,255,0.92); font-weight: 600; font-size: 2.2rem; cursor: pointer; line-height: 0.94; letter-spacing: -0.04em; text-transform: uppercase; transition: background 0.25s, color 0.25s, opacity 0.25s; display: inline-block; text-decoration: none; padding-right: 2.6rem; }
 .sm-scope .sm-panel-itemLabel { display: inline-block; will-change: transform; transform-origin: 50% 100%; }
 .sm-scope .sm-panel-item:hover { color: #ffffff; opacity: 1; }
 .sm-scope .sm-panel-list:hover .sm-panel-item:not(:hover) { opacity: 0.45; }

@@ -315,11 +315,11 @@ function SectionHeader({
   return (
     <div className="space-y-3 border-t border-white/10 pt-4 md:pt-5">
       <EditorialLabel>{eyebrow}</EditorialLabel>
-      <h2 className="m-0 max-w-[12ch] text-[clamp(2.05rem,6.2vw,3.6rem)] font-semibold leading-[0.9] tracking-[-0.078em] text-[#f7f1e7]">
+      <h2 className="m-0 max-w-[12ch] text-[clamp(1.65rem,5vw,2.8rem)] font-semibold leading-[0.9] tracking-[-0.078em] text-[#f7f1e7]">
         {title}
       </h2>
       {text ? (
-        <p className="m-0 max-w-[40ch] text-[0.95rem] leading-[1.62] tracking-[-0.014em] text-white/60 md:text-[1rem]">
+        <p className="m-0 max-w-[40ch] text-[0.82rem] leading-[1.62] tracking-[-0.014em] text-white/60 md:text-[0.88rem]">
           {text}
         </p>
       ) : null}
@@ -379,10 +379,10 @@ function ServiceModule({ service }: { service: ServiceItem }) {
           </div>
         </div>
         <div className="mt-auto space-y-4">
-          <h3 className="m-0 max-w-[8ch] text-[clamp(2.35rem,8vw,4rem)] font-semibold leading-[0.88] tracking-[-0.08em]">
+          <h3 className="m-0 max-w-[8ch] text-[clamp(1.8rem,6.2vw,3.05rem)] font-semibold leading-[0.88] tracking-[-0.08em]">
             {service.title}
           </h3>
-          <p className="m-0 max-w-[28ch] text-[0.95rem] leading-[1.62] tracking-[-0.014em] text-black/62">
+          <p className="m-0 max-w-[28ch] text-[0.82rem] leading-[1.62] tracking-[-0.014em] text-black/62">
             {service.textLines[0]}
           </p>
         </div>
@@ -401,14 +401,14 @@ function ServiceModule({ service }: { service: ServiceItem }) {
         />
         <div className="space-y-4">
           <EditorialLabel>{service.label}</EditorialLabel>
-          <h3 className="m-0 max-w-[11ch] text-[clamp(1.7rem,5.5vw,2.6rem)] font-semibold leading-[0.92] tracking-[-0.065em] text-[#f7f1e7]">
+          <h3 className="m-0 max-w-[11ch] text-[clamp(1.35rem,4.4vw,2.05rem)] font-semibold leading-[0.92] tracking-[-0.065em] text-[#f7f1e7]">
             {service.title}
           </h3>
           <div className="space-y-3">
             {service.textLines.map((line) => (
               <p
                 key={line}
-                className="m-0 max-w-[38ch] text-[0.95rem] leading-[1.62] tracking-[-0.014em] text-white/60"
+                className="m-0 max-w-[38ch] text-[0.82rem] leading-[1.62] tracking-[-0.014em] text-white/60"
               >
                 {line}
               </p>
@@ -442,7 +442,7 @@ function ServiceModule({ service }: { service: ServiceItem }) {
         ) : null}
         <div className="space-y-4">
           <EditorialLabel light={isLight}>{service.label}</EditorialLabel>
-          <h3 className="m-0 max-w-[10ch] text-[clamp(1.7rem,5.5vw,2.5rem)] font-semibold leading-[0.92] tracking-[-0.064em]">
+          <h3 className="m-0 max-w-[10ch] text-[clamp(1.35rem,4.4vw,1.98rem)] font-semibold leading-[0.92] tracking-[-0.064em]">
             {service.title}
           </h3>
           <div className="space-y-3">
@@ -450,7 +450,7 @@ function ServiceModule({ service }: { service: ServiceItem }) {
               <p
                 key={line}
                 className={[
-                  "m-0 max-w-[38ch] text-[0.95rem] leading-[1.62] tracking-[-0.014em]",
+                  "m-0 max-w-[38ch] text-[0.82rem] leading-[1.62] tracking-[-0.014em]",
                   isLight ? "text-black/66" : "text-white/60",
                 ].join(" ")}
               >
@@ -473,14 +473,14 @@ function ServiceModule({ service }: { service: ServiceItem }) {
       />
       <div className="space-y-4 self-end">
         <EditorialLabel>{service.label}</EditorialLabel>
-        <h3 className="m-0 max-w-[10ch] text-[clamp(1.85rem,5.8vw,2.9rem)] font-semibold leading-[0.9] tracking-[-0.07em] text-[#f7f1e7]">
+        <h3 className="m-0 max-w-[10ch] text-[clamp(1.45rem,4.6vw,2.25rem)] font-semibold leading-[0.9] tracking-[-0.07em] text-[#f7f1e7]">
           {service.title}
         </h3>
         <div className="space-y-3">
           {service.textLines.map((line) => (
             <p
               key={line}
-              className="m-0 max-w-[40ch] text-[0.95rem] leading-[1.62] tracking-[-0.014em] text-white/60"
+              className="m-0 max-w-[40ch] text-[0.82rem] leading-[1.62] tracking-[-0.014em] text-white/60"
             >
               {line}
             </p>
@@ -494,7 +494,7 @@ function ServiceModule({ service }: { service: ServiceItem }) {
 function ReasonCarousel({ reasons }: { reasons: ReasonItem[] }) {
   return (
     <div className="space-y-4">
-      <p className="m-0 max-w-[28ch] text-[0.95rem] leading-[1.62] tracking-[-0.014em] text-white/58">
+      <p className="m-0 max-w-[28ch] text-[0.82rem] leading-[1.62] tracking-[-0.014em] text-white/58">
         A clearer way to sell what has not yet been built.
       </p>
       <div
@@ -518,10 +518,10 @@ function ReasonCarousel({ reasons }: { reasons: ReasonItem[] }) {
             />
             <div className="space-y-4 border-t border-white/10 px-4 py-4 md:px-5 md:py-5">
               <EditorialLabel>{`Reason ${reason.number}`}</EditorialLabel>
-              <h3 className="m-0 max-w-[11ch] text-[clamp(1.55rem,4.9vw,2.3rem)] font-semibold leading-[0.92] tracking-[-0.06em] text-[#f7f1e7]">
+              <h3 className="m-0 max-w-[11ch] text-[clamp(1.22rem,3.85vw,1.8rem)] font-semibold leading-[0.92] tracking-[-0.06em] text-[#f7f1e7]">
                 {reason.title}
               </h3>
-              <p className="m-0 max-w-[32ch] text-[0.92rem] leading-[1.6] tracking-[-0.014em] text-white/60">
+              <p className="m-0 max-w-[32ch] text-[0.8rem] leading-[1.6] tracking-[-0.014em] text-white/60">
                 {reason.body}
               </p>
             </div>
@@ -539,10 +539,10 @@ function Footer() {
         <div className="grid gap-0 md:grid-cols-[1.1fr_0.9fr]">
           <div className="border-b border-white/10 px-4 py-6 sm:px-6 md:px-8">
             <EditorialLabel>Contact</EditorialLabel>
-            <h3 className="mt-4 max-w-[10ch] text-[clamp(2rem,6.2vw,3.2rem)] font-semibold leading-[0.9] tracking-[-0.078em] text-[#f7f1e7]">
+            <h3 className="mt-4 max-w-[10ch] text-[clamp(1.55rem,4.9vw,2.45rem)] font-semibold leading-[0.9] tracking-[-0.078em] text-[#f7f1e7]">
               Bangalore-based architectural immersion.
             </h3>
-            <p className="mt-4 max-w-[36ch] text-[0.95rem] leading-[1.62] tracking-[-0.014em] text-white/60">
+            <p className="mt-4 max-w-[36ch] text-[0.82rem] leading-[1.62] tracking-[-0.014em] text-white/60">
               Premium visualization, cinematic renders, and interactive spatial stories for
               unbuilt spaces.
             </p>
@@ -559,7 +559,7 @@ function Footer() {
                 <ArrowIcon className="absolute inset-0 h-10 w-10 -translate-x-4 translate-y-4 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0 group-hover:translate-y-0" />
               </div>
             </div>
-            <h3 className="mt-8 max-w-[7ch] text-[clamp(2.4rem,7vw,4rem)] font-semibold leading-[0.88] tracking-[-0.08em]">
+            <h3 className="mt-8 max-w-[7ch] text-[clamp(1.8rem,5.4vw,3rem)] font-semibold leading-[0.88] tracking-[-0.08em]">
               LET’S
               <br />
               TALK
@@ -661,10 +661,10 @@ export default function TiledComponentMobile({
               />
               <div className="absolute inset-x-0 bottom-0 px-5 pb-6 sm:px-6 md:px-8 md:pb-8">
                 <EditorialLabel>STHYRA</EditorialLabel>
-                <h1 className="mt-3 max-w-[13.2ch] text-[clamp(2.4rem,8.2vw,5.15rem)] font-semibold leading-[0.9] tracking-[-0.082em] text-[#f7f1e7]">
+                <h1 className="mt-3 max-w-[13.2ch] text-[clamp(1.8rem,6.1vw,3.85rem)] font-semibold leading-[0.9] tracking-[-0.082em] text-[#f7f1e7]">
                   Premium architectural visualization for unbuilt spaces.
                 </h1>
-                <p className="mt-4 max-w-[48ch] text-[0.98rem] leading-[1.65] tracking-[-0.014em] text-white/62 md:max-w-[56ch] md:text-[1.02rem]">
+                <p className="mt-4 max-w-[48ch] text-[0.84rem] leading-[1.65] tracking-[-0.014em] text-white/62 md:max-w-[56ch] md:text-[0.88rem]">
                   Sthyra creates premium architectural visualization and digital spatial
                   experiences for unbuilt spaces.
                 </p>
@@ -680,7 +680,7 @@ export default function TiledComponentMobile({
             style={{ transitionDelay: "340ms" }}
           >
             <EditorialLabel light>Positioning</EditorialLabel>
-            <p className="mt-3 max-w-[20ch] text-[clamp(1.15rem,3.6vw,1.95rem)] font-semibold leading-[0.98] tracking-[-0.05em]">
+            <p className="mt-3 max-w-[20ch] text-[clamp(0.95rem,2.85vw,1.55rem)] font-semibold leading-[0.98] tracking-[-0.05em]">
               Built to elevate how real estate is seen.
             </p>
           </div>
@@ -708,7 +708,7 @@ export default function TiledComponentMobile({
                 .join(" ")}
             >
               <EditorialLabel>{item.label}</EditorialLabel>
-              <p className="mt-3 max-w-[42ch] text-[0.95rem] leading-[1.62] tracking-[-0.014em] text-white/60 md:text-[1rem]">
+              <p className="mt-3 max-w-[42ch] text-[0.82rem] leading-[1.62] tracking-[-0.014em] text-white/60 md:text-[0.88rem]">
                 {item.text}
               </p>
             </div>
@@ -751,10 +751,10 @@ export default function TiledComponentMobile({
               >
                 <div className="mt-auto space-y-3">
                   <EditorialLabel light>Skyline</EditorialLabel>
-                  <h3 className="m-0 max-w-[10ch] text-[clamp(1.45rem,4.8vw,2.15rem)] font-semibold leading-[0.92] tracking-[-0.06em]">
+                  <h3 className="m-0 max-w-[10ch] text-[clamp(1.18rem,3.75vw,1.7rem)] font-semibold leading-[0.92] tracking-[-0.06em]">
                     {tile.title}
                   </h3>
-                  <p className="m-0 max-w-[30ch] text-[0.92rem] leading-[1.58] tracking-[-0.014em] text-black/66">
+                  <p className="m-0 max-w-[30ch] text-[0.8rem] leading-[1.58] tracking-[-0.014em] text-black/66">
                     {tile.text}
                   </p>
                 </div>
@@ -800,10 +800,10 @@ export default function TiledComponentMobile({
                 .filter(Boolean)
                 .join(" ")}
             >
-              <p className="m-0 text-[clamp(3.25rem,11vw,5.5rem)] font-semibold leading-[0.88] tracking-[-0.08em] text-[#f7f1e7]">
+              <p className="m-0 text-[clamp(2.25rem,7.8vw,3.9rem)] font-semibold leading-[0.88] tracking-[-0.08em] text-[#f7f1e7]">
                 {stat.value}
               </p>
-              <p className="mt-2 max-w-[20ch] text-[0.95rem] leading-[1.58] tracking-[-0.014em] text-white/60">
+              <p className="mt-2 max-w-[20ch] text-[0.82rem] leading-[1.58] tracking-[-0.014em] text-white/60">
                 {stat.label}
               </p>
             </div>
@@ -829,7 +829,7 @@ export default function TiledComponentMobile({
               ].map((item) => (
                 <p
                   key={item}
-                  className="m-0 border-t border-black/10 pt-3 text-[0.95rem] leading-[1.55] tracking-[-0.014em] text-black/74"
+                  className="m-0 border-t border-black/10 pt-3 text-[0.82rem] leading-[1.55] tracking-[-0.014em] text-black/74"
                 >
                   {item}
                 </p>
@@ -846,7 +846,7 @@ export default function TiledComponentMobile({
             </div>
             <div>
               <EditorialLabel>CTA</EditorialLabel>
-              <h3 className="mt-4 max-w-[7ch] text-[clamp(2.2rem,7vw,3.8rem)] font-semibold leading-[0.88] tracking-[-0.08em]">
+              <h3 className="mt-4 max-w-[7ch] text-[clamp(1.65rem,5.25vw,2.85rem)] font-semibold leading-[0.88] tracking-[-0.08em]">
                 LET’S DO THIS
               </h3>
             </div>
@@ -867,7 +867,7 @@ export default function TiledComponentMobile({
               />
               <div className="space-y-2">
                 <EditorialLabel>{item.category}</EditorialLabel>
-                <h3 className="m-0 max-w-[14ch] text-[1.15rem] font-semibold leading-[1.02] tracking-[-0.04em] text-[#f7f1e7]">
+                <h3 className="m-0 max-w-[14ch] text-[0.95rem] font-semibold leading-[1.02] tracking-[-0.04em] text-[#f7f1e7]">
                   {item.title}
                 </h3>
               </div>

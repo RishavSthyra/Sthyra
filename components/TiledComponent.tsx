@@ -1,10 +1,12 @@
 "use client";
 
 import {
+  useMemo,
   useCallback,
   useLayoutEffect,
   useRef,
   useState,
+  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import Image from "next/image";
@@ -19,6 +21,17 @@ const openSans = Open_Sans({
   subsets: ["latin"],
   weight: ["600", "700"],
 });
+
+let scrollTriggerRegistered = false;
+
+function registerScrollTrigger() {
+  if (scrollTriggerRegistered) {
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+  scrollTriggerRegistered = true;
+}
 
 interface TILECOMBININGTYPES {
   BASEURL: string;
@@ -448,28 +461,62 @@ function buildTileImagePath(baseUrl: string, row: number, col: number, filePrefi
   return `${baseUrl}/${filePrefix}_${row}_${col}.jpg`;
 }
 
+function createIndexArray(length: number) {
+  return Array.from({ length }, (_, index) => index);
+}
+
+function getTilePositionStyle(row: number, col: number, rows: number, columns: number): CSSProperties {
+  const width = 100 / columns;
+  const height = 100 / rows;
+
+  return {
+    left: `${(col / columns) * 100}%`,
+    top: `${(row / rows) * 100}%`,
+    width: `calc(${width}% + 0.5px)`,
+    height: `calc(${height}% + 0.5px)`,
+    transform: "translateZ(0)",
+  };
+}
+
+function getSpanningTileStyle(
+  row: number,
+  col: number,
+  rowSpan: number,
+  colSpan: number,
+  rows: number,
+  columns: number,
+): CSSProperties {
+  return {
+    left: `${(col / columns) * 100}%`,
+    top: `${(row / rows) * 100}%`,
+    width: `calc(${(colSpan / columns) * 100}% + 0.5px)`,
+    height: `calc(${(rowSpan / rows) * 100}% + 0.5px)`,
+    transform: "translateZ(0)",
+  };
+}
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
 function getApartmentBoxTitleClass(box: ApartmentBox) {
   if (box.variant === "dark") {
-    return "text-[clamp(0.76rem,0.9vw,0.98rem)]";
+    return "text-[clamp(0.68rem,0.78vw,0.86rem)]";
   }
 
   if (box.colSpan >= 3) {
-    return "text-[clamp(0.96rem,1.45vw,1.72rem)]";
+    return "text-[clamp(0.82rem,1.18vw,1.36rem)]";
   }
 
-  return "text-[clamp(0.9rem,1.18vw,1.32rem)]";
+  return "text-[clamp(0.78rem,1vw,1.08rem)]";
 }
 
 function getApartmentBoxDescriptionClass(box: ApartmentBox) {
   if (box.colSpan >= 3) {
-    return "text-[clamp(0.94rem,1.05vw,1.12rem)] leading-[1.58]";
+    return "text-[clamp(0.82rem,0.9vw,0.96rem)] leading-[1.58]";
   }
 
-  return "text-[clamp(0.88rem,0.96vw,1.02rem)] leading-[1.58]";
+  return "text-[clamp(0.78rem,0.84vw,0.9rem)] leading-[1.58]";
 }
 
 function FooterWaveLabel({ label }: { label: string }) {
@@ -524,11 +571,88 @@ export default function CreateImageFromTiles({
   const hoverPreloadStartedRef = useRef(false);
   const hoverPreloadTimerRef = useRef<number | null>(null);
   const hoverIdleCallbackRef = useRef<number | null>(null);
+  const hoverAnimationFrameRef = useRef<number | null>(null);
+  const viewportFrameRef = useRef<number | null>(null);
+  const scrollRefreshFrameRef = useRef<number | null>(null);
   const mountedHoverServiceIdsRef = useRef(new Set<string>());
+  const hoverTileCacheRef = useRef(new Map<string, HTMLElement[]>());
   const hoverOriginRef = useRef({ x: 0.5, y: 0.5 });
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
   const [hoveredServiceId, setHoveredServiceId] = useState<string | null>(null);
   const [mountedHoverServiceIds, setMountedHoverServiceIds] = useState<string[]>([]);
+  const hasValidGrid = NO_OF_ROWS > 0 && NO_OF_COLUMNS > 0;
+  const rows = useMemo(() => (hasValidGrid ? createIndexArray(NO_OF_ROWS) : []), [NO_OF_ROWS, hasValidGrid]);
+  const columns = useMemo(
+    () => (hasValidGrid ? createIndexArray(NO_OF_COLUMNS) : []),
+    [NO_OF_COLUMNS, hasValidGrid],
+  );
+  const tileGrid = useMemo(
+    () =>
+      rows.flatMap((row) =>
+        columns.map((col) => ({
+          row,
+          col,
+          key: `${row}_${col}`,
+          style: getTilePositionStyle(row, col, NO_OF_ROWS, NO_OF_COLUMNS),
+        })),
+      ),
+    [NO_OF_ROWS, NO_OF_COLUMNS, rows, columns],
+  );
+  const mountedHoverServiceIdSet = useMemo(
+    () => new Set(mountedHoverServiceIds),
+    [mountedHoverServiceIds],
+  );
+  const mountedHoverServices = useMemo(
+    () => HOVERABLE_APARTMENT_BOXES.filter((box) => mountedHoverServiceIdSet.has(box.id)),
+    [mountedHoverServiceIdSet],
+  );
+  const postSkylineTiles = useMemo(
+    () =>
+      POST_SKYLINE_TILES.map((tile) => ({
+        ...tile,
+        key: `post-skyline-${tile.row}-${tile.col}`,
+        style: hasValidGrid
+          ? getTilePositionStyle(tile.row, tile.col, NO_OF_ROWS, NO_OF_COLUMNS)
+          : {},
+        delay: getPostSkylineDelay(tile.row, tile.col).toFixed(3),
+      })),
+    [NO_OF_COLUMNS, NO_OF_ROWS, hasValidGrid],
+  );
+  const apartmentBoxes = useMemo(
+    () =>
+      APARTMENT_BOXES.map((box, index) => ({
+        ...box,
+        key: `${box.id}-${index}`,
+        style: hasValidGrid
+          ? getSpanningTileStyle(
+              box.row,
+              box.col,
+              box.rowSpan,
+              box.colSpan,
+              NO_OF_ROWS,
+              NO_OF_COLUMNS,
+            )
+          : {},
+      })),
+    [NO_OF_COLUMNS, NO_OF_ROWS, hasValidGrid],
+  );
+  const textCards = useMemo(
+    () =>
+      TEXT_CARDS.map((card) => ({
+        ...card,
+        style: hasValidGrid
+          ? getSpanningTileStyle(
+              card.row,
+              card.col,
+              card.rowSpan,
+              card.colSpan,
+              NO_OF_ROWS,
+              NO_OF_COLUMNS,
+            )
+          : {},
+      })),
+    [NO_OF_COLUMNS, NO_OF_ROWS, hasValidGrid],
+  );
   const apartmentBoxPadding = "max(14px, calc(22px * var(--sthyra-compact-scale)))";
   const apartmentPlusOffset = "max(12px, calc(18px * var(--sthyra-compact-scale)))";
   const apartmentEdgePadding =
@@ -549,9 +673,6 @@ export default function CreateImageFromTiles({
     title: "Urban frame",
     text: "A compressed archviz study for the next reveal.",
   };
-  const mountedHoverServices = HOVERABLE_APARTMENT_BOXES.filter((box) =>
-    mountedHoverServiceIds.includes(box.id),
-  );
   const hasViewport = viewport.width > 0 && viewport.height > 0;
   const useMobileTabletLayout = viewport.width > 0 && viewport.width < 1100;
   const isFeatureTile = (row: number, col: number) =>
@@ -559,29 +680,56 @@ export default function CreateImageFromTiles({
   const isFeatureColumnTile = (row: number, col: number) =>
     col === FEATURE_TILE.col && row !== FEATURE_TILE.row;
 
-  const getHoverTilesForService = (serviceId: string) => {
+  const getHoverTilesForService = useCallback((serviceId: string) => {
+    const cached = hoverTileCacheRef.current.get(serviceId);
+
+    if (cached) {
+      return cached;
+    }
+
     const sequence = apartmentSequenceRef.current;
 
     if (!sequence) {
       return [] as HTMLElement[];
     }
 
-    return gsap.utils.toArray<HTMLElement>(
+    const tiles = gsap.utils.toArray<HTMLElement>(
       sequence.querySelectorAll(`[data-hover-service="${serviceId}"]`),
     );
-  };
 
-  const hideHoverTilesExcept = (serviceId: string | null) => {
-    const sequence = apartmentSequenceRef.current;
+    hoverTileCacheRef.current.set(serviceId, tiles);
+    return tiles;
+  }, []);
 
-    if (!sequence) {
+  useLayoutEffect(() => {
+    if (!apartmentSequenceRef.current) {
       return;
     }
 
-    const selector = serviceId
-      ? `.service-hover-tile:not([data-hover-service="${serviceId}"])`
-      : ".service-hover-tile";
-    const tiles = gsap.utils.toArray<HTMLElement>(sequence.querySelectorAll(selector));
+    mountedHoverServices.forEach((service) => {
+      hoverTileCacheRef.current.delete(service.id);
+      getHoverTilesForService(service.id);
+    });
+  }, [getHoverTilesForService, mountedHoverServices]);
+
+  const hideHoverTilesExcept = useCallback((serviceId: string | null) => {
+    const tileGroups = Array.from(hoverTileCacheRef.current.entries());
+    let tiles = tileGroups
+      .filter(([id]) => id !== serviceId)
+      .flatMap(([, groupTiles]) => groupTiles);
+
+    if (tiles.length === 0) {
+      const sequence = apartmentSequenceRef.current;
+
+      if (!sequence) {
+        return;
+      }
+
+      const selector = serviceId
+        ? `.service-hover-tile:not([data-hover-service="${serviceId}"])`
+        : ".service-hover-tile";
+      tiles = gsap.utils.toArray<HTMLElement>(sequence.querySelectorAll(selector));
+    }
 
     if (tiles.length === 0) {
       return;
@@ -589,16 +737,18 @@ export default function CreateImageFromTiles({
 
     gsap.killTweensOf(tiles);
     gsap.set(tiles, { opacity: 0 });
-  };
+  }, []);
 
-  function ensureHoverServiceMounted(serviceId: string) {
+  const ensureHoverServiceMounted = useCallback((serviceId: string) => {
     if (mountedHoverServiceIdsRef.current.has(serviceId)) {
       return;
     }
 
     mountedHoverServiceIdsRef.current.add(serviceId);
-    setMountedHoverServiceIds((current) => [...current, serviceId]);
-  }
+    setMountedHoverServiceIds((current) =>
+      current.includes(serviceId) ? current : [...current, serviceId],
+    );
+  }, []);
 
   const scheduleHoverServiceWarmup = useCallback(() => {
     if (hoverPreloadStartedRef.current) {
@@ -646,9 +796,9 @@ export default function CreateImageFromTiles({
     };
 
     warmNextService();
-  }, []);
+  }, [ensureHoverServiceMounted]);
 
-  const animateHoverTiles = (mode: "in" | "out", serviceId: string) => {
+  const animateHoverTiles = useCallback((mode: "in" | "out", serviceId: string) => {
     const tiles = getHoverTilesForService(serviceId);
 
     if (tiles.length === 0) {
@@ -674,9 +824,9 @@ export default function CreateImageFromTiles({
       },
       overwrite: true,
     });
-  };
+  }, [NO_OF_COLUMNS, NO_OF_ROWS, getHoverTilesForService]);
 
-  const handleServiceHoverEnter = (
+  const handleServiceHoverEnter = useCallback((
     box: ApartmentBox,
     event: ReactPointerEvent<HTMLDivElement>,
   ) => {
@@ -705,16 +855,21 @@ export default function CreateImageFromTiles({
       visibleHoverServiceIdRef.current = box.id;
     }
 
-    setHoveredServiceId(box.id);
+    setHoveredServiceId((current) => (current === box.id ? current : box.id));
 
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
+    if (hoverAnimationFrameRef.current !== null) {
+      window.cancelAnimationFrame(hoverAnimationFrameRef.current);
+    }
+
+    hoverAnimationFrameRef.current = window.requestAnimationFrame(() => {
+      hoverAnimationFrameRef.current = window.requestAnimationFrame(() => {
+        hoverAnimationFrameRef.current = null;
         animateHoverTiles("in", box.id);
       });
     });
-  };
+  }, [animateHoverTiles, ensureHoverServiceMounted, hideHoverTilesExcept]);
 
-  const handleServiceHoverLeave = (
+  const handleServiceHoverLeave = useCallback((
     box: ApartmentBox,
     event: ReactPointerEvent<HTMLDivElement>,
   ) => {
@@ -724,7 +879,7 @@ export default function CreateImageFromTiles({
       return;
     }
 
-    setHoveredServiceId(null);
+    setHoveredServiceId((current) => (current === null ? current : null));
 
     if (!box.tileBaseUrl) {
       return;
@@ -739,13 +894,26 @@ export default function CreateImageFromTiles({
 
       hoverTileClearRef.current = null;
     }, 440);
-  };
+  }, [animateHoverTiles]);
 
   useLayoutEffect(() => {
     const syncViewport = () => {
-      setViewport({
-        width: window.innerWidth,
-        height: window.innerHeight,
+      if (viewportFrameRef.current !== null) {
+        return;
+      }
+
+      viewportFrameRef.current = window.requestAnimationFrame(() => {
+        viewportFrameRef.current = null;
+        const nextViewport = {
+          width: window.innerWidth,
+          height: window.innerHeight,
+        };
+
+        setViewport((current) =>
+          current.width === nextViewport.width && current.height === nextViewport.height
+            ? current
+            : nextViewport,
+        );
       });
     };
 
@@ -754,8 +922,12 @@ export default function CreateImageFromTiles({
 
     return () => {
       window.removeEventListener("resize", syncViewport);
+      if (viewportFrameRef.current !== null) {
+        window.cancelAnimationFrame(viewportFrameRef.current);
+        viewportFrameRef.current = null;
+      }
     };
-  }, [scheduleHoverServiceWarmup]);
+  }, []);
 
   useLayoutEffect(() => {
     if (!hasViewport) {
@@ -816,13 +988,14 @@ export default function CreateImageFromTiles({
       return;
     }
 
-    gsap.registerPlugin(ScrollTrigger);
+    registerScrollTrigger();
     const introOffset = 2.7;
     const at = (time: number) => time + introOffset;
     const postSkylineReadHold = at(8.78);
     const apartmentSequenceStart = at(9.02);
     const apartmentBoxesStart = apartmentSequenceStart + 3.18;
     const apartmentReadHold = apartmentBoxesStart + 1.18;
+    const hoverTileCache = hoverTileCacheRef.current;
 
     const ctx = gsap.context(() => {
       const stage = stageRef.current;
@@ -833,6 +1006,81 @@ export default function CreateImageFromTiles({
         return;
       }
 
+      const tileMask = sectionRef.current?.querySelector<HTMLElement>(".tile-mask") ?? null;
+      const tileMaskTargets = tileMask ? [tileMask] : [];
+      const tileShell = stage.querySelector<HTMLElement>(".tile-shell");
+      const tileShellTargets = tileShell ? [tileShell] : [];
+      const tileImages = gsap.utils.toArray<HTMLElement>(stage.querySelectorAll(".tile-image"));
+      const featureTiles = gsap.utils.toArray<HTMLElement>(stage.querySelectorAll(".feature-tile"));
+      const nonFeaturePanels = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".non-feature-panel"),
+      );
+      const skylineExpansionTiles = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".skyline-expansion-tile"),
+      );
+      const skylineTiles = gsap.utils.toArray<HTMLElement>(stage.querySelectorAll(".skyline-tile"));
+      const skylineFeatureTiles = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".skyline-feature-tile"),
+      );
+      const skylineColumnTopTiles = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".skyline-column-top"),
+      );
+      const skylineColumnBottomTiles = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".skyline-column-bottom"),
+      );
+      const modulePanels = gsap.utils.toArray<HTMLElement>(stage.querySelectorAll(".module-panel"));
+      const modulePanelPrimary = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".module-panel-primary"),
+      );
+      const modulePanelFinal = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".module-panel-final"),
+      );
+      const postSkylinePanels = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".post-skyline-panel"),
+      );
+      const postSkylineCopy = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".post-skyline-copy"),
+      );
+      const postGlobalHeadline = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".post-global-headline"),
+      );
+      const postGlobalHeadlineChars = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".post-global-headline-char"),
+      );
+      const postGlobalParagraph = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".post-global-paragraph"),
+      );
+      const postSkylineImageFrames = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".post-skyline-image-frame"),
+      );
+      const postSkylineImages = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".post-skyline-image"),
+      );
+      const apartmentSequence = stage.querySelector<HTMLElement>(".apartment-sequence");
+      const apartmentSequenceTargets = apartmentSequence ? [apartmentSequence] : [];
+      const apartmentSequenceTiles = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".apartment-sequence-tile"),
+      );
+      const apartmentSequenceBoxes = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".apartment-sequence-box"),
+      );
+      const apartmentSequenceBoxCopy = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".apartment-sequence-box-copy"),
+      );
+      const headlineChars = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".headline-char"),
+      );
+      const introCopy = stage.querySelector<HTMLElement>(".intro-copy");
+      const introCopyTargets = introCopy ? [introCopy] : [];
+      const introCopyPanel = stage.querySelector<HTMLElement>(".intro-copy-panel");
+      const introCopyPanelTargets = introCopyPanel ? [introCopyPanel] : [];
+      const introLineChars = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".intro-line-char"),
+      );
+      const cardReveals = gsap.utils.toArray<HTMLElement>(stage.querySelectorAll(".card-reveal"));
+      const cardContent = gsap.utils.toArray<HTMLElement>(stage.querySelectorAll(".card-content"));
+      const infoCards = gsap.utils.toArray<HTMLElement>(stage.querySelectorAll(".info-card"));
+
       gsap.set(stage, {
         transformOrigin: "50% 100%",
         scale: 0.94,
@@ -841,76 +1089,76 @@ export default function CreateImageFromTiles({
         borderTopRightRadius: 22,
         clipPath: "inset(8% 0% 0% 0% round 22px 22px 0px 0px)",
       });
-      gsap.set(".non-feature-panel", {
+      gsap.set(nonFeaturePanels, {
         scaleY: 0,
         transformOrigin: "50% 100%",
       });
-      gsap.set(".skyline-expansion-tile", {
+      gsap.set(skylineExpansionTiles, {
         opacity: 0,
         scale: 1.035,
       });
-      gsap.set(".skyline-feature-tile", {
+      gsap.set(skylineFeatureTiles, {
         opacity: 0,
         scale: 1.02,
       });
-      gsap.set(".skyline-column-top", {
+      gsap.set(skylineColumnTopTiles, {
         scaleY: 0,
         transformOrigin: "50% 100%",
       });
-      gsap.set(".skyline-column-bottom", {
+      gsap.set(skylineColumnBottomTiles, {
         scaleY: 0,
         transformOrigin: "50% 0%",
       });
-      gsap.set(".module-panel", {
+      gsap.set(modulePanels, {
         opacity: 0,
         y: 22,
       });
-      gsap.set(".module-panel-final", {
+      gsap.set(modulePanelFinal, {
         opacity: 0,
       });
-      gsap.set(".post-skyline-panel", {
+      gsap.set(postSkylinePanels, {
         opacity: 0,
         clipPath: "inset(0 100% 0 0)",
       });
-      gsap.set(".post-skyline-copy", {
+      gsap.set(postSkylineCopy, {
         opacity: 0,
         y: 18,
       });
-      gsap.set(".post-global-headline", {
+      gsap.set(postGlobalHeadline, {
         opacity: 0,
       });
-      gsap.set(".post-global-headline-char", {
+      gsap.set(postGlobalHeadlineChars, {
         opacity: 0,
         xPercent: -24,
       });
-      gsap.set(".post-global-paragraph", {
+      gsap.set(postGlobalParagraph, {
         opacity: 0,
         x: -26,
       });
-      gsap.set(".post-skyline-image-frame", {
+      gsap.set(postSkylineImageFrames, {
         opacity: 0,
         y: 18,
         scale: 0.98,
       });
-      gsap.set(".post-skyline-image", {
+      gsap.set(postSkylineImages, {
         scale: 1.08,
         filter: "brightness(0.94) saturate(0.88)",
       });
-      gsap.set(".apartment-sequence", {
+      gsap.set(apartmentSequenceTargets, {
         opacity: 0,
       });
-      gsap.set(".apartment-sequence-tile", {
+      gsap.set(apartmentSequenceTiles, {
         opacity: 0,
         yPercent: 112,
         filter: "brightness(0.96) saturate(0.95)",
       });
-      gsap.set(".apartment-sequence-box", {
+      gsap.set(apartmentSequenceBoxes, {
         opacity: 0,
         y: 56,
         scale: 0.96,
         clipPath: "inset(100% 0% 0% 0%)",
       });
-      gsap.set(".apartment-sequence-box-copy", {
+      gsap.set(apartmentSequenceBoxCopy, {
         opacity: 0,
         y: 18,
       });
@@ -918,19 +1166,19 @@ export default function CreateImageFromTiles({
         opacity: 0,
         x: 0,
       });
-      gsap.set(".headline-char", {
+      gsap.set(headlineChars, {
         yPercent: 0,
         opacity: 1,
       });
-      gsap.set(".intro-copy", {
+      gsap.set(introCopyTargets, {
         opacity: 0,
       });
-      gsap.set(".intro-copy-panel", {
+      gsap.set(introCopyPanelTargets, {
         opacity: 0,
         scale: 0.985,
         y: 18,
       });
-      gsap.set(".intro-line-char", {
+      gsap.set(introLineChars, {
         opacity: 0,
         yPercent: 120,
         filter: "blur(10px)",
@@ -942,6 +1190,7 @@ export default function CreateImageFromTiles({
           start: "top 70%",
           end: "top top",
           scrub: 1.15,
+          invalidateOnRefresh: true,
         },
       });
 
@@ -959,7 +1208,7 @@ export default function CreateImageFromTiles({
       );
 
       revealTl.to(
-        ".tile-mask",
+        tileMaskTargets,
         {
           opacity: 0,
           ease: "none",
@@ -968,7 +1217,7 @@ export default function CreateImageFromTiles({
       );
 
       revealTl.fromTo(
-        ".tile-shell",
+        tileShellTargets,
         {
           filter: "brightness(0.68) saturate(0.8)",
         },
@@ -987,10 +1236,12 @@ export default function CreateImageFromTiles({
           scrub: 1.25,
           pin: true,
           anticipatePin: 1,
+          invalidateOnRefresh: true,
+          fastScrollEnd: true,
         },
       });
 
-      tl.to(".tile-image", {
+      tl.to(tileImages, {
         opacity: 0.72,
         scale: 0.995,
         stagger: {
@@ -1001,7 +1252,7 @@ export default function CreateImageFromTiles({
       });
 
       tl.to(
-        ".tile-shell",
+        tileShellTargets,
         {
           scale: 1.015,
           ease: "none",
@@ -1010,7 +1261,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".intro-copy",
+        introCopyTargets,
         {
           opacity: 1,
           duration: 0.18,
@@ -1020,7 +1271,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".intro-copy-panel",
+        introCopyPanelTargets,
         {
           opacity: 1,
           y: 0,
@@ -1032,7 +1283,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".intro-line-char",
+        introLineChars,
         {
           opacity: 1,
           yPercent: 0,
@@ -1045,7 +1296,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".intro-copy-panel",
+        introCopyPanelTargets,
         {
           y: -12,
           duration: 2.05,
@@ -1055,7 +1306,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".intro-line-char",
+        introLineChars,
         {
           opacity: 0,
           yPercent: -42,
@@ -1068,7 +1319,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".intro-copy-panel",
+        introCopyPanelTargets,
         {
           opacity: 0,
           y: -24,
@@ -1080,7 +1331,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.fromTo(
-        ".card-reveal",
+        cardReveals,
         { xPercent: -105 },
         {
           xPercent: 0,
@@ -1092,7 +1343,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".card-content",
+        cardContent,
         {
           opacity: 1,
           duration: 0.34,
@@ -1102,7 +1353,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".card-reveal",
+        cardReveals,
         {
           xPercent: 105,
           duration: 0.9,
@@ -1113,7 +1364,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".card-content, .info-card",
+        [...cardContent, ...infoCards],
         {
           opacity: 0,
           duration: 0.48,
@@ -1122,8 +1373,6 @@ export default function CreateImageFromTiles({
         },
         at(3),
       );
-
-      const nonFeaturePanels = gsap.utils.toArray<HTMLElement>(".non-feature-panel");
 
       nonFeaturePanels.forEach((panel) => {
         const delay = Number(panel.dataset.waveDelay ?? 0);
@@ -1141,7 +1390,7 @@ export default function CreateImageFromTiles({
       });
 
       tl.to(
-        ".feature-tile",
+        featureTiles,
         {
           opacity: 1,
           scale: 1.08,
@@ -1152,7 +1401,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".feature-tile",
+        featureTiles,
         {
           opacity: 0,
           duration: 0.42,
@@ -1162,7 +1411,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".skyline-feature-tile",
+        skylineFeatureTiles,
         {
           opacity: 1,
           scale: 1,
@@ -1173,7 +1422,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".skyline-column-top",
+        skylineColumnTopTiles,
         {
           scaleY: 1,
           duration: 0.7,
@@ -1187,7 +1436,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".skyline-column-bottom",
+        skylineColumnBottomTiles,
         {
           scaleY: 1,
           duration: 0.7,
@@ -1241,7 +1490,7 @@ export default function CreateImageFromTiles({
       }
 
       tl.to(
-        ".module-panel",
+        modulePanels,
         {
           opacity: 1,
           y: 0,
@@ -1250,8 +1499,6 @@ export default function CreateImageFromTiles({
         },
         at(3.28),
       );
-
-      const skylineExpansionTiles = gsap.utils.toArray<HTMLElement>(".skyline-expansion-tile");
 
       skylineExpansionTiles.forEach((tile) => {
         const delay = Number(tile.dataset.skylineDelay ?? 0);
@@ -1269,7 +1516,7 @@ export default function CreateImageFromTiles({
       });
 
       tl.to(
-        ".headline-char",
+        headlineChars,
         {
           yPercent: 132,
           opacity: 0,
@@ -1293,7 +1540,7 @@ export default function CreateImageFromTiles({
       }
 
       tl.to(
-        ".module-panel-primary",
+        modulePanelPrimary,
         {
           opacity: 0,
           duration: 0.32,
@@ -1303,7 +1550,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".module-panel",
+        modulePanels,
         {
           left: `${((NO_OF_COLUMNS - 1) / NO_OF_COLUMNS) * 100}%`,
           width: `${(1 / NO_OF_COLUMNS) * 100}%`,
@@ -1314,7 +1561,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".module-panel-final",
+        modulePanelFinal,
         {
           opacity: 1,
           duration: 0.36,
@@ -1324,15 +1571,13 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".tile-shell",
+        tileShellTargets,
         {
           backgroundColor: "#000000",
           ease: "none",
         },
         at(1.08),
       );
-
-      const postSkylinePanels = gsap.utils.toArray<HTMLElement>(".post-skyline-panel");
 
       postSkylinePanels.forEach((panel) => {
         const delay = Number(panel.dataset.postDelay ?? 0);
@@ -1350,7 +1595,7 @@ export default function CreateImageFromTiles({
       });
 
       tl.to(
-        ".module-panel",
+        modulePanels,
         {
           opacity: 0,
           duration: 0.32,
@@ -1360,7 +1605,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".tile-shell",
+        tileShellTargets,
         {
           backgroundColor: "#ffffff",
           duration: 0.82,
@@ -1370,7 +1615,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".non-feature-panel",
+        nonFeaturePanels,
         {
           backgroundColor: "#ffffff",
           borderColor: "rgba(0,0,0,0.08)",
@@ -1381,7 +1626,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".skyline-tile",
+        skylineTiles,
         {
           opacity: 0,
           duration: 0.82,
@@ -1391,7 +1636,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".post-skyline-copy",
+        postSkylineCopy,
         {
           opacity: 1,
           y: 0,
@@ -1403,7 +1648,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".post-skyline-image-frame",
+        postSkylineImageFrames,
         {
           opacity: 1,
           y: 0,
@@ -1416,7 +1661,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".post-global-headline",
+        postGlobalHeadline,
         {
           opacity: 1,
           duration: 0.22,
@@ -1426,7 +1671,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".post-global-headline-char",
+        postGlobalHeadlineChars,
         {
           opacity: 1,
           xPercent: 0,
@@ -1438,7 +1683,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".post-global-paragraph",
+        postGlobalParagraph,
         {
           opacity: 1,
           x: 0,
@@ -1457,7 +1702,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".post-skyline-image",
+        postSkylineImages,
         {
           scale: 1,
           filter: "brightness(1) saturate(1)",
@@ -1469,7 +1714,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".post-global-headline, .post-global-paragraph",
+        [...postGlobalHeadline, ...postGlobalParagraph],
         {
           opacity: 0,
           duration: 0.28,
@@ -1479,7 +1724,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".post-skyline-image-frame",
+        postSkylineImageFrames,
         {
           opacity: 0,
           duration: 0.32,
@@ -1489,7 +1734,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".apartment-sequence",
+        apartmentSequenceTargets,
         {
           opacity: 1,
           duration: 0.14,
@@ -1499,7 +1744,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".apartment-sequence-tile",
+        apartmentSequenceTiles,
         {
           opacity: 1,
           yPercent: 0,
@@ -1513,7 +1758,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".post-skyline-panel, .module-panel",
+        [...postSkylinePanels, ...modulePanels],
         {
           opacity: 0,
           duration: 0.3,
@@ -1531,7 +1776,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".apartment-sequence-box",
+        apartmentSequenceBoxes,
         {
           opacity: 1,
           y: 0,
@@ -1548,7 +1793,7 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        ".apartment-sequence-box-copy",
+        apartmentSequenceBoxCopy,
         {
           opacity: 1,
           y: 0,
@@ -1566,6 +1811,11 @@ export default function CreateImageFromTiles({
         },
         apartmentReadHold,
       );
+
+      scrollRefreshFrameRef.current = window.requestAnimationFrame(() => {
+        scrollRefreshFrameRef.current = null;
+        ScrollTrigger.refresh();
+      });
     }, sectionRef);
 
     return () => {
@@ -1574,7 +1824,18 @@ export default function CreateImageFromTiles({
         hoverTileClearRef.current = null;
       }
 
+      if (hoverAnimationFrameRef.current !== null) {
+        window.cancelAnimationFrame(hoverAnimationFrameRef.current);
+        hoverAnimationFrameRef.current = null;
+      }
+
+      if (scrollRefreshFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollRefreshFrameRef.current);
+        scrollRefreshFrameRef.current = null;
+      }
+
       hoverTileWaveRef.current?.kill();
+      hoverTileCache.clear();
       ctx.revert();
     };
   }, [NO_OF_COLUMNS, NO_OF_ROWS, useMobileTabletLayout, hasViewport]);
@@ -1588,8 +1849,9 @@ export default function CreateImageFromTiles({
       return;
     }
 
-    gsap.registerPlugin(ScrollTrigger);
+    registerScrollTrigger();
     let rafId: number | null = null;
+    let refreshRafId: number | null = null;
     let reasonsTrigger: ScrollTrigger | null = null;
 
     const ctx = gsap.context(() => {
@@ -1676,6 +1938,7 @@ export default function CreateImageFromTiles({
           setCenterOpacity: center ? gsap.quickSetter(center, "opacity") : null,
           setCenterScale: center ? gsap.quickSetter(center, "scale") : null,
           lastPointerEvents: "none" as "auto" | "none",
+          lastVisibility: "visible" as "visible" | "hidden",
         };
       });
 
@@ -1750,6 +2013,25 @@ export default function CreateImageFromTiles({
             setCenterScale,
           } = scene;
           const relativeZ = cameraZ - depth;
+          const isFarScene = relativeZ < -2600 || relativeZ > 1900;
+          const nextVisibility = isFarScene ? "hidden" : "visible";
+
+          if (scene.lastVisibility !== nextVisibility) {
+            group.style.visibility = nextVisibility;
+            scene.lastVisibility = nextVisibility;
+          }
+
+          if (isFarScene) {
+            setGroupOpacity(0);
+
+            if (scene.lastPointerEvents !== "none") {
+              group.style.pointerEvents = "none";
+              scene.lastPointerEvents = "none";
+            }
+
+            return;
+          }
+
           const distance = Math.abs(relativeZ);
           const closeness = clamp(1 - distance / 1320, 0, 1);
           const visibleOpacity = getSceneOpacity(relativeZ);
@@ -1759,12 +2041,6 @@ export default function CreateImageFromTiles({
           const nextPointerEvents = closeness > 0.84 ? "auto" : "none";
 
           setGroupOpacity(visibleOpacity);
-
-          if (visibleOpacity <= 0.04) {
-            group.style.visibility = "hidden";
-          } else {
-            group.style.visibility = "visible";
-          }
 
           if (scene.lastPointerEvents !== nextPointerEvents) {
             group.style.pointerEvents = nextPointerEvents;
@@ -1846,7 +2122,8 @@ export default function CreateImageFromTiles({
         },
       });
 
-      requestAnimationFrame(() => {
+      refreshRafId = window.requestAnimationFrame(() => {
+        refreshRafId = null;
         ScrollTrigger.refresh();
       });
     }, reasonsSectionRef);
@@ -1855,6 +2132,11 @@ export default function CreateImageFromTiles({
       if (rafId !== null) {
         window.cancelAnimationFrame(rafId);
         rafId = null;
+      }
+
+      if (refreshRafId !== null) {
+        window.cancelAnimationFrame(refreshRafId);
+        refreshRafId = null;
       }
 
       reasonsTrigger?.kill();
@@ -1868,6 +2150,10 @@ export default function CreateImageFromTiles({
   const isCompactReasonLayout = viewport.width > 0 && viewport.width < 960;
   const isMediumReasonLayout =
     viewport.width >= 960 && viewport.width < 1480;
+
+  if (!hasValidGrid) {
+    return null;
+  }
 
   if (useMobileTabletLayout) {
     return (
@@ -1930,8 +2216,8 @@ export default function CreateImageFromTiles({
                           className={[
                             "overflow-hidden text-balance",
                             lineIndex === 0
-                              ? "text-[clamp(3rem,7vw,6.9rem)]"
-                              : "text-[clamp(3rem,7vw,6.9rem)]",
+                              ? "text-[clamp(2.1rem,4.8vw,4.6rem)]"
+                              : "text-[clamp(2.1rem,4.8vw,4.6rem)]",
                           ].join(" ")}
                         >
                           <p
@@ -1953,8 +2239,7 @@ export default function CreateImageFromTiles({
                     </div>
                   </div>
                 </div>
-                {Array.from({ length: NO_OF_ROWS }).map((_, row) =>
-                  Array.from({ length: NO_OF_COLUMNS }).map((_, col) => {
+                {tileGrid.map(({ row, col, key, style }) => {
                     const featureTile = isFeatureTile(row, col);
                     const featureColumnTile = isFeatureColumnTile(row, col);
                     const skylineColumnClass =
@@ -1969,19 +2254,14 @@ export default function CreateImageFromTiles({
 
                     return (
                       <div
-                        key={`${row}_${col}`}
+                        key={key}
                         className={[
                           "tile-cell absolute overflow-hidden",
                           featureTile ? "feature-cell" : "",
                         ]
                           .filter(Boolean)
                           .join(" ")}
-                        style={{
-                          left: `${(col / NO_OF_COLUMNS) * 100}%`,
-                          top: `${(row / NO_OF_ROWS) * 100}%`,
-                          width: `${100 / NO_OF_COLUMNS}%`,
-                          height: `${100 / NO_OF_ROWS}%`,
-                        }}
+                        style={style}
                       >
                         <Image
                           src={`${BASEURL}/tile_${row}_${col}.jpg`}
@@ -1989,6 +2269,11 @@ export default function CreateImageFromTiles({
                           width={TILE_WIDTH}
                           height={TILE_HEIGHT}
                           unoptimized
+                          loading={row < 2 ? "eager" : "lazy"}
+                          decoding="async"
+                          sizes={`${(100 / NO_OF_COLUMNS).toFixed(3)}vw`}
+                          draggable={false}
+                          aria-hidden="true"
                           className={[
                             "tile-image absolute inset-0 h-full w-full object-fill",
                             featureTile ? "feature-tile" : "non-feature-tile",
@@ -2001,6 +2286,11 @@ export default function CreateImageFromTiles({
                             width={TILE_WIDTH}
                             height={TILE_HEIGHT}
                             unoptimized
+                            loading={featureTile ? "eager" : "lazy"}
+                            decoding="async"
+                            sizes={`${(100 / NO_OF_COLUMNS).toFixed(3)}vw`}
+                            draggable={false}
+                            aria-hidden="true"
                             className={skylineClass}
                           />
                         ) : (
@@ -2010,6 +2300,11 @@ export default function CreateImageFromTiles({
                             width={TILE_WIDTH}
                             height={TILE_HEIGHT}
                             unoptimized
+                            loading="lazy"
+                            decoding="async"
+                            sizes={`${(100 / NO_OF_COLUMNS).toFixed(3)}vw`}
+                            draggable={false}
+                            aria-hidden="true"
                             className={skylineClass}
                             data-skyline-delay={getSkylineRevealDelay(row, col).toFixed(3)}
                           />
@@ -2023,24 +2318,18 @@ export default function CreateImageFromTiles({
                         ) : null}
                       </div>
                     );
-                  }),
-                )}
+                })}
               </div>
               <div className="absolute" style={tileFrameStyle}>
-                {POST_SKYLINE_TILES.map((tile) => {
+                {postSkylineTiles.map((tile) => {
                   const postSkylineIsImage = tile.mode === "image";
 
                   return (
                     <div
-                      key={`post-skyline-${tile.row}-${tile.col}`}
+                      key={tile.key}
                       className="post-skyline-panel absolute z-[4] overflow-hidden bg-white text-black"
-                      data-post-delay={getPostSkylineDelay(tile.row, tile.col).toFixed(3)}
-                      style={{
-                        left: `${(tile.col / NO_OF_COLUMNS) * 100}%`,
-                        top: `${(tile.row / NO_OF_ROWS) * 100}%`,
-                        width: `${100 / NO_OF_COLUMNS}%`,
-                        height: `${100 / NO_OF_ROWS}%`,
-                      }}
+                      data-post-delay={tile.delay}
+                      style={tile.style}
                     >
                       {tile.label || tile.title ? (
                         <div
@@ -2059,7 +2348,7 @@ export default function CreateImageFromTiles({
                             </p>
                           ) : null}
                           {tile.title ? (
-                            <h3 className="m-0 max-w-[6ch] text-[clamp(1.75rem,2vw,2.6rem)] font-semibold uppercase leading-[0.9] tracking-[-0.06em]">
+                            <h3 className="m-0 max-w-[6ch] text-[clamp(1.35rem,1.58vw,2rem)] font-semibold uppercase leading-[0.9] tracking-[-0.06em]">
                               {tile.title}
                             </h3>
                           ) : null}
@@ -2072,7 +2361,10 @@ export default function CreateImageFromTiles({
                             alt={tile.imageAlt ?? ""}
                             fill
                             unoptimized
+                            loading="lazy"
+                            decoding="async"
                             sizes="(max-width: 768px) 50vw, 16vw"
+                            draggable={false}
                             className="post-skyline-image object-cover"
                           />
                         </div>
@@ -2129,8 +2421,8 @@ export default function CreateImageFromTiles({
                           className={[
                             "flex flex-nowrap justify-start gap-x-[0.02em] whitespace-nowrap text-white",
                             lineIndex === 0
-                              ? "text-[clamp(2rem,5vw,5.3rem)] font-semibold uppercase leading-[0.92] tracking-[-0.065em] md:text-[clamp(2.4rem,4.7vw,5.85rem)]"
-                              : "text-[clamp(1.7rem,4.3vw,4.5rem)] font-semibold uppercase leading-[0.94] tracking-[-0.06em] md:text-[clamp(2rem,4vw,4.95rem)]",
+                              ? "text-[clamp(1.55rem,3.7vw,3.9rem)] font-semibold uppercase leading-[0.92] tracking-[-0.065em] md:text-[clamp(1.8rem,3.45vw,4.3rem)]"
+                              : "text-[clamp(1.35rem,3.15vw,3.35rem)] font-semibold uppercase leading-[0.94] tracking-[-0.06em] md:text-[clamp(1.55rem,2.95vw,3.65rem)]",
                           ].join(" ")}
                         >
                           {Array.from(line).map((character, charIndex) => (
@@ -2151,12 +2443,14 @@ export default function CreateImageFromTiles({
                       POST_SKYLINE_HEADLINE_PANEL.row,
                       POST_SKYLINE_HEADLINE_PANEL.col,
                     ).toFixed(3)}
-                    style={{
-                      left: `${(POST_SKYLINE_HEADLINE_PANEL.col / NO_OF_COLUMNS) * 100}%`,
-                      top: `${(POST_SKYLINE_HEADLINE_PANEL.row / NO_OF_ROWS) * 100}%`,
-                      width: `${(POST_SKYLINE_HEADLINE_PANEL.colSpan / NO_OF_COLUMNS) * 100}%`,
-                      height: `${(POST_SKYLINE_HEADLINE_PANEL.rowSpan / NO_OF_ROWS) * 100}%`,
-                    }}
+                    style={getSpanningTileStyle(
+                      POST_SKYLINE_HEADLINE_PANEL.row,
+                      POST_SKYLINE_HEADLINE_PANEL.col,
+                      POST_SKYLINE_HEADLINE_PANEL.rowSpan,
+                      POST_SKYLINE_HEADLINE_PANEL.colSpan,
+                      NO_OF_ROWS,
+                      NO_OF_COLUMNS,
+                    )}
                   >
                     <div
                       className="flex h-full flex-col justify-center"
@@ -2174,8 +2468,8 @@ export default function CreateImageFromTiles({
                             className={[
                               "flex flex-nowrap justify-start gap-x-[0.02em] whitespace-nowrap text-black",
                               lineIndex === 0
-                                ? "text-[clamp(1.55rem,2.35vw,3.35rem)] font-semibold uppercase leading-[0.92] tracking-[-0.06em]"
-                                : "text-[clamp(1.45rem,2.15vw,3.1rem)] font-semibold uppercase leading-[0.94] tracking-[-0.055em]",
+                                ? "text-[clamp(1.18rem,1.82vw,2.55rem)] font-semibold uppercase leading-[0.92] tracking-[-0.06em]"
+                                : "text-[clamp(1.08rem,1.68vw,2.35rem)] font-semibold uppercase leading-[0.94] tracking-[-0.055em]",
                             ].join(" ")}
                           >
                             {Array.from(line).map((character, charIndex) => (
@@ -2197,12 +2491,14 @@ export default function CreateImageFromTiles({
                       POST_SKYLINE_PARAGRAPH_PANEL.row,
                       POST_SKYLINE_PARAGRAPH_PANEL.col,
                     ).toFixed(3)}
-                    style={{
-                      left: `${(POST_SKYLINE_PARAGRAPH_PANEL.col / NO_OF_COLUMNS) * 100}%`,
-                      top: `${(POST_SKYLINE_PARAGRAPH_PANEL.row / NO_OF_ROWS) * 100}%`,
-                      width: `${(POST_SKYLINE_PARAGRAPH_PANEL.colSpan / NO_OF_COLUMNS) * 100}%`,
-                      height: `${(POST_SKYLINE_PARAGRAPH_PANEL.rowSpan / NO_OF_ROWS) * 100}%`,
-                    }}
+                    style={getSpanningTileStyle(
+                      POST_SKYLINE_PARAGRAPH_PANEL.row,
+                      POST_SKYLINE_PARAGRAPH_PANEL.col,
+                      POST_SKYLINE_PARAGRAPH_PANEL.rowSpan,
+                      POST_SKYLINE_PARAGRAPH_PANEL.colSpan,
+                      NO_OF_ROWS,
+                      NO_OF_COLUMNS,
+                    )}
                   >
                     <div
                       className="post-global-paragraph flex h-full flex-col justify-between"
@@ -2214,7 +2510,7 @@ export default function CreateImageFromTiles({
                         paddingLeft: "max(16px, calc(20px * var(--sthyra-compact-scale)))",
                       }}
                     >
-                      <p className="m-0 max-w-[26ch] text-[clamp(0.95rem,1.15vw,1.35rem)] font-semibold leading-[1.45] tracking-[-0.02em] text-black/78">
+                      <p className="m-0 max-w-[26ch] text-[clamp(0.8rem,0.92vw,1.04rem)] font-semibold leading-[1.45] tracking-[-0.02em] text-black/78">
                         {POST_SKYLINE_PARAGRAPH}
                       </p>
                       <p className="m-0 text-right text-[10px] font-semibold uppercase tracking-[0.08em] text-black">
@@ -2229,83 +2525,75 @@ export default function CreateImageFromTiles({
                   className="apartment-sequence pointer-events-none absolute inset-0 z-[6]"
                 >
                   <div className="absolute" style={tileFrameStyle}>
-                    {Array.from({ length: NO_OF_ROWS }).map((_, row) =>
-                      Array.from({ length: NO_OF_COLUMNS }).map((_, col) => (
-                        <div
-                          key={`apartment-sequence-${row}-${col}`}
-                          className="absolute overflow-hidden"
-                          style={{
-                            left: `${(col / NO_OF_COLUMNS) * 100}%`,
-                            top: `${(row / NO_OF_ROWS) * 100}%`,
-                            width: `${100 / NO_OF_COLUMNS}%`,
-                            height: `${100 / NO_OF_ROWS}%`,
-                          }}
-                        >
-                          <Image
-                            src={`/vr/tile_${row}_${col}.jpg`}
-                            alt=""
-                            width={TILE_WIDTH}
-                            height={TILE_HEIGHT}
-                            unoptimized
-                            data-apartment-delay={getApartmentTileDelay(
-                              row,
-                              col,
-                              NO_OF_ROWS,
-                              NO_OF_COLUMNS,
-                            ).toFixed(3)}
-                            className="apartment-sequence-tile absolute inset-0 h-full w-full object-fill"
-                          />
-                        </div>
-                      )),
-                    )}
+                    {tileGrid.map(({ row, col, key, style }) => (
+                      <div
+                        key={`apartment-sequence-${key}`}
+                        className="absolute overflow-hidden"
+                        style={style}
+                      >
+                        <Image
+                          src={`/vr/tile_${row}_${col}.jpg`}
+                          alt=""
+                          width={TILE_WIDTH}
+                          height={TILE_HEIGHT}
+                          unoptimized
+                          loading="lazy"
+                          decoding="async"
+                          sizes={`${(100 / NO_OF_COLUMNS).toFixed(3)}vw`}
+                          draggable={false}
+                          aria-hidden="true"
+                          data-apartment-delay={getApartmentTileDelay(
+                            row,
+                            col,
+                            NO_OF_ROWS,
+                            NO_OF_COLUMNS,
+                          ).toFixed(3)}
+                          className="apartment-sequence-tile absolute inset-0 h-full w-full object-fill"
+                        />
+                      </div>
+                    ))}
                   </div>
 
                   {mountedHoverServices.length > 0 ? (
                     <div className="pointer-events-none absolute inset-0" style={tileFrameStyle}>
                       {mountedHoverServices.map((service) =>
-                        Array.from({ length: NO_OF_ROWS }).map((_, row) =>
-                          Array.from({ length: NO_OF_COLUMNS }).map((_, col) => (
-                            <div
-                              key={`${service.id}-${row}-${col}`}
-                              className="absolute overflow-hidden"
-                              style={{
-                                left: `${(col / NO_OF_COLUMNS) * 100}%`,
-                                top: `${(row / NO_OF_ROWS) * 100}%`,
-                                width: `${100 / NO_OF_COLUMNS}%`,
-                                height: `${100 / NO_OF_ROWS}%`,
-                              }}
-                            >
-                              <Image
-                                src={buildTileImagePath(
-                                  service.tileBaseUrl,
-                                  row,
-                                  col,
-                                  service.tileFilePrefix,
-                                )}
-                                alt=""
-                                width={TILE_WIDTH}
-                                height={TILE_HEIGHT}
-                                unoptimized
-                                loading="eager"
-                                sizes="12.5vw"
-                                draggable={false}
-                                aria-hidden="true"
-                                data-hover-service={service.id}
-                                data-hover-row={row}
-                                data-hover-col={col}
-                                className="service-hover-tile absolute inset-0 h-full w-full object-fill opacity-0 [backface-visibility:hidden] [transform:translateZ(0)] [will-change:opacity]"
-                              />
-                            </div>
-                          )),
-                        ),
+                        tileGrid.map(({ row, col, key, style }) => (
+                          <div
+                            key={`${service.id}-${key}`}
+                            className="absolute overflow-hidden"
+                            style={style}
+                          >
+                            <Image
+                              src={buildTileImagePath(
+                                service.tileBaseUrl,
+                                row,
+                                col,
+                                service.tileFilePrefix,
+                              )}
+                              alt=""
+                              width={TILE_WIDTH}
+                              height={TILE_HEIGHT}
+                              unoptimized
+                              loading="lazy"
+                              decoding="async"
+                              sizes="12.5vw"
+                              draggable={false}
+                              aria-hidden="true"
+                              data-hover-service={service.id}
+                              data-hover-row={row}
+                              data-hover-col={col}
+                              className="service-hover-tile absolute inset-0 h-full w-full object-fill opacity-0 [backface-visibility:hidden] [transform:translateZ(0)] [will-change:opacity]"
+                            />
+                          </div>
+                        )),
                       )}
                     </div>
                   ) : null}
 
                   <div className="absolute" style={tileFrameStyle}>
-                    {APARTMENT_BOXES.map((box, index) => (
+                    {apartmentBoxes.map((box) => (
                       <div
-                        key={`${box.id}-${index}`}
+                        key={box.key}
                         className={[
                           "apartment-sequence-box group/service-card pointer-events-auto absolute overflow-hidden",
                           box.variant === "light" ? "bg-white text-black" : "bg-black text-white",
@@ -2314,10 +2602,7 @@ export default function CreateImageFromTiles({
                         onPointerEnter={(event) => handleServiceHoverEnter(box, event)}
                         onPointerLeave={(event) => handleServiceHoverLeave(box, event)}
                         style={{
-                          left: `${(box.col / NO_OF_COLUMNS) * 100}%`,
-                          top: `${(box.row / NO_OF_ROWS) * 100}%`,
-                          width: `${(box.colSpan / NO_OF_COLUMNS) * 100}%`,
-                          height: `${(box.rowSpan / NO_OF_ROWS) * 100}%`,
+                          ...box.style,
                           opacity:
                             hoveredServiceId && hoveredServiceId !== box.id ? 0.28 : 1,
                           transition: "opacity 280ms ease",
@@ -2396,16 +2681,11 @@ export default function CreateImageFromTiles({
                   </div>
                 </div>
 
-                {TEXT_CARDS.map((card) => (
+                {textCards.map((card) => (
                   <div
                     key={card.title}
                     className="info-card absolute overflow-hidden"
-                    style={{
-                      left: `${(card.col / NO_OF_COLUMNS) * 100}%`,
-                      top: `${(card.row / NO_OF_ROWS) * 100}%`,
-                      width: `${(card.colSpan / NO_OF_COLUMNS) * 100}%`,
-                      height: `${(card.rowSpan / NO_OF_ROWS) * 100}%`,
-                    }}
+                    style={card.style}
                   >
                     <div className="card-reveal absolute inset-0 bg-black" />
 
@@ -2414,7 +2694,7 @@ export default function CreateImageFromTiles({
                         {card.title}
                       </p>
 
-                      <p className="mt-5 max-w-[22ch] text-[clamp(1.1rem,1.45vw,1.6rem)] leading-[1.45] tracking-[-0.035em] text-white/84">
+                      <p className="mt-5 max-w-[22ch] text-[clamp(0.9rem,1.12vw,1.24rem)] leading-[1.45] tracking-[-0.035em] text-white/84">
                         {card.text}
                       </p>
                     </div>
@@ -2522,7 +2802,7 @@ export default function CreateImageFromTiles({
                         }}
                       >
                         <h3
-                          className="m-0 text-[clamp(2.15rem,4.9vw,5.8rem)] font-semibold leading-[0.88] tracking-[-0.078em] text-[#f8f1e7] md:text-[clamp(2.35rem,4.7vw,6.1rem)]"
+                          className="m-0 text-[clamp(1.65rem,3.65vw,4.25rem)] font-semibold leading-[0.88] tracking-[-0.078em] text-[#f8f1e7] md:text-[clamp(1.8rem,3.45vw,4.55rem)]"
                           style={{
                             marginLeft:
                               isCompactReasonLayout || imageOnLeft ? "0" : "auto",
@@ -2549,7 +2829,7 @@ export default function CreateImageFromTiles({
                     <div
                       className={`${openSans.className} reasons-center-plane absolute left-1/2 top-1/2 w-[min(92vw,112rem)] -translate-x-1/2 -translate-y-1/2 text-white`}
                     >
-                      <h3 className="m-0 text-center text-[clamp(3.15rem,8.8vw,8.4rem)] font-semibold leading-[0.87] tracking-[-0.082em] text-[#f8f1e7] md:text-[clamp(3.5rem,8.4vw,9rem)]">
+                      <h3 className="m-0 text-center text-[clamp(2.15rem,5.8vw,5.7rem)] font-semibold leading-[0.87] tracking-[-0.082em] text-[#f8f1e7] md:text-[clamp(2.35rem,5.4vw,6.05rem)]">
                         {scene.title}
                       </h3>
                       <p className="mt-4 text-center text-[clamp(0.74rem,0.84vw,0.92rem)] leading-[1.55] tracking-[-0.01em] text-white/54">
@@ -2572,20 +2852,20 @@ export default function CreateImageFromTiles({
           <div className="min-h-[9rem] border-b border-r border-white/10 bg-black" aria-hidden="true" />
 
           <div className="flex min-h-[9rem] flex-col justify-between gap-10 border-b border-r border-white/10 bg-black px-8 py-10 md:px-10 xl:px-11 xl:py-12">
-            <div className="space-y-2 text-[clamp(1.2rem,1.8vw,2rem)] font-semibold leading-[1.08] tracking-[-0.05em] text-[#f7f0e5]">
+            <div className="space-y-2 text-[clamp(1rem,1.35vw,1.52rem)] font-semibold leading-[1.08] tracking-[-0.05em] text-[#f7f0e5]">
               <p className="m-0">Sthyra,</p>
               <p className="m-0">Bangalore, India</p>
             </div>
             <a
               href="mailto:hello@sthyra.com"
-              className="text-[clamp(1rem,1.15vw,1.25rem)] font-semibold tracking-[-0.03em] text-white transition-colors duration-300 hover:text-white/72"
+              className="text-[clamp(0.86rem,0.95vw,1.05rem)] font-semibold tracking-[-0.03em] text-white transition-colors duration-300 hover:text-white/72"
             >
               hello@sthyra.com
             </a>
           </div>
 
           <div className="flex min-h-[9rem] items-center justify-center border-b border-r border-white/10 bg-black px-8 py-10 text-center">
-            <p className="m-0 text-[clamp(1.35rem,1.8vw,2.1rem)] font-semibold leading-[0.96] tracking-[-0.055em] text-[#f7f0e5]">
+            <p className="m-0 text-[clamp(1.08rem,1.38vw,1.62rem)] font-semibold leading-[0.96] tracking-[-0.055em] text-[#f7f0e5]">
               HAVE AN IDEA?
             </p>
           </div>
@@ -2595,11 +2875,11 @@ export default function CreateImageFromTiles({
               <p className="m-0 text-[0.72rem] uppercase tracking-[0.28em] text-black/46">
                 STHYRA
               </p>
-              <p className="mt-5 max-w-[12ch] text-[clamp(1.75rem,2.45vw,3rem)] font-semibold leading-[0.92] tracking-[-0.06em]">
+              <p className="mt-5 max-w-[12ch] text-[clamp(1.32rem,1.82vw,2.22rem)] font-semibold leading-[0.92] tracking-[-0.06em]">
                 Bangalore-based architectural immersion.
               </p>
             </div>
-            <p className="m-0 max-w-[30ch] text-[clamp(0.92rem,0.95vw,1rem)] leading-[1.65] tracking-[-0.012em] text-black/62">
+            <p className="m-0 max-w-[30ch] text-[clamp(0.78rem,0.82vw,0.88rem)] leading-[1.65] tracking-[-0.012em] text-black/62">
               Premium visualization, cinematic renders, and interactive spatial stories.
             </p>
           </div>
@@ -2607,7 +2887,7 @@ export default function CreateImageFromTiles({
           <div className="min-h-[9rem] border-b border-r border-white/10 bg-black" aria-hidden="true" />
 
           <div className="border-b border-r border-white/10 bg-white px-8 py-10 text-black md:px-10 xl:px-11 xl:py-12">
-            <div className="flex flex-col gap-4 text-[clamp(1.05rem,1.3vw,1.45rem)] font-semibold leading-[1.02] tracking-[-0.04em]">
+            <div className="flex flex-col gap-4 text-[clamp(0.88rem,1.02vw,1.12rem)] font-semibold leading-[1.02] tracking-[-0.04em]">
               {FOOTER_NAV_LINKS.map((item) => (
                 <Link
                   key={item.label}
@@ -2660,7 +2940,7 @@ export default function CreateImageFromTiles({
               <p className="m-0 text-[0.72rem] uppercase tracking-[0.28em] text-black/46">
                 Start a project
               </p>
-              <p className="mt-6 max-w-[7ch] text-[clamp(2.75rem,4.7vw,5rem)] font-semibold leading-[0.88] tracking-[-0.075em]">
+              <p className="mt-6 max-w-[7ch] text-[clamp(1.95rem,3.35vw,3.65rem)] font-semibold leading-[0.88] tracking-[-0.075em]">
                 LET&apos;S
                 <br />
                 TALK
@@ -2671,13 +2951,13 @@ export default function CreateImageFromTiles({
           <div className="min-h-[12rem] border-b border-r border-white/10 bg-black" aria-hidden="true" />
 
           <div className="flex min-h-[9rem] items-end border-b border-r border-white/10 bg-black px-8 py-8 md:px-10 xl:px-11">
-            <p className="m-0 text-[clamp(1rem,1.1vw,1.15rem)] leading-[1.3] tracking-[-0.02em] text-white/90">
+            <p className="m-0 text-[clamp(0.84rem,0.92vw,0.98rem)] leading-[1.3] tracking-[-0.02em] text-white/90">
               ©2026 Sthyra
             </p>
           </div>
 
           <div className="border-b border-r border-white/10 bg-white px-8 py-10 text-black md:px-10 xl:px-11 xl:py-12">
-            <div className="flex flex-col gap-4 text-[clamp(1.05rem,1.25vw,1.35rem)] font-semibold leading-[1.02] tracking-[-0.04em]">
+            <div className="flex flex-col gap-4 text-[clamp(0.88rem,0.98vw,1.08rem)] font-semibold leading-[1.02] tracking-[-0.04em]">
               {FOOTER_SOCIAL_LINKS.map((item) => (
                 <a
                   key={item.label}
@@ -2693,19 +2973,19 @@ export default function CreateImageFromTiles({
           </div>
 
           <div className="flex min-h-[9rem] items-end border-b border-r border-white/10 bg-black px-8 py-8 md:px-10 xl:px-11">
-            <p className="m-0 max-w-[18ch] text-[clamp(1rem,1.08vw,1.18rem)] leading-[1.3] tracking-[-0.02em] text-white/90">
+            <p className="m-0 max-w-[18ch] text-[clamp(0.84rem,0.9vw,0.98rem)] leading-[1.3] tracking-[-0.02em] text-white/90">
               Built for unbuilt spaces. Designed to help people see the future sooner.
             </p>
           </div>
 
           <div className="flex min-h-[9rem] items-end border-b border-r border-white/10 bg-black px-8 py-8 md:px-10 xl:px-11">
-            <p className="m-0 text-[clamp(1rem,1.08vw,1.18rem)] leading-[1.3] tracking-[-0.02em] text-white/90">
+            <p className="m-0 text-[clamp(0.84rem,0.9vw,0.98rem)] leading-[1.3] tracking-[-0.02em] text-white/90">
               Made in Bangalore
             </p>
           </div>
 
           <div className="flex min-h-[9rem] items-end border-b border-r border-white/10 bg-black px-8 py-8 md:px-10 xl:px-11">
-            <div className="flex flex-col gap-3 text-[clamp(1rem,1.08vw,1.18rem)] leading-[1.25] tracking-[-0.02em] text-white/90">
+            <div className="flex flex-col gap-3 text-[clamp(0.84rem,0.9vw,0.98rem)] leading-[1.25] tracking-[-0.02em] text-white/90">
               {FOOTER_POLICY_LINKS.map((item) => (
                 <p key={item} className="m-0">
                   {item}

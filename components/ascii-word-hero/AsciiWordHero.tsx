@@ -316,10 +316,10 @@ function renderDefaultNextSection() {
         <p className="m-0 text-[0.78rem] uppercase tracking-[0.28em] text-white/58">
           Precision in motion
         </p>
-        <h2 className="m-0 max-w-[14ch] text-[clamp(2.1rem,13vw,3.8rem)] font-semibold leading-[0.9] tracking-[0.04em] text-white uppercase md:max-w-[12ch] md:text-[clamp(2.5rem,6vw,5.6rem)]">
+        <h2 className="m-0 max-w-[14ch] text-[clamp(1.65rem,9vw,2.9rem)] font-semibold leading-[0.9] tracking-[0.04em] text-white uppercase md:max-w-[12ch] md:text-[clamp(1.9rem,4.25vw,4rem)]">
           A quiet mark, assembled from controlled energy.
         </h2>
-        <p className="m-0 max-w-[58ch] text-[clamp(1rem,1.4vw,1.16rem)] leading-[1.7] text-white/68">
+        <p className="m-0 max-w-[58ch] text-[clamp(0.84rem,1.05vw,0.96rem)] leading-[1.7] text-white/68">
           The hero resolves into a legible monogram, then releases that same energy
           on scroll so the page opens without a hard cut. The motion stays flat,
           typographic, and deliberate from first frame to reveal.
@@ -330,7 +330,7 @@ function renderDefaultNextSection() {
           <span className="text-[0.74rem] uppercase tracking-[0.22em] text-white/50">
             Entry
           </span>
-          <p className="m-0 text-[clamp(1.05rem,1.8vw,1.35rem)] leading-[1.35] uppercase tracking-[0.08em] text-white">
+          <p className="m-0 text-[clamp(0.86rem,1.28vw,1.05rem)] leading-[1.35] uppercase tracking-[0.08em] text-white">
             Swept ribbon
           </p>
         </article>
@@ -338,7 +338,7 @@ function renderDefaultNextSection() {
           <span className="text-[0.74rem] uppercase tracking-[0.22em] text-white/50">
             Formation
           </span>
-          <p className="m-0 text-[clamp(1.05rem,1.8vw,1.35rem)] leading-[1.35] uppercase tracking-[0.08em] text-white">
+          <p className="m-0 text-[clamp(0.86rem,1.28vw,1.05rem)] leading-[1.35] uppercase tracking-[0.08em] text-white">
             Grid-sampled type mask
           </p>
         </article>
@@ -346,7 +346,7 @@ function renderDefaultNextSection() {
           <span className="text-[0.74rem] uppercase tracking-[0.22em] text-white/50">
             Reveal
           </span>
-          <p className="m-0 text-[clamp(1.05rem,1.8vw,1.35rem)] leading-[1.35] uppercase tracking-[0.08em] text-white">
+          <p className="m-0 text-[clamp(0.86rem,1.28vw,1.05rem)] leading-[1.35] uppercase tracking-[0.08em] text-white">
             Scroll-driven breakup
           </p>
         </article>

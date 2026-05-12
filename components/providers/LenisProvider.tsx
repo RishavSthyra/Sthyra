@@ -47,15 +47,40 @@ export default function LenisProvider({ children }: LenisProviderProps) {
       lenis.start();
     };
 
+    const handleLenisScrollTo = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        target?: number | string | HTMLElement;
+        offset?: number;
+        immediate?: boolean;
+      }>;
+      const target = customEvent.detail?.target;
+
+      if (target === undefined) {
+        return;
+      }
+
+      lenis.start();
+      lenis.scrollTo(target, {
+        duration: customEvent.detail?.immediate ? 0 : 1.05,
+        immediate: customEvent.detail?.immediate,
+        offset: customEvent.detail?.offset ?? 0,
+      });
+    };
+
     lenis.on("scroll", ScrollTrigger.update);
     frame = window.requestAnimationFrame(update);
     ScrollTrigger.addEventListener("refresh", handleRefresh);
     window.addEventListener("sthyra:lenis-lock", handleLenisLock as EventListener);
+    window.addEventListener("sthyra:lenis-scroll-to", handleLenisScrollTo as EventListener);
     ScrollTrigger.refresh();
 
     return () => {
       ScrollTrigger.removeEventListener("refresh", handleRefresh);
       window.removeEventListener("sthyra:lenis-lock", handleLenisLock as EventListener);
+      window.removeEventListener(
+        "sthyra:lenis-scroll-to",
+        handleLenisScrollTo as EventListener,
+      );
 
       if (frame !== 0) {
         window.cancelAnimationFrame(frame);
