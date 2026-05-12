@@ -7,10 +7,12 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Open_Sans } from "next/font/google";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -59,6 +61,7 @@ type PostSkylineTileConfig = {
 
 type ApartmentBox = {
   id: string;
+  href?: string;
   row: number;
   col: number;
   rowSpan: number;
@@ -329,6 +332,7 @@ const APARTMENT_BOXES: ApartmentBox[] = [
   },
   {
     id: "interactive-web-experiences",
+    href: "/services/interactive-real-estate-web-experiences",
     row: 0,
     col: 2,
     rowSpan: 1,
@@ -345,6 +349,7 @@ const APARTMENT_BOXES: ApartmentBox[] = [
   },
   {
     id: "cinematic-films",
+    href: "/services/cinematic-real-estate-films",
     row: 1,
     col: 0,
     rowSpan: 1,
@@ -361,6 +366,7 @@ const APARTMENT_BOXES: ApartmentBox[] = [
   },
   {
     id: "ultra-real-renders",
+    href: "/services/ultra-real-real-estate-renders",
     row: 1,
     col: 3,
     rowSpan: 1,
@@ -377,15 +383,16 @@ const APARTMENT_BOXES: ApartmentBox[] = [
   },
   {
     id: "pixel-streaming",
+    href: "/services/real-estate-digital-twins",
     row: 1,
     col: 6,
     rowSpan: 1,
     colSpan: 2,
     variant: "light",
-    titleLines: ["PIXEL", "STREAMING"],
+    titleLines: ["DIGITAL", "TWINS"],
     descriptionLines: [
-      "Unreal Engine quality delivered through the cloud without requiring powerful local devices.",
-      "This allows premium interactive experiences to run through a browser.",
+      "A living digital replica of your project, designed to make every tower, amenity, and spatial decision instantly understandable.",
+      "It turns complex real estate plans into an interactive experience buyers, teams, and stakeholders can explore with confidence.",
     ],
     tileBaseUrl: "/pixelstreaming_tiles_4x8",
     tileFilePrefix: "pixelstreaming_tile",
@@ -393,6 +400,7 @@ const APARTMENT_BOXES: ApartmentBox[] = [
   },
   {
     id: "vr-ar-immersion",
+    href: "/services/ar-vr-real-estate-experiences",
     row: 3,
     col: 5,
     rowSpan: 1,
@@ -561,6 +569,7 @@ export default function CreateImageFromTiles({
   TILE_HEIGHT,
   TILE_WIDTH,
 }: TILECOMBININGTYPES) {
+  const router = useRouter();
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const apartmentSequenceRef = useRef<HTMLDivElement | null>(null);
@@ -625,13 +634,13 @@ export default function CreateImageFromTiles({
         key: `${box.id}-${index}`,
         style: hasValidGrid
           ? getSpanningTileStyle(
-              box.row,
-              box.col,
-              box.rowSpan,
-              box.colSpan,
-              NO_OF_ROWS,
-              NO_OF_COLUMNS,
-            )
+            box.row,
+            box.col,
+            box.rowSpan,
+            box.colSpan,
+            NO_OF_ROWS,
+            NO_OF_COLUMNS,
+          )
           : {},
       })),
     [NO_OF_COLUMNS, NO_OF_ROWS, hasValidGrid],
@@ -642,13 +651,13 @@ export default function CreateImageFromTiles({
         ...card,
         style: hasValidGrid
           ? getSpanningTileStyle(
-              card.row,
-              card.col,
-              card.rowSpan,
-              card.colSpan,
-              NO_OF_ROWS,
-              NO_OF_COLUMNS,
-            )
+            card.row,
+            card.col,
+            card.rowSpan,
+            card.colSpan,
+            NO_OF_ROWS,
+            NO_OF_COLUMNS,
+          )
           : {},
       })),
     [NO_OF_COLUMNS, NO_OF_ROWS, hasValidGrid],
@@ -895,6 +904,26 @@ export default function CreateImageFromTiles({
       hoverTileClearRef.current = null;
     }, 440);
   }, [animateHoverTiles]);
+
+  const handleServiceCardActivate = useCallback((box: ApartmentBox) => {
+    if (!box.href) {
+      return;
+    }
+
+    router.push(box.href, { scroll: true });
+  }, [router]);
+
+  const handleServiceCardKeyDown = useCallback((
+    box: ApartmentBox,
+    event: ReactKeyboardEvent<HTMLDivElement>,
+  ) => {
+    if (!box.href || (event.key !== "Enter" && event.key !== " ")) {
+      return;
+    }
+
+    event.preventDefault();
+    handleServiceCardActivate(box);
+  }, [handleServiceCardActivate]);
 
   useLayoutEffect(() => {
     const syncViewport = () => {
@@ -2240,84 +2269,84 @@ export default function CreateImageFromTiles({
                   </div>
                 </div>
                 {tileGrid.map(({ row, col, key, style }) => {
-                    const featureTile = isFeatureTile(row, col);
-                    const featureColumnTile = isFeatureColumnTile(row, col);
-                    const skylineColumnClass =
-                      row < FEATURE_TILE.row
-                        ? "skyline-column-top"
-                        : "skyline-column-bottom";
-                    const skylineClass = featureTile
-                      ? "skyline-tile skyline-feature-tile absolute inset-0 z-[2] h-full w-full object-fill"
-                      : featureColumnTile
-                        ? `skyline-tile absolute inset-0 z-[3] h-full w-full object-fill ${skylineColumnClass}`
-                        : "skyline-tile skyline-expansion-tile absolute inset-0 z-[3] h-full w-full object-fill";
+                  const featureTile = isFeatureTile(row, col);
+                  const featureColumnTile = isFeatureColumnTile(row, col);
+                  const skylineColumnClass =
+                    row < FEATURE_TILE.row
+                      ? "skyline-column-top"
+                      : "skyline-column-bottom";
+                  const skylineClass = featureTile
+                    ? "skyline-tile skyline-feature-tile absolute inset-0 z-[2] h-full w-full object-fill"
+                    : featureColumnTile
+                      ? `skyline-tile absolute inset-0 z-[3] h-full w-full object-fill ${skylineColumnClass}`
+                      : "skyline-tile skyline-expansion-tile absolute inset-0 z-[3] h-full w-full object-fill";
 
-                    return (
-                      <div
-                        key={key}
+                  return (
+                    <div
+                      key={key}
+                      className={[
+                        "tile-cell absolute overflow-hidden",
+                        featureTile ? "feature-cell" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      style={style}
+                    >
+                      <Image
+                        src={`${BASEURL}/tile_${row}_${col}.jpg`}
+                        alt=""
+                        width={TILE_WIDTH}
+                        height={TILE_HEIGHT}
+                        unoptimized
+                        loading={row < 2 ? "eager" : "lazy"}
+                        decoding="async"
+                        sizes={`${(100 / NO_OF_COLUMNS).toFixed(3)}vw`}
+                        draggable={false}
+                        aria-hidden="true"
                         className={[
-                          "tile-cell absolute overflow-hidden",
-                          featureTile ? "feature-cell" : "",
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
-                        style={style}
-                      >
+                          "tile-image absolute inset-0 h-full w-full object-fill",
+                          featureTile ? "feature-tile" : "non-feature-tile",
+                        ].join(" ")}
+                      />
+                      {featureTile ? (
                         <Image
-                          src={`${BASEURL}/tile_${row}_${col}.jpg`}
+                          src={`${SECONDARY_BASEURL}/tile_${row}_${col}.jpg`}
                           alt=""
                           width={TILE_WIDTH}
                           height={TILE_HEIGHT}
                           unoptimized
-                          loading={row < 2 ? "eager" : "lazy"}
+                          loading={featureTile ? "eager" : "lazy"}
                           decoding="async"
                           sizes={`${(100 / NO_OF_COLUMNS).toFixed(3)}vw`}
                           draggable={false}
                           aria-hidden="true"
-                          className={[
-                            "tile-image absolute inset-0 h-full w-full object-fill",
-                            featureTile ? "feature-tile" : "non-feature-tile",
-                          ].join(" ")}
+                          className={skylineClass}
                         />
-                        {featureTile ? (
-                          <Image
-                            src={`${SECONDARY_BASEURL}/tile_${row}_${col}.jpg`}
-                            alt=""
-                            width={TILE_WIDTH}
-                            height={TILE_HEIGHT}
-                            unoptimized
-                            loading={featureTile ? "eager" : "lazy"}
-                            decoding="async"
-                            sizes={`${(100 / NO_OF_COLUMNS).toFixed(3)}vw`}
-                            draggable={false}
-                            aria-hidden="true"
-                            className={skylineClass}
-                          />
-                        ) : (
-                          <Image
-                            src={`${SECONDARY_BASEURL}/tile_${row}_${col}.jpg`}
-                            alt=""
-                            width={TILE_WIDTH}
-                            height={TILE_HEIGHT}
-                            unoptimized
-                            loading="lazy"
-                            decoding="async"
-                            sizes={`${(100 / NO_OF_COLUMNS).toFixed(3)}vw`}
-                            draggable={false}
-                            aria-hidden="true"
-                            className={skylineClass}
-                            data-skyline-delay={getSkylineRevealDelay(row, col).toFixed(3)}
-                          />
-                        )}
-                        {!featureTile ? (
-                          <div
-                            className="non-feature-panel absolute inset-0 z-[2] border border-white/6 bg-black"
-                            data-wave-delay={getTileWaveDelay(row, col).toFixed(3)}
-                            data-cover-duration={getTileCoverDuration(row, col).toFixed(3)}
-                          />
-                        ) : null}
-                      </div>
-                    );
+                      ) : (
+                        <Image
+                          src={`${SECONDARY_BASEURL}/tile_${row}_${col}.jpg`}
+                          alt=""
+                          width={TILE_WIDTH}
+                          height={TILE_HEIGHT}
+                          unoptimized
+                          loading="lazy"
+                          decoding="async"
+                          sizes={`${(100 / NO_OF_COLUMNS).toFixed(3)}vw`}
+                          draggable={false}
+                          aria-hidden="true"
+                          className={skylineClass}
+                          data-skyline-delay={getSkylineRevealDelay(row, col).toFixed(3)}
+                        />
+                      )}
+                      {!featureTile ? (
+                        <div
+                          className="non-feature-panel absolute inset-0 z-[2] border border-white/6 bg-black"
+                          data-wave-delay={getTileWaveDelay(row, col).toFixed(3)}
+                          data-cover-duration={getTileCoverDuration(row, col).toFixed(3)}
+                        />
+                      ) : null}
+                    </div>
+                  );
                 })}
               </div>
               <div className="absolute" style={tileFrameStyle}>
@@ -2596,9 +2625,15 @@ export default function CreateImageFromTiles({
                         key={box.key}
                         className={[
                           "apartment-sequence-box group/service-card pointer-events-auto absolute overflow-hidden",
+                          box.href ? "cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-black/70" : "",
                           box.variant === "light" ? "bg-white text-black" : "bg-black text-white",
                         ].join(" ")}
                         data-service-card="true"
+                        role={box.href ? "link" : undefined}
+                        tabIndex={box.href ? 0 : undefined}
+                        aria-label={box.href ? `Open ${box.titleLines.join(" ")} service page` : undefined}
+                        onClick={() => handleServiceCardActivate(box)}
+                        onKeyDown={(event) => handleServiceCardKeyDown(box, event)}
                         onPointerEnter={(event) => handleServiceHoverEnter(box, event)}
                         onPointerLeave={(event) => handleServiceHoverLeave(box, event)}
                         style={{
@@ -2724,18 +2759,18 @@ export default function CreateImageFromTiles({
                   ? imageOnLeft
                     ? "37.5%"
                     : "62.5%"
-                : imageOnLeft
-                  ? "33.5%"
-                  : "66.5%";
+                  : imageOnLeft
+                    ? "33.5%"
+                    : "66.5%";
               const textLeft = isCompactReasonLayout
                 ? "50%"
                 : isMediumReasonLayout
                   ? imageOnLeft
                     ? "59.5%"
                     : "40.5%"
-                : imageOnLeft
-                  ? "64%"
-                  : "36%";
+                  : imageOnLeft
+                    ? "64%"
+                    : "36%";
               const imageTop = isCompactReasonLayout ? "40%" : "50%";
               const textTop = isCompactReasonLayout ? "77%" : "50%";
 
@@ -2758,12 +2793,12 @@ export default function CreateImageFromTiles({
                             ? "min(62vw, 22rem)"
                             : isMediumReasonLayout
                               ? "clamp(18rem, 26vw, 26rem)"
-                            : "clamp(18rem, 30vw, 31rem)",
+                              : "clamp(18rem, 30vw, 31rem)",
                           height: isCompactReasonLayout
                             ? "min(76vw, 26rem)"
                             : isMediumReasonLayout
                               ? "clamp(22rem, 32vw, 31rem)"
-                            : "clamp(22rem, 40vw, 38rem)",
+                              : "clamp(22rem, 40vw, 38rem)",
                         }}
                       >
                         <Image
@@ -2786,7 +2821,7 @@ export default function CreateImageFromTiles({
                             ? "min(78vw, 26rem)"
                             : isMediumReasonLayout
                               ? "clamp(22rem, 27vw, 31rem)"
-                            : "clamp(24rem, 34vw, 39rem)",
+                              : "clamp(24rem, 34vw, 39rem)",
                           textAlign: isCompactReasonLayout
                             ? "center"
                             : imageOnLeft

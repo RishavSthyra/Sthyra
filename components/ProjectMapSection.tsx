@@ -679,7 +679,7 @@ export default function ProjectMapSection({
       </div>
 
       <div
-        className="pointer-events-none absolute inset-0 z-[2] bg-[radial-gradient(circle_at_50%_42%,rgba(255,255,255,0.05),transparent_24%),linear-gradient(180deg,rgba(0,0,0,0.42)_0%,rgba(0,0,0,0.16)_18%,rgba(0,0,0,0)_46%,rgba(0,0,0,0)_70%,rgba(0,0,0,0.38)_100%)]"
+        className="pointer-events-none absolute inset-0 z-[2] bg-[radial-gradient(circle_at_50%_42%,rgba(0,0,0,0.08),transparent_28%),linear-gradient(180deg,rgba(0,0,0,0.48)_0%,rgba(0,0,0,0.24)_22%,rgba(0,0,0,0.22)_48%,rgba(0,0,0,0.18)_70%,rgba(0,0,0,0.42)_100%)]"
         aria-hidden="true"
       />
       <div

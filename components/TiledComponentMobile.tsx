@@ -33,6 +33,7 @@ type SkylineTile = {
 
 type ServiceItem = {
   id: string;
+  href?: string;
   label: string;
   title: string;
   textLines: string[];
@@ -119,6 +120,7 @@ const MOBILE_SKYLINE_TILES: SkylineTile[] = [
 const MOBILE_SERVICES: ServiceItem[] = [
   {
     id: "interactive-web-experiences",
+    href: "/services/interactive-real-estate-web-experiences",
     label: "Service 01",
     title: "Interactive Web Experiences",
     textLines: [
@@ -132,6 +134,7 @@ const MOBILE_SERVICES: ServiceItem[] = [
   },
   {
     id: "cinematic-films",
+    href: "/services/cinematic-real-estate-films",
     label: "Service 02",
     title: "Cinematic Films",
     textLines: [
@@ -145,6 +148,7 @@ const MOBILE_SERVICES: ServiceItem[] = [
   },
   {
     id: "ultra-real-renders",
+    href: "/services/ultra-real-real-estate-renders",
     label: "Service 03",
     title: "Ultra-Real Renders",
     textLines: [
@@ -158,11 +162,12 @@ const MOBILE_SERVICES: ServiceItem[] = [
   },
   {
     id: "pixel-streaming",
+    href: "/services/real-estate-digital-twins",
     label: "Service 04",
-    title: "Pixel Streaming",
+    title: "Digital Twins",
     textLines: [
-      "Unreal Engine quality delivered through the cloud without requiring powerful local devices.",
-      "This allows premium interactive experiences to run through a browser.",
+      "A living digital replica of your project, designed to make every tower, amenity, and spatial decision instantly understandable.",
+      "It turns complex real estate plans into an interactive experience buyers, teams, and stakeholders can explore with confidence.",
     ],
     imageSrc: "/pixelstreaming_tiles_4x8/pixelstreaming_tile_1_3.jpg",
     imageAlt: "Pixel streaming tile",
@@ -171,6 +176,7 @@ const MOBILE_SERVICES: ServiceItem[] = [
   },
   {
     id: "vr-ar-immersion",
+    href: "/services/ar-vr-real-estate-experiences",
     label: "Service 05",
     title: "VR & AR Immersion",
     textLines: [
@@ -392,7 +398,11 @@ function ServiceModule({ service }: { service: ServiceItem }) {
 
   if (service.layout === "image-strip") {
     return (
-      <article className="grid gap-4 border-t border-white/10 py-5 md:grid-cols-[1.1fr_0.9fr] md:items-start">
+      <Link
+        href={service.href ?? "#"}
+        scroll
+        className="group grid cursor-pointer gap-4 border-t border-white/10 py-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white/70 md:grid-cols-[1.1fr_0.9fr] md:items-start"
+      >
         <ImageTile
           src={service.imageSrc ?? ""}
           alt={service.imageAlt ?? service.title}
@@ -415,16 +425,19 @@ function ServiceModule({ service }: { service: ServiceItem }) {
             ))}
           </div>
         </div>
-      </article>
+      </Link>
     );
   }
 
   if (service.layout === "text") {
     return (
-      <article
+      <Link
+        href={service.href ?? "#"}
+        scroll
         className={[
-          "grid gap-4 border-t py-5 md:min-h-[18rem] md:grid-cols-[0.85fr_1.15fr] md:gap-6",
+          "group grid cursor-pointer gap-4 border-t py-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] md:min-h-[18rem] md:grid-cols-[0.85fr_1.15fr] md:gap-6",
           isLight ? "border-black/10 bg-[#f4efe7] px-4 text-black sm:px-6" : "border-white/10 bg-black px-0 text-[#f7f1e7]",
+          isLight ? "focus-visible:outline-black/70" : "focus-visible:outline-white/70",
         ].join(" ")}
       >
         {service.imageSrc ? (
@@ -459,12 +472,16 @@ function ServiceModule({ service }: { service: ServiceItem }) {
             ))}
           </div>
         </div>
-      </article>
+      </Link>
     );
   }
 
   return (
-    <article className="grid gap-4 border-t border-white/10 py-5 md:grid-cols-[1.1fr_0.9fr] md:gap-6">
+    <Link
+      href={service.href ?? "#"}
+      scroll
+      className="group grid cursor-pointer gap-4 border-t border-white/10 py-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white/70 md:grid-cols-[1.1fr_0.9fr] md:gap-6"
+    >
       <ImageTile
         src={service.imageSrc ?? ""}
         alt={service.imageAlt ?? service.title}
@@ -487,7 +504,7 @@ function ServiceModule({ service }: { service: ServiceItem }) {
           ))}
         </div>
       </div>
-    </article>
+    </Link>
   );
 }
 
