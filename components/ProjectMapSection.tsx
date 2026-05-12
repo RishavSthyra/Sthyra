@@ -424,52 +424,61 @@ export default function ProjectMapSection({
         exaggeration: isCompactDevice ? 1.22 : 1.65,
       });
 
-      if (!isCompactDevice && !map.getLayer(BUILDING_LAYER_ID)) {
+      if (
+        !isCompactDevice &&
+        !map.getLayer(BUILDING_LAYER_ID) &&
+        map.getSource("composite")
+      ) {
         const labelLayerId = getFirstSymbolLayerId(map);
 
-        map.addLayer(
-          {
-            id: BUILDING_LAYER_ID,
-            source: "composite",
-            "source-layer": "building",
-            filter: ["==", "extrude", "true"],
-            type: "fill-extrusion",
-            minzoom: 12.5,
-            paint: {
-              "fill-extrusion-color": [
-                "interpolate",
-                ["linear"],
-                ["get", "height"],
-                0,
-                "#d5d7d9",
-                60,
-                "#f1f2f3",
-                160,
-                "#ffffff",
-              ],
-              "fill-extrusion-height": [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                12.5,
-                0,
-                13.6,
-                ["coalesce", ["get", "height"], 36],
-              ],
-              "fill-extrusion-base": [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                12.5,
-                0,
-                13.6,
-                ["coalesce", ["get", "min_height"], 0],
-              ],
-              "fill-extrusion-opacity": 0.9,
+        try {
+          map.addLayer(
+            {
+              id: BUILDING_LAYER_ID,
+              source: "composite",
+              "source-layer": "building",
+              filter: ["==", "extrude", "true"],
+              type: "fill-extrusion",
+              minzoom: 12.5,
+              paint: {
+                "fill-extrusion-color": [
+                  "interpolate",
+                  ["linear"],
+                  ["get", "height"],
+                  0,
+                  "#d5d7d9",
+                  60,
+                  "#f1f2f3",
+                  160,
+                  "#ffffff",
+                ],
+                "fill-extrusion-height": [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  12.5,
+                  0,
+                  13.6,
+                  ["coalesce", ["get", "height"], 36],
+                ],
+                "fill-extrusion-base": [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  12.5,
+                  0,
+                  13.6,
+                  ["coalesce", ["get", "min_height"], 0],
+                ],
+                "fill-extrusion-opacity": 0.9,
+              },
             },
-          },
-          labelLayerId,
-        );
+            labelLayerId,
+          );
+        } catch {
+          // Some Mapbox styles, including Standard variants, do not expose the
+          // legacy composite building source. The map remains usable without it.
+        }
       }
 
       map.easeTo({

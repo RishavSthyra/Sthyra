@@ -882,9 +882,12 @@ export default function CreateImageFromTiles({
     box: ApartmentBox,
     event: ReactPointerEvent<HTMLDivElement>,
   ) => {
-    const nextTarget = event.relatedTarget as HTMLElement | null;
+    const nextTarget = event.relatedTarget;
 
-    if (nextTarget?.closest("[data-service-card='true']")) {
+    if (
+      nextTarget instanceof Element &&
+      nextTarget.closest("[data-service-card='true']")
+    ) {
       return;
     }
 
