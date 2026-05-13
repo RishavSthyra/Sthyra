@@ -42,6 +42,14 @@ body {
   margin: 0;
 }
 
+.mobile-home {
+  font-family: var(--font-mobile-body), "DM Sans", sans-serif;
+}
+
+.mobile-home :is(h1, h2, h3, .mobile-title-text) {
+  font-family: var(--font-mobile-title), Montserrat, sans-serif;
+}
+
 .service-hero-tile {
   animation: service-tile-reveal 1120ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   clip-path: inset(0 100% 0 0);
@@ -67,6 +75,37 @@ body {
   animation-delay: 760ms;
 }
 
+.mobile-tile-entry {
+  animation: mobile-tile-image-reveal 880ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: center bottom;
+}
+
+.mobile-tile-shell {
+  animation: mobile-tile-shell-reveal 760ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: center bottom;
+}
+
+.mobile-hero-letter {
+  animation: mobile-hero-letter-rise 980ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: 50% 100%;
+  will-change: opacity, transform, filter;
+}
+
+.mobile-hero-copy {
+  animation: mobile-hero-copy-rise 940ms cubic-bezier(0.22, 1, 0.36, 1) 680ms both;
+  will-change: opacity, transform, filter;
+}
+
+.mobile-section-reveal {
+  animation: mobile-section-text-rise 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform;
+}
+
+.mobile-reason-hover-track {
+  animation: mobile-reason-marquee 7.2s linear infinite;
+  animation-play-state: paused;
+}
+
 @keyframes service-tile-reveal {
   0% {
     opacity: 0;
@@ -87,6 +126,94 @@ body {
   }
 }
 
+@keyframes mobile-hero-letter-rise {
+  0% {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translate3d(0, 0.72em, 0) scaleY(0.86);
+  }
+
+  58% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, -0.045em, 0) scaleY(1.02);
+  }
+
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes mobile-hero-copy-rise {
+  0% {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translate3d(0, 0.85rem, 0);
+  }
+
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes mobile-section-text-rise {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 1.15rem, 0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes mobile-reason-marquee {
+  0% {
+    transform: translate3d(-12%, 0, 0);
+  }
+
+  100% {
+    transform: translate3d(-42%, 0, 0);
+  }
+}
+
+@keyframes mobile-tile-image-reveal {
+  0% {
+    opacity: 0;
+    clip-path: inset(18% 0 0 0);
+    filter: brightness(0.76) saturate(0.82);
+    transform: translate3d(0, 18px, 0) scale(1.035);
+  }
+
+  62% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    filter: brightness(1) saturate(1);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes mobile-tile-shell-reveal {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
 @keyframes service-copy-reveal {
   0% {
     opacity: 0;
@@ -96,6 +223,19 @@ body {
   100% {
     opacity: 1;
     transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-section-reveal {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .mobile-reason-hover-track {
+    animation: none;
+    transform: translate3d(-12%, 0, 0);
   }
 }
 

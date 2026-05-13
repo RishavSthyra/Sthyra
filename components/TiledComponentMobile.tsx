@@ -1,14 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Open_Sans } from "next/font/google";
+import { DM_Sans, Montserrat } from "next/font/google";
 import ProjectMapSection from "@/components/ProjectMapSection";
 
-const openSans = Open_Sans({
+const montserrat = Montserrat({
   subsets: ["latin"],
-  weight: ["600", "700"],
+  weight: ["600", "700", "800"],
+  variable: "--font-mobile-title",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-mobile-body",
 });
 
 type TiledComponentMobileProps = {
@@ -54,13 +61,6 @@ type ReasonItem = {
 type StatItem = {
   value: string;
   label: string;
-};
-
-type JournalItem = {
-  category: string;
-  title: string;
-  imageSrc: string;
-  imageAlt: string;
 };
 
 const MOBILE_INTRO_ITEMS: IntroItem[] = [
@@ -257,27 +257,6 @@ const MOBILE_STATS: StatItem[] = [
   },
 ];
 
-const MOBILE_JOURNAL: JournalItem[] = [
-  {
-    category: "Article 01",
-    title: "How Immersion Changes Pre-Construction Sales",
-    imageSrc: "/reasons/Reason 3.jpg",
-    imageAlt: "Editorial visual for pre-construction sales article",
-  },
-  {
-    category: "Article 02",
-    title: "From Blueprint to Buyer Confidence",
-    imageSrc: "/reasons/Reason 2.jpg",
-    imageAlt: "Editorial visual for blueprint to buyer confidence article",
-  },
-  {
-    category: "Article 03",
-    title: "Why Premium Projects Need Spatial Storytelling",
-    imageSrc: "/reasons/Reason 4.jpg",
-    imageAlt: "Editorial visual for spatial storytelling article",
-  },
-];
-
 const MOBILE_FOOTER_LINKS = [
   { label: "Home", href: "/" },
   { label: "Services", href: "#services-mobile" },
@@ -319,13 +298,21 @@ function SectionHeader({
   text?: string;
 }) {
   return (
-    <div className="space-y-3 border-t border-white/10 pt-4 md:pt-5">
-      <EditorialLabel>{eyebrow}</EditorialLabel>
-      <h2 className="m-0 max-w-[12ch] text-[clamp(1.65rem,5vw,2.8rem)] font-semibold leading-[0.9] tracking-[-0.078em] text-[#f7f1e7]">
+    <div className="mx-4 space-y-4 border-y border-white/[0.08] px-0 py-8 sm:mx-6 md:mx-8 md:py-10">
+      <div className="mobile-section-reveal" style={{ animationDelay: "40ms" }}>
+        <EditorialLabel>{eyebrow}</EditorialLabel>
+      </div>
+      <h2
+        className="mobile-section-reveal m-0 max-w-[22ch] text-balance text-[clamp(2rem,7.7vw,3.7rem)] font-semibold leading-[0.92] tracking-[-0.055em] text-[#f7f1e7] md:max-w-[20ch] md:text-[clamp(3.3rem,6.8vw,5.8rem)]"
+        style={{ animationDelay: "140ms" }}
+      >
         {title}
       </h2>
       {text ? (
-        <p className="m-0 max-w-[40ch] text-[0.82rem] leading-[1.62] tracking-[-0.014em] text-white/60 md:text-[0.88rem]">
+        <p
+          className="mobile-section-reveal m-0 max-w-[40ch] text-[0.95rem] leading-[1.56] tracking-[-0.012em] text-white/62 md:text-[1.05rem]"
+          style={{ animationDelay: "240ms" }}
+        >
           {text}
         </p>
       ) : null}
@@ -347,124 +334,146 @@ function ArrowIcon({ className = "" }: { className?: string }) {
   );
 }
 
-function ImageTile({
-  src,
-  alt,
-  sizes,
-  className = "",
-  overlayClassName = "bg-[linear-gradient(180deg,rgba(0,0,0,0.04),rgba(0,0,0,0.38))]",
-}: {
-  src: string;
-  alt: string;
-  sizes: string;
-  className?: string;
-  overlayClassName?: string;
-}) {
+function HeroTileGrid({ baseUrl }: { baseUrl: string }) {
+  const rows = [0, 1, 2, 3];
+  const columns = [0, 1, 2, 3, 4, 5, 6, 7];
+
   return (
-    <div className={`relative overflow-hidden ${className}`}>
-      <Image src={src} alt={alt} fill unoptimized sizes={sizes} className="object-cover" />
-      <div className={`absolute inset-0 ${overlayClassName}`} />
+    <div className="mobile-tile-entry absolute left-1/2 top-0 grid h-full w-[max(100%,200svh)] -translate-x-1/2 grid-cols-8 grid-rows-4">
+      {rows.flatMap((row) =>
+        columns.map((col) => (
+          <div key={`${row}-${col}`} className="relative overflow-hidden bg-black">
+            <Image
+              src={`${baseUrl}/tile_${row}_${col}.jpg`}
+              alt=""
+              fill
+              unoptimized
+              sizes="13vw"
+              className="object-fill"
+            />
+          </div>
+        )),
+      )}
     </div>
   );
 }
 
-function ServiceModule({ service }: { service: ServiceItem }) {
-  const isLight = service.tone === "light";
+function MobileIntroHero() {
+  const title = "STHYRA";
+  const subtitle = "Premium spatial stories for unbuilt real estate.";
+  const rows = [0, 1, 2, 3];
+  const columns = [0, 1, 2, 3, 4, 5, 6, 7];
 
-  if (service.layout === "cta") {
-    return (
-      <a
-        href="mailto:info@sthyra.com?subject=Project%20Inquiry"
-        className="group grid min-h-[18rem] border-t border-b border-white/10 bg-[#f4efe7] px-4 py-5 text-black transition-colors duration-300 hover:bg-white sm:px-6 md:min-h-[20rem]"
-      >
-        <div className="flex items-start justify-between gap-4">
-          <EditorialLabel light>{service.label}</EditorialLabel>
-          <div className="relative h-9 w-9 overflow-hidden text-black md:h-10 md:w-10">
-            <ArrowIcon className="absolute inset-0 h-9 w-9 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-4 group-hover:-translate-y-4 md:h-10 md:w-10" />
-            <ArrowIcon className="absolute inset-0 h-9 w-9 -translate-x-4 translate-y-4 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0 group-hover:translate-y-0 md:h-10 md:w-10" />
-          </div>
-        </div>
-        <div className="mt-auto space-y-4">
-          <h3 className="m-0 max-w-[8ch] text-[clamp(1.8rem,6.2vw,3.05rem)] font-semibold leading-[0.88] tracking-[-0.08em]">
-            {service.title}
-          </h3>
-          <p className="m-0 max-w-[28ch] text-[0.82rem] leading-[1.62] tracking-[-0.014em] text-black/62">
-            {service.textLines[0]}
+  return (
+    <section className="relative z-0 min-h-[100svh] overflow-hidden border-y border-white/10 bg-black">
+      <div className="mobile-tile-entry absolute left-1/2 top-0 grid h-full w-[max(100%,156svh)] -translate-x-1/2 grid-cols-8 grid-rows-4 md:w-[max(100%,164svh)]">
+        {rows.flatMap((row) =>
+          columns.map((col) => (
+            <div key={`${row}-${col}`} className="relative overflow-hidden bg-black">
+              <Image
+                src={`/mobilehero_tiles/mobilehero_tile_${row}_${col}.jpg`}
+                alt=""
+                fill
+                unoptimized
+                sizes="13vw"
+                className="object-fill"
+              />
+            </div>
+          )),
+        )}
+      </div>
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.06),rgba(0,0,0,0.18)_42%,rgba(0,0,0,0.82)_100%)]" />
+      <div className="absolute inset-x-0 bottom-0 z-[1] flex justify-end px-4 pb-11 sm:px-6 md:px-8 md:pb-14">
+        <div className="w-full text-right">
+          <h1 className="mobile-hero-title m-0 whitespace-nowrap text-[clamp(3.05rem,15.4vw,6.15rem)] font-semibold uppercase leading-none tracking-[-0.028em] text-[#f7f1e7] [text-shadow:0_14px_42px_rgba(0,0,0,0.38)] sm:text-[clamp(3.55rem,14.4vw,7.15rem)] md:text-[clamp(6.15rem,13.2vw,8.9rem)]">
+            {title.split("").map((letter, index) => (
+              <span
+                key={`${letter}-${index}`}
+                className="mobile-hero-letter inline-block"
+                style={{ animationDelay: `${180 + index * 46}ms` }}
+              >
+                {letter}
+              </span>
+            ))}
+          </h1>
+          <p className="mobile-hero-copy ml-auto mt-6 max-w-[30ch] text-[0.92rem] font-medium leading-[1.34] tracking-[-0.012em] text-white/76 sm:max-w-[36ch] sm:text-[1rem] md:mt-7 md:max-w-[46ch] md:text-[1.16rem]">
+            {subtitle}
           </p>
         </div>
-      </a>
-    );
-  }
+      </div>
+    </section>
+  );
+}
 
-  if (service.layout === "image-strip") {
-    return (
-      <Link
-        href={service.href ?? "#"}
-        scroll
-        className="group grid cursor-pointer gap-4 border-t border-white/10 py-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white/70 md:grid-cols-[1.1fr_0.9fr] md:items-start"
-      >
-        <ImageTile
-          src={service.imageSrc ?? ""}
-          alt={service.imageAlt ?? service.title}
-          sizes="(max-width: 767px) 100vw, 52vw"
-          className="min-h-[13rem] md:min-h-[16rem]"
-        />
-        <div className="space-y-4">
-          <EditorialLabel>{service.label}</EditorialLabel>
-          <h3 className="m-0 max-w-[11ch] text-[clamp(1.35rem,4.4vw,2.05rem)] font-semibold leading-[0.92] tracking-[-0.065em] text-[#f7f1e7]">
-            {service.title}
-          </h3>
-          <div className="space-y-3">
-            {service.textLines.map((line) => (
-              <p
-                key={line}
-                className="m-0 max-w-[38ch] text-[0.82rem] leading-[1.62] tracking-[-0.014em] text-white/60"
-              >
-                {line}
-              </p>
-            ))}
-          </div>
-        </div>
-      </Link>
-    );
-  }
+function ServiceCarouselCard({ service, index }: { service: ServiceItem; index: number }) {
+  const isCta = service.layout === "cta";
+  const cardTone = isCta ? "bg-[#f4efe7] text-black" : "bg-[#050505] text-[#f7f1e7]";
+  const href = isCta ? "mailto:info@sthyra.com?subject=Project%20Inquiry" : service.href ?? "#";
 
-  if (service.layout === "text") {
-    return (
-      <Link
-        href={service.href ?? "#"}
-        scroll
-        className={[
-          "group grid cursor-pointer gap-4 border-t py-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] md:min-h-[18rem] md:grid-cols-[0.85fr_1.15fr] md:gap-6",
-          isLight ? "border-black/10 bg-[#f4efe7] px-4 text-black sm:px-6" : "border-white/10 bg-black px-0 text-[#f7f1e7]",
-          isLight ? "focus-visible:outline-black/70" : "focus-visible:outline-white/70",
-        ].join(" ")}
-      >
-        {service.imageSrc ? (
-          <ImageTile
+  return (
+    <Link
+      href={href}
+      scroll={!isCta}
+      className={[
+        "mobile-section-reveal group relative flex h-[34rem] w-[84vw] shrink-0 snap-start flex-col overflow-hidden border transition-[border-color,background-color,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] sm:w-[68vw] md:h-[38rem] md:w-[43vw]",
+        isCta
+          ? "border-black/10 bg-[#f4efe7] text-black focus-visible:outline-black/70"
+          : "border-white/[0.1] bg-[#050505] text-[#f7f1e7] focus-visible:outline-white/70",
+        cardTone,
+      ].join(" ")}
+      style={{ animationDelay: `${index * 90}ms` }}
+    >
+      {service.imageSrc ? (
+        <div className="relative h-[54%] overflow-hidden bg-black">
+          <Image
             src={service.imageSrc}
             alt={service.imageAlt ?? service.title}
-            sizes="(max-width: 767px) 100vw, 34vw"
-            className="min-h-[11rem] md:min-h-[14rem]"
-            overlayClassName={
-              isLight
-                ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.18))]"
-                : "bg-[linear-gradient(180deg,rgba(0,0,0,0.04),rgba(0,0,0,0.44))]"
-            }
+            fill
+            unoptimized
+            sizes="(max-width: 767px) 84vw, 43vw"
+            className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.035]"
           />
-        ) : null}
-        <div className="space-y-4">
-          <EditorialLabel light={isLight}>{service.label}</EditorialLabel>
-          <h3 className="m-0 max-w-[10ch] text-[clamp(1.35rem,4.4vw,1.98rem)] font-semibold leading-[0.92] tracking-[-0.064em]">
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.42))]" />
+        </div>
+      ) : (
+        <div className="relative flex h-[54%] items-end overflow-hidden bg-[#ece5da] p-5 md:p-6">
+          <div className="absolute inset-x-5 top-5 h-px bg-black/14" />
+          <p className="m-0 max-w-[10ch] text-[clamp(2.35rem,9vw,4.4rem)] font-semibold uppercase leading-[0.84] tracking-[-0.075em] text-black/90">
+            STHYRA
+          </p>
+        </div>
+      )}
+
+      <div
+        className={[
+          "flex flex-1 flex-col px-5 py-5 md:px-6 md:py-6",
+          isCta ? "border-t border-black/10" : "border-t border-white/[0.1]",
+        ].join(" ")}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <EditorialLabel light={isCta}>{service.label}</EditorialLabel>
+          <span
+            className={[
+              "grid h-9 w-9 shrink-0 place-items-center rounded-full border transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1",
+              isCta ? "border-black/16 text-black" : "border-white/14 text-white",
+            ].join(" ")}
+            aria-hidden="true"
+          >
+            <ArrowIcon className="h-5 w-5" />
+          </span>
+        </div>
+
+        <div className="mt-auto">
+          <h3 className="m-0 max-w-[11ch] text-[clamp(1.65rem,6.8vw,2.75rem)] font-semibold leading-[0.9] tracking-[-0.06em] md:text-[clamp(2rem,3.4vw,3.35rem)]">
             {service.title}
           </h3>
-          <div className="space-y-3">
-            {service.textLines.map((line) => (
+          <div className="mt-4 space-y-2.5">
+            {service.textLines.slice(0, 2).map((line) => (
               <p
                 key={line}
                 className={[
-                  "m-0 max-w-[38ch] text-[0.82rem] leading-[1.62] tracking-[-0.014em]",
-                  isLight ? "text-black/66" : "text-white/60",
+                  "m-0 max-w-[35ch] text-[0.84rem] leading-[1.5] tracking-[-0.012em] md:text-[0.9rem]",
+                  isCta ? "text-black/64" : "text-white/62",
                 ].join(" ")}
               >
                 {line}
@@ -472,81 +481,163 @@ function ServiceModule({ service }: { service: ServiceItem }) {
             ))}
           </div>
         </div>
-      </Link>
-    );
-  }
-
-  return (
-    <Link
-      href={service.href ?? "#"}
-      scroll
-      className="group grid cursor-pointer gap-4 border-t border-white/10 py-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white/70 md:grid-cols-[1.1fr_0.9fr] md:gap-6"
-    >
-      <ImageTile
-        src={service.imageSrc ?? ""}
-        alt={service.imageAlt ?? service.title}
-        sizes="(max-width: 767px) 100vw, 52vw"
-        className="min-h-[15rem] md:min-h-[18rem]"
-      />
-      <div className="space-y-4 self-end">
-        <EditorialLabel>{service.label}</EditorialLabel>
-        <h3 className="m-0 max-w-[10ch] text-[clamp(1.45rem,4.6vw,2.25rem)] font-semibold leading-[0.9] tracking-[-0.07em] text-[#f7f1e7]">
-          {service.title}
-        </h3>
-        <div className="space-y-3">
-          {service.textLines.map((line) => (
-            <p
-              key={line}
-              className="m-0 max-w-[40ch] text-[0.82rem] leading-[1.62] tracking-[-0.014em] text-white/60"
-            >
-              {line}
-            </p>
-          ))}
-        </div>
       </div>
     </Link>
   );
 }
 
-function ReasonCarousel({ reasons }: { reasons: ReasonItem[] }) {
+function ReasonRows({ reasons }: { reasons: ReasonItem[] }) {
+  const [activeReason, setActiveReason] = useState<string | null>(null);
+
   return (
-    <div className="space-y-4">
-      <p className="m-0 max-w-[28ch] text-[0.82rem] leading-[1.62] tracking-[-0.014em] text-white/58">
+    <div className="mx-4 mt-7 sm:mx-6 md:mx-8 md:mt-9">
+      <p className="mobile-section-reveal m-0 max-w-[34ch] text-[0.84rem] leading-[1.62] tracking-[-0.014em] text-white/58 md:max-w-[42ch] md:text-[0.95rem]">
         A clearer way to sell what has not yet been built.
       </p>
-      <div
-        aria-label="Reasons carousel"
-        className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:gap-5 md:scroll-px-6"
-      >
-        {reasons.map((reason) => (
-          <article
-            key={reason.number}
-            className="relative w-[82vw] shrink-0 snap-start border border-white/10 bg-black md:w-[44vw] lg:w-[36vw]"
-          >
-            <div className="pointer-events-none absolute right-3 top-2 text-[4.3rem] font-semibold leading-none tracking-[-0.08em] text-white/[0.07] md:right-4 md:top-3 md:text-[5rem]">
-              {reason.number}
-            </div>
-            <ImageTile
-              src={reason.imageSrc}
-              alt={reason.imageAlt}
-              sizes="(max-width: 767px) 82vw, 44vw"
-              className="h-[16rem] md:h-[19rem]"
-              overlayClassName="bg-[linear-gradient(180deg,rgba(0,0,0,0.04),rgba(0,0,0,0.46))]"
-            />
-            <div className="space-y-4 border-t border-white/10 px-4 py-4 md:px-5 md:py-5">
-              <EditorialLabel>{`Reason ${reason.number}`}</EditorialLabel>
-              <h3 className="m-0 max-w-[11ch] text-[clamp(1.22rem,3.85vw,1.8rem)] font-semibold leading-[0.92] tracking-[-0.06em] text-[#f7f1e7]">
+      <div className="mt-4 grid border-t border-white/[0.09] md:mt-6">
+        {reasons.map((reason) => {
+          const isActive = activeReason === reason.number;
+
+          return (
+            <article
+              key={reason.number}
+              className="mobile-section-reveal group/reason relative cursor-pointer overflow-hidden border-b border-white/[0.09] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white/70"
+              style={{ animationDelay: `${Number(reason.number) * 70}ms` }}
+              tabIndex={0}
+              onClick={() => setActiveReason(reason.number)}
+              onFocus={() => setActiveReason(reason.number)}
+              onBlur={() => setActiveReason(null)}
+              onMouseEnter={() => setActiveReason(reason.number)}
+              onMouseLeave={() => setActiveReason(null)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setActiveReason(reason.number);
+                }
+              }}
+            >
+            <div
+              className={[
+                "relative z-[1] grid gap-4 py-5 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/reason:-translate-y-1 group-hover/reason:opacity-20 group-focus/reason:-translate-y-1 group-focus/reason:opacity-20 md:grid-cols-[0.16fr_0.58fr_1.26fr] md:items-center md:gap-6 md:py-7",
+                isActive ? "-translate-y-1 opacity-20" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            >
+              <p className="m-0 text-[0.66rem] font-semibold uppercase tracking-[0.26em] text-white/34">
+                {reason.number}
+              </p>
+              <h3 className="m-0 max-w-[12ch] text-[clamp(1.45rem,5.2vw,2.35rem)] font-semibold leading-[0.94] tracking-[-0.058em] text-[#f7f1e7] md:text-[clamp(1.55rem,2.5vw,2.6rem)]">
                 {reason.title}
               </h3>
-              <p className="m-0 max-w-[32ch] text-[0.8rem] leading-[1.6] tracking-[-0.014em] text-white/60">
+              <p className="m-0 max-w-[56ch] text-[0.88rem] leading-[1.66] tracking-[-0.014em] text-white/58 md:text-[0.95rem]">
                 {reason.body}
               </p>
             </div>
+
+            <div
+              className={[
+                "pointer-events-none absolute inset-0 z-[2] flex items-center overflow-hidden bg-[#f4efe7] text-black opacity-0 [clip-path:inset(50%_0_50%_0)] transition-[opacity,clip-path] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/reason:opacity-100 group-hover/reason:[clip-path:inset(0_0_0_0)] group-focus/reason:opacity-100 group-focus/reason:[clip-path:inset(0_0_0_0)]",
+                isActive ? "opacity-100 [clip-path:inset(0_0_0_0)]" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            >
+              <div
+                className="mobile-reason-hover-track flex min-w-[220%] items-center gap-8 whitespace-nowrap will-change-transform group-hover/reason:[animation-play-state:running] group-focus/reason:[animation-play-state:running] md:gap-10"
+                style={{ animationPlayState: isActive ? "running" : undefined }}
+              >
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={`${reason.number}-${index}`} className="flex items-center gap-8 md:gap-10">
+                    <span className="text-[clamp(1.75rem,6.4vw,3.65rem)] font-semibold uppercase leading-none tracking-[-0.058em]">
+                      {reason.title}
+                    </span>
+                    <span className="relative h-16 w-52 overflow-hidden rounded-full border border-black/10 bg-black/10 shadow-[0_18px_44px_rgba(0,0,0,0.18)] md:h-20 md:w-72">
+                      <Image
+                        src={reason.imageSrc}
+                        alt=""
+                        fill
+                        unoptimized
+                        sizes="18rem"
+                        className="object-cover"
+                      />
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </article>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
+}
+
+function CountUpNumber({ value }: { value: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [displayValue, setDisplayValue] = useState("0");
+
+  useEffect(() => {
+    const element = ref.current;
+
+    if (!element) {
+      return;
+    }
+
+    const match = value.match(/^(\d+)(.*)$/);
+    const target = match ? Number(match[1]) : 0;
+    const suffix = match?.[2] ?? "";
+
+    if (!target) {
+      return;
+    }
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let frame = 0;
+
+    const runCounter = () => {
+      if (prefersReducedMotion) {
+        setDisplayValue(`${target}${suffix}`);
+        return;
+      }
+
+      const start = performance.now();
+      const duration = 1200;
+
+      const tick = (now: number) => {
+        const progress = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - progress, 3);
+
+        setDisplayValue(`${Math.round(target * eased)}${suffix}`);
+
+        if (progress < 1) {
+          frame = window.requestAnimationFrame(tick);
+        }
+      };
+
+      frame = window.requestAnimationFrame(tick);
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          runCounter();
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.45 },
+    );
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+      window.cancelAnimationFrame(frame);
+    };
+  }, [value]);
+
+  return <span ref={ref}>{displayValue}</span>;
 }
 
 function Footer() {
@@ -641,6 +732,7 @@ export default function TiledComponentMobile({
   PROJECT_COORDINATES = [77.5946, 12.9716],
 }: TiledComponentMobileProps) {
   const [heroReady, setHeroReady] = useState(false);
+  const heroStackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -652,80 +744,113 @@ export default function TiledComponentMobile({
     };
   }, []);
 
+  useEffect(() => {
+    const updateRevealProgress = () => {
+      const stack = heroStackRef.current;
+
+      if (!stack) {
+        return;
+      }
+
+      const viewportHeight = window.innerHeight || 1;
+      const { top } = stack.getBoundingClientRect();
+      const revealDistance = viewportHeight * 0.2;
+      const progress = Math.min(1, Math.max(0, -top / revealDistance));
+
+      stack.style.setProperty("--mobile-reveal-progress", progress.toFixed(4));
+    };
+
+    updateRevealProgress();
+    window.addEventListener("scroll", updateRevealProgress, { passive: true });
+    window.addEventListener("resize", updateRevealProgress);
+
+    return () => {
+      window.removeEventListener("scroll", updateRevealProgress);
+      window.removeEventListener("resize", updateRevealProgress);
+    };
+  }, []);
+
   const skylineTiles = MOBILE_SKYLINE_TILES.map((tile) =>
     tile.src?.startsWith("/SKYLINE_tiles_32")
       ? { ...tile, src: tile.src.replace("/SKYLINE_tiles_32", SECONDARY_BASEURL) }
       : tile,
   );
+  const transitionImages = skylineTiles
+    .filter((tile) => tile.type === "image" && tile.src?.startsWith("http"))
+    .slice(0, 4);
 
   return (
-    <div className={`${openSans.className} bg-black text-[#f7f1e7] lg:hidden`}>
-      <section className="border-t border-white/10 bg-black">
-        <div className="relative overflow-hidden px-4 pb-6 pt-4 sm:px-6 sm:pb-8 md:px-8 md:pt-6">
-          <div className="grid grid-cols-1 gap-[10px]">
-            <div
-              className={[
-                "relative min-h-[72svh] overflow-hidden border border-white/10 transition-[transform,opacity] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] md:min-h-[78svh]",
-                heroReady ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0",
-              ].join(" ")}
-            >
-              <ImageTile
-                src={`${BASEURL}/tile_1_3.jpg`}
-                alt="Cinematic architectural visualization hero"
-                sizes="(max-width: 767px) 74vw, 62vw"
-                className="h-full"
-                overlayClassName="bg-[linear-gradient(180deg,rgba(0,0,0,0.06),rgba(0,0,0,0.78))]"
-              />
-              <div className="absolute inset-x-0 bottom-0 px-5 pb-6 sm:px-6 md:px-8 md:pb-8">
-                <EditorialLabel>STHYRA</EditorialLabel>
-                <h1 className="mt-3 max-w-[13.2ch] text-[clamp(1.8rem,6.1vw,3.85rem)] font-semibold leading-[0.9] tracking-[-0.082em] text-[#f7f1e7]">
-                  Premium architectural visualization for unbuilt spaces.
-                </h1>
-                <p className="mt-4 max-w-[48ch] text-[0.84rem] leading-[1.65] tracking-[-0.014em] text-white/62 md:max-w-[56ch] md:text-[0.88rem]">
-                  Sthyra creates premium architectural visualization and digital spatial
-                  experiences for unbuilt spaces.
-                </p>
+    <div className={`${montserrat.variable} ${dmSans.variable} mobile-home overflow-x-hidden bg-black text-[#f7f1e7] lg:hidden`}>
+      <div ref={heroStackRef} className="relative z-0 h-[100svh] bg-black [--mobile-reveal-progress:0]">
+        <div className="sticky top-0 h-[100svh] overflow-hidden">
+          <MobileIntroHero />
+          <section
+            className="absolute inset-0 z-10 border-t border-white/10 bg-black shadow-[0_-28px_80px_rgba(0,0,0,0.34)] will-change-transform"
+            style={{
+              transform: "translate3d(0, calc((1 - var(--mobile-reveal-progress, 0)) * 100%), 0)",
+            }}
+          >
+            <div className="relative h-full overflow-hidden pb-0 pt-0">
+              <div
+                className={[
+                  "relative h-full overflow-hidden border-y border-white/10 transition-[transform,opacity] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  heroReady ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0",
+                ].join(" ")}
+              >
+                <HeroTileGrid baseUrl={BASEURL} />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.04),rgba(0,0,0,0.76))]" />
+                <div className="absolute inset-x-0 bottom-0 px-5 pb-6 sm:px-6 md:px-8 md:pb-8">
+                  <EditorialLabel>STHYRA</EditorialLabel>
+                  <h1 className="mt-3 max-w-[16.5ch] border-l border-white/30 pl-3 text-[clamp(1.85rem,6.1vw,4.1rem)] font-semibold leading-[0.9] tracking-[-0.078em] text-[#f7f1e7]">
+                    Premium architectural visualization for unbuilt spaces.
+                  </h1>
+                  <p className="mt-4 max-w-[60ch] text-[0.84rem] leading-[1.65] tracking-[-0.014em] text-white/62 md:max-w-[68ch] md:text-[0.9rem]">
+                    Sthyra creates premium architectural visualization and digital spatial
+                    experiences for unbuilt spaces.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-
-          <div
-            className={[
-              "mt-[10px] border border-black/10 bg-[#f4efe7] px-4 py-4 text-black transition-[transform,opacity] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] md:mt-3 md:px-5 md:py-5",
-              heroReady ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0",
-            ].join(" ")}
-            style={{ transitionDelay: "340ms" }}
-          >
-            <EditorialLabel light>Positioning</EditorialLabel>
-            <p className="mt-3 max-w-[20ch] text-[clamp(0.95rem,2.85vw,1.55rem)] font-semibold leading-[0.98] tracking-[-0.05em]">
-              Built to elevate how real estate is seen.
-            </p>
-          </div>
+          </section>
         </div>
-      </section>
+      </div>
 
-      <section className="bg-black px-4 py-10 sm:px-6 md:px-8 md:py-12">
+      {/* <div
+        className={[
+          "mt-0 border-y border-black/10 bg-[#f4efe7] px-5 py-5 text-black transition-[transform,opacity] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:px-6 md:px-8 md:py-6",
+          heroReady ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0",
+        ].join(" ")}
+        style={{ transitionDelay: "340ms" }}
+      >
+        <EditorialLabel light>Positioning</EditorialLabel>
+        <p className="mt-3 max-w-[28ch] border-l border-black/18 pl-3 text-[clamp(0.95rem,2.85vw,1.55rem)] font-semibold leading-[0.98] tracking-[-0.05em]">
+          Built to elevate how real estate is seen.
+        </p>
+      </div> */}
+
+      <section className="bg-black py-10 md:py-12">
         <SectionHeader
           eyebrow="Positioning"
           title="We bridge the gap between blueprint and reality."
         />
 
-        <div className="mt-6 grid border-t border-white/10 md:mt-8 md:grid-cols-2">
+        <div className="mx-4 mt-7 grid border-t border-white/[0.08] sm:mx-6 md:mx-8 md:mt-9 md:grid-cols-2">
           {MOBILE_INTRO_ITEMS.map((item, index) => (
             <div
               key={item.label}
               className={[
-                "py-5",
-                index !== MOBILE_INTRO_ITEMS.length - 1 ? "border-b border-white/10 md:border-b-0" : "",
-                index === 1 ? "md:border-l md:border-white/10 md:px-6" : "",
+                "mobile-section-reveal py-6 md:py-7",
+                index !== MOBILE_INTRO_ITEMS.length - 1 ? "border-b border-white/[0.08] md:border-b-0" : "",
+                index === 1 ? "md:border-l md:border-white/[0.08] md:px-6" : "",
                 index === 0 ? "md:pr-6" : "",
-                index === 2 ? "md:col-span-2 md:border-t md:border-white/10 md:pt-6" : "",
+                index === 2 ? "md:col-span-2 md:border-t md:border-white/[0.08] md:pt-7" : "",
               ]
                 .filter(Boolean)
                 .join(" ")}
+              style={{ animationDelay: `${260 + index * 120}ms` }}
             >
               <EditorialLabel>{item.label}</EditorialLabel>
-              <p className="mt-3 max-w-[42ch] text-[0.82rem] leading-[1.62] tracking-[-0.014em] text-white/60 md:text-[0.88rem]">
+              <p className="mt-4 max-w-[48ch] text-[0.95rem] leading-[1.62] tracking-[-0.012em] text-white/64 md:text-[1.05rem]">
                 {item.text}
               </p>
             </div>
@@ -733,163 +858,174 @@ export default function TiledComponentMobile({
         </div>
       </section>
 
-      <section className="bg-black px-4 py-10 sm:px-6 md:px-8 md:py-12">
+      <section className="bg-black py-12 md:py-16">
         <SectionHeader
           eyebrow="Transition"
           title="Friction exists in the imagination."
           text="Sculpting 3D into lived spaces."
         />
 
-        <div className="mt-6 grid grid-cols-3 gap-[1px] bg-white/10 md:mt-8 md:grid-cols-6">
-          {skylineTiles.map((tile, index) =>
-            tile.type === "image" && tile.src ? (
-              <div
-                key={`${tile.type}-${index}`}
-                className={[
-                  "bg-black",
-                  tile.span ?? "col-span-1 row-span-1",
-                  index === 1 ? "min-h-[14rem] md:min-h-[18rem]" : "min-h-[7.5rem] md:min-h-[8.5rem]",
-                ].join(" ")}
+        <div className="mx-4 mt-8 grid gap-3 sm:mx-6 md:mx-8 md:mt-10 md:gap-4">
+          <div className="grid gap-3 md:grid-cols-[1.42fr_1fr] md:items-stretch md:gap-4">
+            {transitionImages[0] ? (
+              <figure
+                className="mobile-section-reveal relative m-0 aspect-[0.86] overflow-hidden border border-white/[0.08] bg-[#070707] md:h-full md:min-h-[38rem] md:aspect-auto"
+                style={{ animationDelay: "120ms" }}
               >
-                <ImageTile
-                  src={tile.src}
-                  alt={tile.alt ?? "Architectural tile"}
-                  sizes="(max-width: 767px) 33vw, 16vw"
-                  className="h-full"
+                <Image
+                  src={transitionImages[0].src ?? ""}
+                  alt={transitionImages[0].alt ?? "Luxury architectural visualization"}
+                  fill
+                  unoptimized
+                  sizes="(max-width: 767px) 92vw, 58vw"
+                  className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
                 />
-              </div>
-            ) : (
-              <div
-                key={`${tile.type}-${index}`}
-                className={[
-                  "flex bg-[#f4efe7] px-4 py-4 text-black md:px-5 md:py-5",
-                  tile.span ?? "col-span-1 row-span-1",
-                ].join(" ")}
-              >
-                <div className="mt-auto space-y-3">
-                  <EditorialLabel light>Skyline</EditorialLabel>
-                  <h3 className="m-0 max-w-[10ch] text-[clamp(1.18rem,3.75vw,1.7rem)] font-semibold leading-[0.92] tracking-[-0.06em]">
-                    {tile.title}
-                  </h3>
-                  <p className="m-0 max-w-[30ch] text-[0.8rem] leading-[1.58] tracking-[-0.014em] text-black/66">
-                    {tile.text}
-                  </p>
-                </div>
-              </div>
-            ),
-          )}
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.18))]" />
+              </figure>
+            ) : null}
+
+            <div className="grid gap-3 md:grid-rows-2 md:gap-4">
+              {transitionImages.slice(1, 3).map((tile, index) => (
+                <figure
+                  key={`${tile.src}-${index + 1}`}
+                  className="mobile-section-reveal relative m-0 aspect-[1.28] overflow-hidden border border-white/[0.08] bg-[#070707] md:h-full md:aspect-auto"
+                  style={{ animationDelay: `${230 + index * 110}ms` }}
+                >
+                  <Image
+                    src={tile.src ?? ""}
+                    alt={tile.alt ?? "Luxury architectural visualization"}
+                    fill
+                    unoptimized
+                    sizes="(max-width: 767px) 92vw, 42vw"
+                    className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+                  />
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.18))]" />
+                </figure>
+              ))}
+            </div>
+          </div>
+
+          {transitionImages.slice(3, 4).map((tile, index) => (
+            <figure
+              key={`${tile.src}-${index + 3}`}
+              className="mobile-section-reveal relative m-0 aspect-[1.55] overflow-hidden border border-white/[0.08] bg-[#070707] md:aspect-[2.35]"
+              style={{ animationDelay: "460ms" }}
+            >
+              <Image
+                src={tile.src ?? ""}
+                alt={tile.alt ?? "Luxury architectural visualization"}
+                fill
+                unoptimized
+                sizes="(max-width: 767px) 92vw, 92vw"
+                className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+              />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.18))]" />
+            </figure>
+          ))}
         </div>
       </section>
 
-      <section id="services-mobile" className="bg-black px-4 py-10 sm:px-6 md:px-8 md:py-12">
+      <section id="services-mobile" className="bg-black py-10 md:py-12">
         <SectionHeader
           eyebrow="Services"
           title="Luxury-ready systems for unbuilt spaces."
           text="The same service logic as desktop, re-shaped into a sharper editorial flow for mobile and tablet."
         />
 
-        <div className="mt-6 grid md:mt-8">
-          {MOBILE_SERVICES.map((service) => (
-            <ServiceModule key={service.id} service={service} />
+        <div
+          aria-label="Services carousel"
+          className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-3 [-ms-overflow-style:none] [scrollbar-width:none] sm:scroll-px-6 sm:px-6 md:mt-10 md:gap-5 md:scroll-px-8 md:px-8 [&::-webkit-scrollbar]:hidden"
+        >
+          {MOBILE_SERVICES.map((service, index) => (
+            <ServiceCarouselCard key={service.id} service={service} index={index} />
           ))}
         </div>
       </section>
 
       <ProjectMapSection projectCoordinates={PROJECT_COORDINATES} />
 
-      <section id="reasons-mobile" className="bg-black px-4 py-10 sm:px-6 md:px-8 md:py-12">
+      <section id="reasons-mobile" className="bg-black py-10 md:py-12">
         <SectionHeader eyebrow="Reasons" title="Why this visual language sells better." />
-        <div className="mt-6 md:mt-8">
-          <ReasonCarousel reasons={MOBILE_REASONS} />
-        </div>
+        <ReasonRows reasons={MOBILE_REASONS} />
       </section>
 
-      <section className="bg-black px-4 py-10 sm:px-6 md:px-8 md:py-12">
+      <section className="bg-black py-12 md:py-16">
         <SectionHeader eyebrow="Impact" title="Numbers that signal movement." />
-        <div className="mt-6 border-t border-white/10 md:mt-8 md:grid md:grid-cols-3 md:gap-8">
+        <div className="mx-4 mt-8 grid gap-3 border-t border-white/[0.08] pt-3 sm:mx-6 md:mx-8 md:mt-10 md:grid-cols-3 md:gap-4 md:pt-4">
           {MOBILE_STATS.map((stat, index) => (
-            <div
+            <article
               key={stat.value}
-              className={[
-                "py-5",
-                index !== MOBILE_STATS.length - 1 ? "border-b border-white/10 md:border-b-0 md:border-r md:border-white/10 md:pr-8" : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
+              className="mobile-section-reveal relative min-h-[13rem] overflow-hidden border border-white/[0.08] bg-[#050505] px-5 py-5 md:min-h-[16rem] md:px-6 md:py-6"
+              style={{ animationDelay: `${index * 110}ms` }}
             >
-              <p className="m-0 text-[clamp(2.25rem,7.8vw,3.9rem)] font-semibold leading-[0.88] tracking-[-0.08em] text-[#f7f1e7]">
-                {stat.value}
+              <div className="absolute inset-x-5 top-5 h-px bg-white/[0.08] md:inset-x-6" />
+              <p className="m-0 pt-7 text-[0.62rem] font-semibold uppercase tracking-[0.28em] text-white/34">
+                {`Impact 0${index + 1}`}
               </p>
-              <p className="mt-2 max-w-[20ch] text-[0.82rem] leading-[1.58] tracking-[-0.014em] text-white/60">
+              <p className="mt-7 text-[clamp(3.2rem,16vw,6.5rem)] font-semibold leading-[0.82] tracking-[-0.075em] text-[#f7f1e7] md:text-[clamp(4.4rem,8vw,7.4rem)]">
+                <CountUpNumber value={stat.value} />
+              </p>
+              <p className="mt-4 max-w-[24ch] text-[0.9rem] leading-[1.5] tracking-[-0.014em] text-white/60 md:text-[0.96rem]">
                 {stat.label}
               </p>
-            </div>
+            </article>
           ))}
         </div>
       </section>
 
-      <section className="bg-black px-4 py-10 sm:px-6 md:px-8 md:py-12">
+      <section className="bg-black py-12 md:py-16">
         <SectionHeader
           eyebrow="Final Positioning"
           title="Your product deserves the right stage. Let’s design it together."
         />
 
-        <div className="mt-6 grid gap-[1px] bg-white/10 md:mt-8 md:grid-cols-[1.1fr_0.9fr]">
-          <div className="bg-[#f4efe7] px-4 py-5 text-black md:px-6 md:py-6">
-            <EditorialLabel light>What we will cover</EditorialLabel>
-            <div className="mt-4 grid gap-3">
+        <div className="mx-4 mt-8 overflow-hidden border border-white/[0.08] bg-[#050505] sm:mx-6 md:mx-8 md:mt-10">
+          <div className="grid md:grid-cols-[1.08fr_0.92fr]">
+            <div className="bg-[#f4efe7] px-5 py-6 text-black md:px-7 md:py-8">
+              <EditorialLabel light>What we will shape</EditorialLabel>
+              <h3 className="mt-7 max-w-[12ch] text-[clamp(2rem,8.4vw,4.2rem)] font-semibold leading-[0.88] tracking-[-0.07em] md:text-[clamp(3rem,5vw,5.2rem)]">
+                A sharper sales stage for your project.
+              </h3>
+              <div className="mt-8 grid border-t border-black/12">
               {[
                 "Project visual strategy",
                 "Interactive sales journey",
                 "Cinematic launch content",
                 "Spatial storytelling system",
-              ].map((item) => (
+              ].map((item, index) => (
                 <p
                   key={item}
-                  className="m-0 border-t border-black/10 pt-3 text-[0.82rem] leading-[1.55] tracking-[-0.014em] text-black/74"
+                  className="m-0 flex items-center justify-between gap-4 border-b border-black/12 py-3.5 text-[0.86rem] leading-[1.5] tracking-[-0.014em] text-black/70 md:text-[0.95rem]"
                 >
-                  {item}
+                  <span>{item}</span>
+                  <span className="text-[0.58rem] font-semibold uppercase tracking-[0.22em] text-black/34">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
                 </p>
               ))}
+              </div>
             </div>
-          </div>
 
-          <a
-            href="mailto:info@sthyra.com?subject=Project%20Inquiry"
-            className="group flex min-h-[14rem] flex-col justify-between bg-black px-4 py-5 text-[#f7f1e7] transition-colors duration-300 hover:bg-[#090909] md:px-6 md:py-6"
-          >
-            <div className="ml-auto h-10 w-10 overflow-hidden">
-              <ArrowIcon className="h-10 w-10 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-3 group-hover:-translate-y-3" />
-            </div>
-            <div>
-              <EditorialLabel>CTA</EditorialLabel>
-              <h3 className="mt-4 max-w-[7ch] text-[clamp(1.65rem,5.25vw,2.85rem)] font-semibold leading-[0.88] tracking-[-0.08em]">
-                LET’S DO THIS
-              </h3>
-            </div>
-          </a>
-        </div>
-      </section>
-
-      <section className="bg-black px-4 py-10 sm:px-6 md:px-8 md:py-12">
-        <SectionHeader eyebrow="Journal" title="Editorial notes from the visual side of real estate." />
-        <div className="mt-6 grid gap-5 md:mt-8 md:grid-cols-3">
-          {MOBILE_JOURNAL.map((item) => (
-            <article key={item.title} className="grid gap-3 border-t border-white/10 pt-4">
-              <ImageTile
-                src={item.imageSrc}
-                alt={item.imageAlt}
-                sizes="(max-width: 767px) 100vw, 33vw"
-                className="h-[13rem] md:h-[12rem]"
-              />
-              <div className="space-y-2">
-                <EditorialLabel>{item.category}</EditorialLabel>
-                <h3 className="m-0 max-w-[14ch] text-[0.95rem] font-semibold leading-[1.02] tracking-[-0.04em] text-[#f7f1e7]">
-                  {item.title}
+            <a
+              href="mailto:info@sthyra.com?subject=Project%20Inquiry"
+              className="group flex min-h-[19rem] flex-col justify-between border-t border-white/[0.08] px-5 py-6 text-[#f7f1e7] transition-colors duration-300 hover:bg-white/[0.035] md:min-h-0 md:border-l md:border-t-0 md:px-7 md:py-8"
+            >
+              <div className="flex items-start justify-between gap-5">
+                <EditorialLabel>Private briefing</EditorialLabel>
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-white/14 transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1">
+                  <ArrowIcon className="h-6 w-6" />
+                </span>
+              </div>
+              <div>
+                <p className="m-0 max-w-[28ch] text-[0.95rem] leading-[1.6] tracking-[-0.014em] text-white/58">
+                  Bring the brief, the site, or the ambition. We’ll define the visual system that makes it feel inevitable.
+                </p>
+                <h3 className="mt-8 max-w-[8ch] text-[clamp(2.2rem,9vw,4.7rem)] font-semibold uppercase leading-[0.84] tracking-[-0.072em]">
+                  LET’S DO THIS
                 </h3>
               </div>
-            </article>
-          ))}
+            </a>
+          </div>
         </div>
       </section>
 

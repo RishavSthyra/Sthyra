@@ -1,4 +1,4 @@
-import AsciiWordHero from "@/components/ascii-word-hero/AsciiWordHero";
+import DesktopAsciiHero from "@/components/DesktopAsciiHero";
 import CreateImageFromTiles from "@/components/TiledComponent";
 import StaggeredMenu from "@/components/ui/StaggeredMenu";
 import AIChatbot from "@/components/AIChatbot";
@@ -33,7 +33,7 @@ export default function Home() {
       accentColor="#ffffff"
       isFixed
      />
-     <AsciiWordHero nextSection={<div className="hidden" aria-hidden="true" />} />
+     <DesktopAsciiHero />
      <CreateImageFromTiles
       BASEURL="/villa_tiles_32"
       SECONDARY_BASEURL="/SKYLINE_tiles_32"
