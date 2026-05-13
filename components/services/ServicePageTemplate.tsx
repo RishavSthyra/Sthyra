@@ -250,12 +250,12 @@ export default function ServicePageTemplate({ service }: ServicePageTemplateProp
             </h2>
           </div>
           <Link
-            href={`mailto:hello@sthyra.com?subject=${encodeURIComponent(
+            href={`mailto:info@sthyra.com?subject=${encodeURIComponent(
               service.contactSubject ?? service.hero.eyebrow,
             )}`}
             className="w-fit rounded-full border border-black/14 bg-black px-5 py-3 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-white transition-colors hover:bg-black/78"
           >
-            hello@sthyra.com
+            info@sthyra.com
           </Link>
         </div>
       </section>

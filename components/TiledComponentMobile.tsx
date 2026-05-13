@@ -282,7 +282,7 @@ const MOBILE_FOOTER_LINKS = [
   { label: "Home", href: "/" },
   { label: "Services", href: "#services-mobile" },
   { label: "Reasons", href: "#reasons-mobile" },
-  { label: "Contact", href: "mailto:hello@sthyra.com" },
+  { label: "Contact", href: "mailto:info@sthyra.com" },
 ];
 
 const MOBILE_SOCIAL_LINKS = [
@@ -374,7 +374,7 @@ function ServiceModule({ service }: { service: ServiceItem }) {
   if (service.layout === "cta") {
     return (
       <a
-        href="mailto:hello@sthyra.com?subject=Project%20Inquiry"
+        href="mailto:info@sthyra.com?subject=Project%20Inquiry"
         className="group grid min-h-[18rem] border-t border-b border-white/10 bg-[#f4efe7] px-4 py-5 text-black transition-colors duration-300 hover:bg-white sm:px-6 md:min-h-[20rem]"
       >
         <div className="flex items-start justify-between gap-4">
@@ -566,7 +566,7 @@ function Footer() {
           </div>
 
           <a
-            href="mailto:hello@sthyra.com?subject=Project%20Inquiry"
+            href="mailto:info@sthyra.com?subject=Project%20Inquiry"
             className="group border-b border-white/10 bg-[#f4efe7] px-4 py-6 text-black transition-colors duration-300 hover:bg-white sm:px-6 md:px-8"
           >
             <div className="flex items-start justify-between gap-4">
@@ -627,7 +627,7 @@ function Footer() {
 
         <div className="flex flex-col gap-2 px-4 py-5 text-[0.86rem] tracking-[-0.01em] text-white/56 sm:px-6 md:flex-row md:items-center md:justify-between md:px-8">
           <p className="m-0">©2026 Sthyra</p>
-          <p className="m-0">hello@sthyra.com</p>
+          <p className="m-0">info@sthyra.com</p>
           <p className="m-0">Bangalore, India</p>
         </div>
       </div>
@@ -855,7 +855,7 @@ export default function TiledComponentMobile({
           </div>
 
           <a
-            href="mailto:hello@sthyra.com?subject=Project%20Inquiry"
+            href="mailto:info@sthyra.com?subject=Project%20Inquiry"
             className="group flex min-h-[14rem] flex-col justify-between bg-black px-4 py-5 text-[#f7f1e7] transition-colors duration-300 hover:bg-[#090909] md:px-6 md:py-6"
           >
             <div className="ml-auto h-10 w-10 overflow-hidden">

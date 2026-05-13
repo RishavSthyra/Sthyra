@@ -2895,10 +2895,10 @@ export default function CreateImageFromTiles({
               <p className="m-0">Bangalore, India</p>
             </div>
             <a
-              href="mailto:hello@sthyra.com"
+              href="mailto:info@sthyra.com"
               className="text-[clamp(0.86rem,0.95vw,1.05rem)] font-semibold tracking-[-0.03em] text-white transition-colors duration-300 hover:text-white/72"
             >
-              hello@sthyra.com
+              info@sthyra.com
             </a>
           </div>
 
@@ -2943,7 +2943,7 @@ export default function CreateImageFromTiles({
           <div className="min-h-[12rem] border-b border-r border-white/10 bg-black" aria-hidden="true" />
 
           <a
-            href="mailto:hello@sthyra.com?subject=Project%20Inquiry"
+            href="mailto:info@sthyra.com?subject=Project%20Inquiry"
             className="group/start-project relative flex min-h-[16rem] flex-col justify-between border-b border-r border-white/10 bg-white px-8 py-10 text-black transition-colors duration-300 hover:bg-[#f5eee1] md:px-10 xl:px-11 xl:py-12"
           >
             <div className="relative ml-auto h-12 w-12 overflow-hidden">

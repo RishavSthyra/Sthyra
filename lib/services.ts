@@ -681,7 +681,7 @@ export const SERVICE_PAGES: ServicePageData[] = [
       {
         label: "Exterior Render",
         title: "Photoreal exteriors shaped for launches and campaigns.",
-        imageSrc: "/Cinematic_Image_1.avif",
+        imageSrc: "/ultrarender1.avif",
         imageAlt: "Ultra-real exterior real estate render placeholder",
       },
       {
@@ -699,7 +699,7 @@ export const SERVICE_PAGES: ServicePageData[] = [
       {
         label: "Campaign Visual",
         title: "High-resolution renders ready for web, print, and outdoor.",
-        imageSrc: "/images_last_frame.jpg",
+        imageSrc: "/ultrarender2.avif",
         imageAlt: "Real estate marketing render campaign placeholder",
       },
     ],

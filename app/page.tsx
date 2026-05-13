@@ -1,6 +1,7 @@
 import AsciiWordHero from "@/components/ascii-word-hero/AsciiWordHero";
 import CreateImageFromTiles from "@/components/TiledComponent";
 import StaggeredMenu from "@/components/ui/StaggeredMenu";
+import AIChatbot from "@/components/AIChatbot";
 
 const menuItems = [
   { label: "Home", ariaLabel: "Go to home page", link: "/" },
@@ -41,6 +42,7 @@ export default function Home() {
       TILE_HEIGHT={768}
       TILE_WIDTH={768}
      />
+     <AIChatbot />
     </main>
   );
 }
