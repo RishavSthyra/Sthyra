@@ -86,6 +86,7 @@ export default function ProjectMapSection({
     [],
   );
   const [activeProjectId, setActiveProjectId] = useState(projectLocations[0]?.id ?? "");
+  const [expandedProjectId, setExpandedProjectId] = useState(projectLocations[0]?.id ?? "");
   activeProjectIdRef.current = activeProjectId;
 
   const setActiveProject = useCallback((projectId: string) => {
@@ -219,6 +220,7 @@ export default function ProjectMapSection({
 
   const selectProject = useCallback(
     (project: ProjectLocation) => {
+      setExpandedProjectId(project.id);
       setActiveProject(project.id);
       snapToMap();
       flyToProject(project);
@@ -230,6 +232,11 @@ export default function ProjectMapSection({
 
   useEffect(() => {
     setActiveProjectId((current) =>
+      projectLocations.some((project) => project.id === current)
+        ? current
+        : projectLocations[0]?.id ?? "",
+    );
+    setExpandedProjectId((current) =>
       projectLocations.some((project) => project.id === current)
         ? current
         : projectLocations[0]?.id ?? "",
@@ -705,12 +712,14 @@ export default function ProjectMapSection({
           <div className="absolute right-4 top-[42%] z-[80] flex w-[27rem] -translate-y-1/2 flex-col items-end gap-3.5 overflow-visible md:right-8">
             {projectLocations.map((project, index) => {
               const isActive = activeProjectId === project.id;
+              const isExpanded = expandedProjectId === project.id;
 
               return (
                 <div key={project.id} className="relative h-[9.2rem] w-full overflow-visible">
                   <div
                     className={[
-                      "group/project-tab absolute right-0 top-0 h-full w-[8.4rem] overflow-hidden rounded-[1.35rem] border bg-black shadow-[0_26px_90px_rgba(0,0,0,0.5)] transition-[width,border-color,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:w-full focus-within:w-full",
+                      "group/project-tab absolute right-0 top-0 h-full overflow-hidden rounded-[1.35rem] border bg-black shadow-[0_26px_90px_rgba(0,0,0,0.5)] transition-[width,border-color,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:w-full focus-within:w-full",
+                      isExpanded ? "w-full" : "w-[8.4rem]",
                       isActive
                         ? "border-white/24 bg-black/92 text-white"
                         : "border-white/10 bg-black/88 text-white/72 hover:border-white/22 hover:bg-black/94 hover:text-white",
@@ -720,11 +729,16 @@ export default function ProjectMapSection({
                       <button
                         type="button"
                         onClick={() => selectProject(project)}
+                        onFocus={() => setExpandedProjectId(project.id)}
                         className="relative h-full overflow-hidden text-left"
                         aria-label={`Go to ${project.name}`}
+                        aria-expanded={isExpanded}
                       >
                         <span
-                          className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover/project-tab:-translate-x-4 group-focus-within/project-tab:-translate-x-4"
+                          className={[
+                            "absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover/project-tab:-translate-x-4 group-focus-within/project-tab:-translate-x-4",
+                            isExpanded ? "-translate-x-4" : "",
+                          ].join(" ")}
                           style={{ backgroundImage: `url(${project.imageSrc})` }}
                           aria-hidden="true"
                         />
@@ -733,7 +747,12 @@ export default function ProjectMapSection({
                           aria-hidden="true"
                         />
                     </button>
-                      <div className="pointer-events-none grid h-full content-between gap-2.5 bg-[linear-gradient(145deg,rgba(9,10,12,0.94),rgba(0,0,0,0.86))] px-4 py-3 opacity-0 backdrop-blur-xl transition-opacity duration-300 group-hover/project-tab:pointer-events-auto group-hover/project-tab:opacity-100 group-focus-within/project-tab:pointer-events-auto group-focus-within/project-tab:opacity-100">
+                      <div
+                        className={[
+                          "grid h-full content-between gap-2.5 bg-[linear-gradient(145deg,rgba(9,10,12,0.94),rgba(0,0,0,0.86))] px-4 py-3 backdrop-blur-xl transition-opacity duration-300 group-hover/project-tab:pointer-events-auto group-hover/project-tab:opacity-100 group-focus-within/project-tab:pointer-events-auto group-focus-within/project-tab:opacity-100",
+                          isExpanded ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+                        ].join(" ")}
+                      >
                         <div className="grid gap-2">
                           <div className="flex items-center justify-between gap-3">
                             <span className="text-[0.56rem] font-semibold uppercase tracking-[0.24em] text-white/36">
@@ -754,6 +773,7 @@ export default function ProjectMapSection({
                           <button
                             type="button"
                             onClick={() => selectProject(project)}
+                            onFocus={() => setExpandedProjectId(project.id)}
                             className="w-fit text-[0.56rem] font-semibold uppercase tracking-[0.18em] text-white/50 transition-colors hover:text-white"
                           >
                             Go to point

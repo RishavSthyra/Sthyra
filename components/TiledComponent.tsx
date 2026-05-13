@@ -2564,7 +2564,7 @@ export default function CreateImageFromTiles({
                         style={style}
                       >
                         <Image
-                          src={`/vr/tile_${row}_${col}.jpg`}
+                          src={`/interior_tiles/interior_tile_${row}_${col}.jpg`}
                           alt=""
                           width={TILE_WIDTH}
                           height={TILE_HEIGHT}

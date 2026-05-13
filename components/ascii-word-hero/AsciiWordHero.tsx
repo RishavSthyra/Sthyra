@@ -25,6 +25,7 @@ type AsciiWordHeroProps = {
   config?: Partial<AsciiWordHeroConfig>;
   nextSection?: ReactNode;
   modelUrl?: string;
+  onReady?: () => void;
 };
 
 type Size = {
@@ -361,6 +362,7 @@ export default function AsciiWordHero({
   config,
   nextSection,
   modelUrl = "/models/sTHYRALOGO2.glb",
+  onReady,
 }: AsciiWordHeroProps) {
   const mergedConfig = useMemo(() => mergeConfig(config), [config]);
   const characters = useMemo(
@@ -370,6 +372,7 @@ export default function AsciiWordHero({
   const sectionRef = useRef<HTMLElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const readyReportedRef = useRef(false);
   const pointerRef = useRef<PointerState>({ x: 0, y: 0, active: false });
   const scrollProgressRef = useRef(0);
   const sceneMetricsRef = useRef<SceneMetrics>({
@@ -706,6 +709,11 @@ export default function AsciiWordHero({
       context.shadowBlur = 0;
 
       if (breakProgress >= responsiveConfig.scrollClearThreshold) {
+        if (!readyReportedRef.current) {
+          readyReportedRef.current = true;
+          onReady?.();
+        }
+
         animationFrame = window.requestAnimationFrame(draw);
         return;
       }
@@ -992,6 +1000,12 @@ export default function AsciiWordHero({
       }
 
       context.globalAlpha = 1;
+
+      if (!readyReportedRef.current) {
+        readyReportedRef.current = true;
+        onReady?.();
+      }
+
       animationFrame = window.requestAnimationFrame(draw);
     };
 
@@ -1000,7 +1014,7 @@ export default function AsciiWordHero({
     return () => {
       window.cancelAnimationFrame(animationFrame);
     };
-  }, [characters, field, reducedMotion, responsiveConfig, size, word]);
+  }, [characters, field, onReady, reducedMotion, responsiveConfig, size, word]);
 
   return (
     <section
