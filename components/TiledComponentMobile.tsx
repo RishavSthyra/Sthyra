@@ -263,7 +263,7 @@ const MOBILE_FOOTER_LINKS = [
   { label: "Home", href: "/" },
   { label: "Services", href: "#services-mobile" },
   { label: "Reasons", href: "#reasons-mobile" },
-  { label: "Contact", href: "mailto:info@sthyra.com" },
+  { label: "Contact", href: "https://wa.me/+91-7075747159" },
 ];
 
 const MOBILE_SOCIAL_LINKS = [
@@ -410,7 +410,7 @@ function MobileIntroHero() {
 function ServiceCarouselCard({ service, index }: { service: ServiceItem; index: number }) {
   const isCta = service.layout === "cta";
   const cardTone = isCta ? "bg-[#f4efe7] text-black" : "bg-[#050505] text-[#f7f1e7]";
-  const href = isCta ? "mailto:info@sthyra.com?subject=Project%20Inquiry" : service.href ?? "#";
+  const href = isCta ? "https://wa.me/+91-7075747159" : service.href ?? "#";
 
   return (
     <Link
@@ -659,7 +659,7 @@ function Footer() {
           </div>
 
           <a
-            href="mailto:info@sthyra.com?subject=Project%20Inquiry"
+            href="https://wa.me/+91-7075747159"
             className="group border-b border-white/10 bg-[#f4efe7] px-4 py-6 text-black transition-colors duration-300 hover:bg-white sm:px-6 md:px-8"
           >
             <div className="flex items-start justify-between gap-4">
@@ -1009,7 +1009,7 @@ export default function TiledComponentMobile({
             </div>
 
             <a
-              href="mailto:info@sthyra.com?subject=Project%20Inquiry"
+              href="https://wa.me/+91-7075747159"
               className="group flex min-h-[19rem] flex-col justify-between border-t border-white/[0.08] px-5 py-6 text-[#f7f1e7] transition-colors duration-300 hover:bg-white/[0.035] md:min-h-0 md:border-l md:border-t-0 md:px-7 md:py-8"
             >
               <div className="flex items-start justify-between gap-5">

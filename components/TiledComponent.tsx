@@ -3031,10 +3031,10 @@ export default function CreateImageFromTiles({
               <p className="m-0">Bangalore, India</p>
             </div>
             <a
-              href="mailto:info@sthyra.com"
+              href="https://wa.me/+91-7075747159"
               className="text-[clamp(0.86rem,0.95vw,1.05rem)] font-semibold tracking-[-0.03em] text-white transition-colors duration-300 hover:text-white/72"
             >
-              info@sthyra.com
+              Whatsapp
             </a>
           </div>
 
@@ -3079,7 +3079,7 @@ export default function CreateImageFromTiles({
           <div className="min-h-[12rem] border-b border-r border-white/10 bg-black" aria-hidden="true" />
 
           <a
-            href="mailto:info@sthyra.com?subject=Project%20Inquiry"
+            href="https://wa.me/+91-7075747159"
             className="group/start-project relative flex min-h-[16rem] flex-col justify-between border-b border-r border-white/10 bg-white px-8 py-10 text-black transition-colors duration-300 hover:bg-[#f5eee1] md:px-10 xl:px-11 xl:py-12"
           >
             <div className="relative ml-auto h-12 w-12 overflow-hidden">

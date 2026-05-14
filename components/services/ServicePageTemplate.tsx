@@ -253,12 +253,10 @@ export default function ServicePageTemplate({ service }: ServicePageTemplateProp
             </h2>
           </div>
           <Link
-            href={`mailto:info@sthyra.com?subject=${encodeURIComponent(
-              service.contactSubject ?? service.hero.eyebrow,
-            )}`}
+            href={`https://wa.me/+91-7075747159}`}
             className="w-fit rounded-full border border-black/14 bg-black px-5 py-3 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-white transition-colors hover:bg-black/78"
           >
-            info@sthyra.com
+            Whatsapp
           </Link>
         </div>
       </section>
