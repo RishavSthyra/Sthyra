@@ -577,6 +577,7 @@ export default function CreateImageFromTiles({
   const hoverTileWaveRef = useRef<gsap.core.Tween | null>(null);
   const hoverTileClearRef = useRef<number | null>(null);
   const visibleHoverServiceIdRef = useRef<string | null>(null);
+  const hoverRunRef = useRef(0);
   const hoverPreloadStartedRef = useRef(false);
   const hoverPreloadTimerRef = useRef<number | null>(null);
   const hoverIdleCallbackRef = useRef<number | null>(null);
@@ -585,6 +586,7 @@ export default function CreateImageFromTiles({
   const scrollRefreshFrameRef = useRef<number | null>(null);
   const mountedHoverServiceIdsRef = useRef(new Set<string>());
   const hoverTileCacheRef = useRef(new Map<string, HTMLElement[]>());
+  const hoverLayerCacheRef = useRef(new Map<string, HTMLElement>());
   const hoverOriginRef = useRef({ x: 0.5, y: 0.5 });
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
   const [hoveredServiceId, setHoveredServiceId] = useState<string | null>(null);
@@ -710,6 +712,42 @@ export default function CreateImageFromTiles({
     return tiles;
   }, []);
 
+  const getHoverLayerForService = useCallback((serviceId: string) => {
+    const cached = hoverLayerCacheRef.current.get(serviceId);
+
+    if (cached) {
+      return cached;
+    }
+
+    const sequence = apartmentSequenceRef.current;
+
+    if (!sequence) {
+      return null;
+    }
+
+    const layer = sequence.querySelector<HTMLElement>(
+      `[data-hover-service-layer="${serviceId}"]`,
+    );
+
+    if (layer) {
+      hoverLayerCacheRef.current.set(serviceId, layer);
+    }
+
+    return layer;
+  }, []);
+
+  const getAllHoverLayers = useCallback(() => {
+    const sequence = apartmentSequenceRef.current;
+
+    if (!sequence) {
+      return [] as HTMLElement[];
+    }
+
+    return gsap.utils.toArray<HTMLElement>(
+      sequence.querySelectorAll(".service-hover-layer"),
+    );
+  }, []);
+
   useLayoutEffect(() => {
     if (!apartmentSequenceRef.current) {
       return;
@@ -717,36 +755,33 @@ export default function CreateImageFromTiles({
 
     mountedHoverServices.forEach((service) => {
       hoverTileCacheRef.current.delete(service.id);
+      hoverLayerCacheRef.current.delete(service.id);
       getHoverTilesForService(service.id);
+      getHoverLayerForService(service.id);
     });
-  }, [getHoverTilesForService, mountedHoverServices]);
+  }, [getHoverLayerForService, getHoverTilesForService, mountedHoverServices]);
 
   const hideHoverTilesExcept = useCallback((serviceId: string | null) => {
-    const tileGroups = Array.from(hoverTileCacheRef.current.entries());
-    let tiles = tileGroups
-      .filter(([id]) => id !== serviceId)
-      .flatMap(([, groupTiles]) => groupTiles);
+    const layers = getAllHoverLayers().filter(
+      (layer) => !serviceId || layer.dataset.hoverServiceLayer !== serviceId,
+    );
 
-    if (tiles.length === 0) {
-      const sequence = apartmentSequenceRef.current;
-
-      if (!sequence) {
-        return;
-      }
-
-      const selector = serviceId
-        ? `.service-hover-tile:not([data-hover-service="${serviceId}"])`
-        : ".service-hover-tile";
-      tiles = gsap.utils.toArray<HTMLElement>(sequence.querySelectorAll(selector));
-    }
-
-    if (tiles.length === 0) {
+    if (layers.length === 0) {
       return;
     }
 
-    gsap.killTweensOf(tiles);
-    gsap.set(tiles, { opacity: 0 });
-  }, []);
+    gsap.killTweensOf(layers);
+    gsap.set(layers, { opacity: 0 });
+
+    const hiddenTiles = layers.flatMap((layer) =>
+      gsap.utils.toArray<HTMLElement>(layer.querySelectorAll(".service-hover-tile")),
+    );
+
+    if (hiddenTiles.length > 0) {
+      gsap.killTweensOf(hiddenTiles);
+      gsap.set(hiddenTiles, { opacity: 0 });
+    }
+  }, [getAllHoverLayers]);
 
   const ensureHoverServiceMounted = useCallback((serviceId: string) => {
     if (mountedHoverServiceIdsRef.current.has(serviceId)) {
@@ -807,20 +842,46 @@ export default function CreateImageFromTiles({
     warmNextService();
   }, [ensureHoverServiceMounted]);
 
-  const animateHoverTiles = useCallback((mode: "in" | "out", serviceId: string) => {
-    const tiles = getHoverTilesForService(serviceId);
+  const animateHoverTiles = useCallback((
+    mode: "in" | "out",
+    serviceId: string,
+    runId = hoverRunRef.current,
+  ) => {
+    const layer = getHoverLayerForService(serviceId);
 
-    if (tiles.length === 0) {
+    if (!layer) {
       return;
     }
 
+    const tiles = getHoverTilesForService(serviceId);
+
+    gsap.killTweensOf(layer);
     gsap.killTweensOf(tiles);
     hoverTileWaveRef.current?.kill();
 
+    if (mode === "out") {
+      hoverTileWaveRef.current = gsap.to(layer, {
+        opacity: 0,
+        duration: 0.16,
+        ease: "power2.inOut",
+        overwrite: true,
+        onComplete: () => {
+          if (runId === hoverRunRef.current) {
+            gsap.set([layer, ...tiles], { opacity: 0 });
+          }
+        },
+      });
+
+      return;
+    }
+
+    gsap.set(layer, { opacity: 1 });
+    gsap.set(tiles, { opacity: 0 });
+
     hoverTileWaveRef.current = gsap.to(tiles, {
-      opacity: mode === "in" ? 1 : 0,
-      duration: mode === "in" ? 0.56 : 0.42,
-      ease: mode === "in" ? "power2.out" : "power2.inOut",
+      opacity: 1,
+      duration: 0.5,
+      ease: "power2.out",
       delay: (index, target) => {
         const element = target as HTMLElement;
         const row = Number(element.dataset.hoverRow ?? 0);
@@ -829,11 +890,17 @@ export default function CreateImageFromTiles({
         const originY = hoverOriginRef.current.y * Math.max(NO_OF_ROWS - 1, 1);
         const distance = Math.hypot(col - originX, row - originY);
 
-        return distance * 0.045;
+        return distance * 0.038;
       },
       overwrite: true,
+      onComplete: () => {
+        if (runId !== hoverRunRef.current) {
+          gsap.set(layer, { opacity: 0 });
+          gsap.set(tiles, { opacity: 0 });
+        }
+      },
     });
-  }, [NO_OF_COLUMNS, NO_OF_ROWS, getHoverTilesForService]);
+  }, [NO_OF_COLUMNS, NO_OF_ROWS, getHoverLayerForService, getHoverTilesForService]);
 
   const handleServiceHoverEnter = useCallback((
     box: ApartmentBox,
@@ -850,6 +917,14 @@ export default function CreateImageFromTiles({
       hoverTileClearRef.current = null;
     }
 
+    if (hoverAnimationFrameRef.current !== null) {
+      window.cancelAnimationFrame(hoverAnimationFrameRef.current);
+      hoverAnimationFrameRef.current = null;
+    }
+
+    hoverRunRef.current += 1;
+    const runId = hoverRunRef.current;
+
     const bounds = apartmentSequenceRef.current?.getBoundingClientRect();
 
     if (bounds) {
@@ -859,21 +934,17 @@ export default function CreateImageFromTiles({
       };
     }
 
-    if (visibleHoverServiceIdRef.current !== box.id) {
-      hideHoverTilesExcept(box.id);
-      visibleHoverServiceIdRef.current = box.id;
-    }
+    hideHoverTilesExcept(box.id);
+    visibleHoverServiceIdRef.current = box.id;
 
     setHoveredServiceId((current) => (current === box.id ? current : box.id));
-
-    if (hoverAnimationFrameRef.current !== null) {
-      window.cancelAnimationFrame(hoverAnimationFrameRef.current);
-    }
 
     hoverAnimationFrameRef.current = window.requestAnimationFrame(() => {
       hoverAnimationFrameRef.current = window.requestAnimationFrame(() => {
         hoverAnimationFrameRef.current = null;
-        animateHoverTiles("in", box.id);
+        if (runId === hoverRunRef.current) {
+          animateHoverTiles("in", box.id, runId);
+        }
       });
     });
   }, [animateHoverTiles, ensureHoverServiceMounted, hideHoverTilesExcept]);
@@ -897,7 +968,15 @@ export default function CreateImageFromTiles({
       return;
     }
 
-    animateHoverTiles("out", box.id);
+    if (hoverAnimationFrameRef.current !== null) {
+      window.cancelAnimationFrame(hoverAnimationFrameRef.current);
+      hoverAnimationFrameRef.current = null;
+    }
+
+    hoverRunRef.current += 1;
+    const runId = hoverRunRef.current;
+
+    animateHoverTiles("out", box.id, runId);
 
     hoverTileClearRef.current = window.setTimeout(() => {
       if (visibleHoverServiceIdRef.current === box.id) {
@@ -1023,11 +1102,29 @@ export default function CreateImageFromTiles({
     registerScrollTrigger();
     const introOffset = 2.7;
     const at = (time: number) => time + introOffset;
+    const cardContentRevealStart = at(0.92);
+    const cardContentRevealDuration = 0.34;
+    const cardContentRevealStagger = 0.18;
+    const cardRevealExitStart = at(1.28);
+    const cardRevealExitDuration = 0.9;
+    const cardRevealExitStagger = 0.14;
+    const cardContentFullyVisibleAt =
+      cardContentRevealStart +
+      cardContentRevealDuration +
+      (TEXT_CARDS.length - 1) * cardContentRevealStagger;
+    const cardRevealFullyClearAt =
+      cardRevealExitStart +
+      cardRevealExitDuration +
+      (TEXT_CARDS.length - 1) * cardRevealExitStagger;
+    const cardFullyVisibleAt = Math.max(cardContentFullyVisibleAt, cardRevealFullyClearAt);
+    const cardToSkylineTransitionStart = cardFullyVisibleAt + 0.26;
+    const postIntroShift = cardToSkylineTransitionStart - at(1.06);
     const postSkylineReadHold = at(8.78);
     const apartmentSequenceStart = at(9.02);
     const apartmentBoxesStart = apartmentSequenceStart + 3.18;
     const apartmentReadHold = apartmentBoxesStart + 1.18;
     const hoverTileCache = hoverTileCacheRef.current;
+    const hoverLayerCache = hoverLayerCacheRef.current;
 
     const ctx = gsap.context(() => {
       const stage = stageRef.current;
@@ -1110,6 +1207,9 @@ export default function CreateImageFromTiles({
         stage.querySelectorAll(".intro-line-char"),
       );
       const cardReveals = gsap.utils.toArray<HTMLElement>(stage.querySelectorAll(".card-reveal"));
+      const cardBlackouts = gsap.utils.toArray<HTMLElement>(
+        stage.querySelectorAll(".card-blackout"),
+      );
       const cardContent = gsap.utils.toArray<HTMLElement>(stage.querySelectorAll(".card-content"));
       const infoCards = gsap.utils.toArray<HTMLElement>(stage.querySelectorAll(".info-card"));
 
@@ -1214,6 +1314,9 @@ export default function CreateImageFromTiles({
         opacity: 0,
         yPercent: 120,
         filter: "blur(10px)",
+      });
+      gsap.set(cardBlackouts, {
+        opacity: 0,
       });
 
       const revealTl = gsap.timeline({
@@ -1378,10 +1481,10 @@ export default function CreateImageFromTiles({
         cardContent,
         {
           opacity: 1,
-          duration: 0.34,
-          stagger: 0.18,
+          duration: cardContentRevealDuration,
+          stagger: cardContentRevealStagger,
         },
-        at(0.92),
+        cardContentRevealStart,
       );
 
       tl.to(
@@ -1396,7 +1499,29 @@ export default function CreateImageFromTiles({
       );
 
       tl.to(
-        [...cardContent, ...infoCards],
+        cardBlackouts,
+        {
+          opacity: 1,
+          duration: 0.24,
+          stagger: 0.04,
+          ease: "power2.out",
+        },
+        cardToSkylineTransitionStart,
+      );
+
+      tl.to(
+        cardContent,
+        {
+          opacity: 0,
+          duration: 0.24,
+          stagger: 0.04,
+          ease: "power2.out",
+        },
+        cardToSkylineTransitionStart,
+      );
+
+      tl.to(
+        infoCards,
         {
           opacity: 0,
           duration: 0.48,
@@ -1417,7 +1542,7 @@ export default function CreateImageFromTiles({
             duration,
             ease: "power3.inOut",
           },
-          at(1.06) + delay,
+          cardToSkylineTransitionStart + delay,
         );
       });
 
@@ -1429,7 +1554,7 @@ export default function CreateImageFromTiles({
           filter: "brightness(1.06) saturate(1.04)",
           ease: "power2.out",
         },
-        at(1.34),
+        at(1.34) + postIntroShift,
       );
 
       tl.to(
@@ -1439,7 +1564,7 @@ export default function CreateImageFromTiles({
           duration: 0.42,
           ease: "power2.inOut",
         },
-        at(2.02),
+        at(2.02) + postIntroShift,
       );
 
       tl.to(
@@ -1450,7 +1575,7 @@ export default function CreateImageFromTiles({
           duration: 0.52,
           ease: "power2.inOut",
         },
-        at(2.02),
+        at(2.02) + postIntroShift,
       );
 
       tl.to(
@@ -1464,7 +1589,7 @@ export default function CreateImageFromTiles({
           },
           ease: "power2.out",
         },
-        at(2.34),
+        at(2.34) + postIntroShift,
       );
 
       tl.to(
@@ -1478,7 +1603,7 @@ export default function CreateImageFromTiles({
           },
           ease: "power2.out",
         },
-        at(2.34),
+        at(2.34) + postIntroShift,
       );
 
       if (headlineBlock) {
@@ -1490,7 +1615,7 @@ export default function CreateImageFromTiles({
             duration: 0.42,
             ease: "power2.out",
           },
-          at(2.58),
+          at(2.58) + postIntroShift,
         );
 
         tl.to(
@@ -1517,7 +1642,7 @@ export default function CreateImageFromTiles({
             duration: 0.82,
             ease: "power2.out",
           },
-          at(2.84),
+          at(2.84) + postIntroShift,
         );
       }
 
@@ -1529,7 +1654,7 @@ export default function CreateImageFromTiles({
           duration: 0.64,
           ease: "power2.out",
         },
-        at(3.28),
+        at(3.28) + postIntroShift,
       );
 
       skylineExpansionTiles.forEach((tile) => {
@@ -1543,7 +1668,7 @@ export default function CreateImageFromTiles({
             duration: 0.68,
             ease: "power2.out",
           },
-          at(3.8) + delay,
+          at(3.8) + postIntroShift + delay,
         );
       });
 
@@ -1556,7 +1681,7 @@ export default function CreateImageFromTiles({
           stagger: 0.01,
           ease: "power2.in",
         },
-        at(4.26),
+        at(4.26) + postIntroShift,
       );
 
       if (headlineBlock) {
@@ -1567,7 +1692,7 @@ export default function CreateImageFromTiles({
             duration: 0.24,
             ease: "none",
           },
-          at(4.54),
+          at(4.54) + postIntroShift,
         );
       }
 
@@ -1578,7 +1703,7 @@ export default function CreateImageFromTiles({
           duration: 0.32,
           ease: "power2.out",
         },
-        at(4.4),
+        at(4.4) + postIntroShift,
       );
 
       tl.to(
@@ -1589,7 +1714,7 @@ export default function CreateImageFromTiles({
           duration: 0.72,
           ease: "power3.inOut",
         },
-        at(4.48),
+        at(4.48) + postIntroShift,
       );
 
       tl.to(
@@ -1599,7 +1724,7 @@ export default function CreateImageFromTiles({
           duration: 0.36,
           ease: "power2.out",
         },
-        at(4.84),
+        at(4.84) + postIntroShift,
       );
 
       tl.to(
@@ -1608,7 +1733,7 @@ export default function CreateImageFromTiles({
           backgroundColor: "#000000",
           ease: "none",
         },
-        at(1.08),
+        cardToSkylineTransitionStart,
       );
 
       postSkylinePanels.forEach((panel) => {
@@ -1622,7 +1747,7 @@ export default function CreateImageFromTiles({
             duration: 0.9,
             ease: "power3.inOut",
           },
-          at(5.24) + delay,
+          at(5.24) + postIntroShift + delay,
         );
       });
 
@@ -1633,7 +1758,7 @@ export default function CreateImageFromTiles({
           duration: 0.32,
           ease: "power2.out",
         },
-        at(5.12),
+        at(5.12) + postIntroShift,
       );
 
       tl.to(
@@ -1643,7 +1768,7 @@ export default function CreateImageFromTiles({
           duration: 0.82,
           ease: "power2.inOut",
         },
-        at(5.14),
+        at(5.14) + postIntroShift,
       );
 
       tl.to(
@@ -1654,7 +1779,7 @@ export default function CreateImageFromTiles({
           duration: 0.82,
           ease: "power2.inOut",
         },
-        at(5.14),
+        at(5.14) + postIntroShift,
       );
 
       tl.to(
@@ -1664,7 +1789,7 @@ export default function CreateImageFromTiles({
           duration: 0.82,
           ease: "power2.inOut",
         },
-        at(5.26),
+        at(5.26) + postIntroShift,
       );
 
       tl.to(
@@ -1676,7 +1801,7 @@ export default function CreateImageFromTiles({
           stagger: 0.06,
           ease: "power2.out",
         },
-        at(5.58),
+        at(5.58) + postIntroShift,
       );
 
       tl.to(
@@ -1689,7 +1814,7 @@ export default function CreateImageFromTiles({
           stagger: 0.12,
           ease: "power3.out",
         },
-        at(5.66),
+        at(5.66) + postIntroShift,
       );
 
       tl.to(
@@ -1699,7 +1824,7 @@ export default function CreateImageFromTiles({
           duration: 0.22,
           ease: "none",
         },
-        at(5.58),
+        at(5.58) + postIntroShift,
       );
 
       tl.to(
@@ -1711,7 +1836,7 @@ export default function CreateImageFromTiles({
           stagger: 0.014,
           ease: "power2.out",
         },
-        at(5.62),
+        at(5.62) + postIntroShift,
       );
 
       tl.to(
@@ -1722,7 +1847,7 @@ export default function CreateImageFromTiles({
           duration: 0.54,
           ease: "power2.out",
         },
-        at(5.94),
+        at(5.94) + postIntroShift,
       );
 
       tl.to(
@@ -1742,7 +1867,7 @@ export default function CreateImageFromTiles({
           stagger: 0.12,
           ease: "power2.out",
         },
-        at(5.66),
+        at(5.66) + postIntroShift,
       );
 
       tl.to(
@@ -1868,6 +1993,7 @@ export default function CreateImageFromTiles({
 
       hoverTileWaveRef.current?.kill();
       hoverTileCache.clear();
+      hoverLayerCache.clear();
       ctx.revert();
     };
   }, [NO_OF_COLUMNS, NO_OF_ROWS, useMobileTabletLayout, hasViewport]);
@@ -2588,37 +2714,43 @@ export default function CreateImageFromTiles({
 
                   {mountedHoverServices.length > 0 ? (
                     <div className="pointer-events-none absolute inset-0" style={tileFrameStyle}>
-                      {mountedHoverServices.map((service) =>
-                        tileGrid.map(({ row, col, key, style }) => (
-                          <div
-                            key={`${service.id}-${key}`}
-                            className="absolute overflow-hidden"
-                            style={style}
-                          >
-                            <Image
-                              src={buildTileImagePath(
-                                service.tileBaseUrl,
-                                row,
-                                col,
-                                service.tileFilePrefix,
-                              )}
-                              alt=""
-                              width={TILE_WIDTH}
-                              height={TILE_HEIGHT}
-                              unoptimized
-                              loading="lazy"
-                              decoding="async"
-                              sizes="12.5vw"
-                              draggable={false}
-                              aria-hidden="true"
-                              data-hover-service={service.id}
-                              data-hover-row={row}
-                              data-hover-col={col}
-                              className="service-hover-tile absolute inset-0 h-full w-full object-fill opacity-0 [backface-visibility:hidden] [transform:translateZ(0)] [will-change:opacity]"
-                            />
-                          </div>
-                        )),
-                      )}
+                      {mountedHoverServices.map((service) => (
+                        <div
+                          key={service.id}
+                          className="service-hover-layer absolute inset-0 opacity-0 [backface-visibility:hidden] [transform:translateZ(0)] [will-change:opacity]"
+                          data-hover-service-layer={service.id}
+                        >
+                          {tileGrid.map(({ row, col, key, style }) => (
+                            <div
+                              key={`${service.id}-${key}`}
+                              className="absolute overflow-hidden"
+                              style={style}
+                            >
+                              <Image
+                                src={buildTileImagePath(
+                                  service.tileBaseUrl,
+                                  row,
+                                  col,
+                                  service.tileFilePrefix,
+                                )}
+                                alt=""
+                                width={TILE_WIDTH}
+                                height={TILE_HEIGHT}
+                                unoptimized
+                                loading="lazy"
+                                decoding="async"
+                                sizes="12.5vw"
+                                draggable={false}
+                                aria-hidden="true"
+                                data-hover-service={service.id}
+                                data-hover-row={row}
+                                data-hover-col={col}
+                                className="service-hover-tile absolute inset-0 h-full w-full object-fill opacity-0 [backface-visibility:hidden] [transform:translateZ(0)]"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      ))}
                     </div>
                   ) : null}
 
@@ -2725,9 +2857,10 @@ export default function CreateImageFromTiles({
                     className="info-card absolute overflow-hidden"
                     style={card.style}
                   >
-                    <div className="card-reveal absolute inset-0 bg-black" />
+                    <div className="card-reveal absolute inset-0 z-[1] bg-black" />
+                    <div className="card-blackout absolute inset-0 z-[2] bg-black opacity-0" />
 
-                    <div className="card-content absolute inset-0 border border-white/10 bg-black/90 p-8 text-white opacity-0 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-[4px] md:p-10">
+                    <div className="card-content absolute inset-0 z-[3] border border-white/10 bg-black/90 p-8 text-white opacity-0 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-[4px] md:p-10">
                       <p className="text-[10px] uppercase tracking-[0.35em] text-white/42">
                         {card.title}
                       </p>
