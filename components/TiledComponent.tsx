@@ -2524,9 +2524,9 @@ export default function CreateImageFromTiles({
                             src={tile.imageSrc}
                             alt={tile.imageAlt ?? ""}
                             fill
-                            unoptimized
                             loading="lazy"
                             decoding="async"
+                            quality={72}
                             sizes="(max-width: 768px) 50vw, 16vw"
                             draggable={false}
                             className="post-skyline-image object-cover"
