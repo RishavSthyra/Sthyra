@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { SiGooglegemini } from "react-icons/si";
-import { RxCross1 } from "react-icons/rx";
 import { Open_Sans } from "next/font/google";
 
 const openSans = Open_Sans({
@@ -51,6 +49,37 @@ const PROJECT_TYPES = [
   "VR/AR",
   "Other",
 ];
+
+function CloseIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M6 18L18 6M6 6l12 12"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function SparkIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 2.8l1.38 5.02L18.4 9.2l-5.02 1.38L12 15.6l-1.38-5.02L5.6 9.2l5.02-1.38L12 2.8Z"
+        stroke="currentColor"
+        strokeWidth="1.65"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M18.6 14.8l.62 2.24 2.18.56-2.18.62-.62 2.18-.58-2.18-2.22-.62 2.22-.56.58-2.24ZM5.4 14.2l.46 1.68 1.74.52-1.74.48-.46 1.72-.5-1.72-1.7-.48 1.7-.52.5-1.68Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
 
 export default function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -373,9 +402,9 @@ export default function AIChatbot() {
         aria-label={isOpen ? "Close chat" : "Open chat"}
       >
         {isOpen ? (
-         <RxCross1 className="text-white" />
+         <CloseIcon className="h-5 w-5 text-white" />
         ) : (
-          <SiGooglegemini className="text-white" />
+          <SparkIcon className="h-5 w-5 text-white" />
         )}
       </button>
     </div>

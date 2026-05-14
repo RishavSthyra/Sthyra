@@ -1,6 +1,3 @@
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import * as THREE from "three";
-
 type ModelMask = {
   image: ImageData;
   maskWidth: number;
@@ -15,11 +12,40 @@ type CreateModelMaskOptions = {
   padding?: number;
 };
 
-const loader = new GLTFLoader();
-const modelCache = new Map<string, Promise<THREE.Object3D>>();
+type ThreeModule = typeof import("three");
+type GLTFLoaderConstructor = typeof import("three/examples/jsm/loaders/GLTFLoader.js").GLTFLoader;
+type Object3D = InstanceType<ThreeModule["Object3D"]>;
+type Vector3 = InstanceType<ThreeModule["Vector3"]>;
 
-function getModel(url: string) {
+const moduleCache = new Map<
+  "modules",
+  Promise<{ THREE: ThreeModule; GLTFLoader: GLTFLoaderConstructor }>
+>();
+const modelCache = new Map<string, Promise<Object3D>>();
+const maskCache = new Map<string, Promise<ModelMask>>();
+
+function getModules() {
+  if (!moduleCache.has("modules")) {
+    moduleCache.set(
+      "modules",
+      Promise.all([
+        import("three"),
+        import("three/examples/jsm/loaders/GLTFLoader.js"),
+      ]).then(([THREE, loaderModule]) => ({
+        THREE,
+        GLTFLoader: loaderModule.GLTFLoader,
+      })),
+    );
+  }
+
+  return moduleCache.get("modules")!;
+}
+
+async function getModel(url: string) {
   if (!modelCache.has(url)) {
+    const { GLTFLoader } = await getModules();
+    const loader = new GLTFLoader();
+
     modelCache.set(
       url,
       loader.loadAsync(url).then((gltf) => {
@@ -33,7 +59,7 @@ function getModel(url: string) {
 }
 
 function projectVector(
-  vector: THREE.Vector3,
+  vector: Vector3,
   scale: number,
   offsetX: number,
   offsetY: number,
@@ -54,6 +80,30 @@ export async function createModelMask({
   height,
   padding = 0.12,
 }: CreateModelMaskOptions): Promise<ModelMask> {
+  const cacheKey = `${url}:${Math.round(width)}x${Math.round(height)}:${padding.toFixed(3)}`;
+
+  if (maskCache.has(cacheKey)) {
+    return maskCache.get(cacheKey)!;
+  }
+
+  const maskPromise = createModelMaskUncached({ url, width, height, padding });
+  maskCache.set(cacheKey, maskPromise);
+
+  try {
+    return await maskPromise;
+  } catch (error) {
+    maskCache.delete(cacheKey);
+    throw error;
+  }
+}
+
+async function createModelMaskUncached({
+  url,
+  width,
+  height,
+  padding = 0.12,
+}: CreateModelMaskOptions): Promise<ModelMask> {
+  const { THREE } = await getModules();
   const root = await getModel(url);
   root.updateMatrixWorld(true);
 

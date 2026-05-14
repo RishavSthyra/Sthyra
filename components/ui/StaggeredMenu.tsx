@@ -448,6 +448,9 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                 alt="Logo"
                 width={110}
                 height={32}
+                priority
+                fetchPriority="high"
+                sizes="110px"
                 className="sm-logo-img block h-8 w-auto object-contain"
               />
             </div>

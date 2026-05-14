@@ -1,11 +1,22 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import DesktopAsciiHero from "@/components/DesktopAsciiHero";
-import CreateImageFromTiles from "@/components/TiledComponent";
 import StaggeredMenu from "@/components/ui/StaggeredMenu";
-import AIChatbot from "@/components/AIChatbot";
 import { SERVICE_PAGES } from "@/lib/services";
+
+const CreateImageFromTiles = dynamic(() => import("@/components/TiledComponent"), {
+  ssr: false,
+  loading: () => (
+    <div className="min-h-[7600px] bg-black md:min-h-screen" aria-hidden="true" />
+  ),
+});
+
+const AIChatbot = dynamic(() => import("@/components/AIChatbot"), {
+  ssr: false,
+  loading: () => null,
+});
 
 const serviceMenuItems = SERVICE_PAGES.map((service) => ({
   label: service.hero.eyebrow,
@@ -30,7 +41,28 @@ const socialItems = [
 
 export default function HomeExperience() {
   const [heroReady, setHeroReady] = useState(false);
+  const [usesDesktopHero, setUsesDesktopHero] = useState<boolean | null>(null);
+  const [showChatbot, setShowChatbot] = useState(false);
   const handleHeroReady = useCallback(() => setHeroReady(true), []);
+  const shouldHoldForDesktopHero = usesDesktopHero === true && !heroReady;
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1100px)");
+    const syncLayoutMode = () => {
+      setUsesDesktopHero(mediaQuery.matches);
+
+      if (!mediaQuery.matches) {
+        setHeroReady(true);
+      }
+    };
+
+    syncLayoutMode();
+    mediaQuery.addEventListener("change", syncLayoutMode);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncLayoutMode);
+    };
+  }, []);
 
   useLayoutEffect(() => {
     const previousScrollRestoration = window.history.scrollRestoration;
@@ -49,10 +81,10 @@ export default function HomeExperience() {
 
   useEffect(() => {
     window.dispatchEvent(
-      new CustomEvent("sthyra:lenis-lock", { detail: { locked: !heroReady } }),
+      new CustomEvent("sthyra:lenis-lock", { detail: { locked: shouldHoldForDesktopHero } }),
     );
 
-    if (heroReady) {
+    if (!shouldHoldForDesktopHero) {
       return;
     }
 
@@ -68,11 +100,49 @@ export default function HomeExperience() {
         new CustomEvent("sthyra:lenis-lock", { detail: { locked: false } }),
       );
     };
+  }, [shouldHoldForDesktopHero]);
+
+  useEffect(() => {
+    if (!heroReady) {
+      return;
+    }
+
+    let timeoutId: number | null = null;
+    const loadChatbot = () => setShowChatbot(true);
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (
+        callback: IdleRequestCallback,
+        options?: IdleRequestOptions,
+      ) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+
+    if (idleWindow.requestIdleCallback) {
+      timeoutId = idleWindow.requestIdleCallback(loadChatbot, { timeout: 8000 });
+    } else {
+      timeoutId = window.setTimeout(loadChatbot, 8000);
+    }
+
+    const loadOnIntent = () => loadChatbot();
+    window.addEventListener("pointerdown", loadOnIntent, { once: true, passive: true });
+    window.addEventListener("keydown", loadOnIntent, { once: true });
+
+    return () => {
+      if (timeoutId !== null) {
+        if (idleWindow.cancelIdleCallback) {
+          idleWindow.cancelIdleCallback(timeoutId);
+        } else {
+          window.clearTimeout(timeoutId);
+        }
+      }
+      window.removeEventListener("pointerdown", loadOnIntent);
+      window.removeEventListener("keydown", loadOnIntent);
+    };
   }, [heroReady]);
 
   return (
     <main className="bg-black">
-      {!heroReady ? (
+      {shouldHoldForDesktopHero ? (
         <div
           className="fixed inset-0 z-[9999] bg-black"
           aria-hidden="true"
@@ -92,7 +162,7 @@ export default function HomeExperience() {
         accentColor="#ffffff"
         isFixed
       />
-      <DesktopAsciiHero onReady={handleHeroReady} />
+      {usesDesktopHero !== false ? <DesktopAsciiHero onReady={handleHeroReady} /> : null}
       <CreateImageFromTiles
         BASEURL="/villa_tiles_32"
         SECONDARY_BASEURL="/SKYLINE_tiles_32"
@@ -101,7 +171,7 @@ export default function HomeExperience() {
         TILE_HEIGHT={768}
         TILE_WIDTH={768}
       />
-      <AIChatbot />
+      {showChatbot ? <AIChatbot /> : null}
     </main>
   );
 }

@@ -4,6 +4,17 @@ import ServicePageTemplate from "@/components/services/ServicePageTemplate";
 import ServiceScrollReset from "@/components/services/ServiceScrollReset";
 import { getServicePage, SERVICE_PAGES } from "@/lib/services";
 import StaggeredMenu from "@/components/ui/StaggeredMenu";
+import {
+  SERVICE_SEO_KEYWORDS,
+  absoluteUrl,
+  getBreadcrumbJsonLd,
+  getOrganizationJsonLd,
+  getServiceJsonLd,
+  getServiceUrl,
+  jsonLdScript,
+} from "@/lib/seo";
+
+type JsonLdObject = Record<string, unknown>;
 
 type ServicePageProps = {
   params: Promise<{
@@ -42,6 +53,7 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
   return {
     title: service.seoTitle,
     description: service.metaDescription,
+    keywords: SERVICE_SEO_KEYWORDS[service.slug],
     alternates: {
       canonical: `/services/${service.slug}`,
     },
@@ -50,14 +62,21 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
       description: service.metaDescription,
       type: "website",
       url: `/services/${service.slug}`,
+      siteName: "Sthyra",
       images: [
         {
-          url: `${service.hero.tileBasePath}/${service.hero.tilePrefix}_0_0.jpg`,
+          url: absoluteUrl(`${service.hero.tileBasePath}/${service.hero.tilePrefix}_0_0.jpg`),
           width: 1200,
           height: 630,
           alt: service.hero.h1,
         },
       ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: service.seoTitle,
+      description: service.metaDescription,
+      images: [absoluteUrl(`${service.hero.tileBasePath}/${service.hero.tilePrefix}_0_0.jpg`)],
     },
   };
 }
@@ -70,8 +89,31 @@ export default async function ServicePage({ params }: ServicePageProps) {
     notFound();
   }
 
+  const serviceJsonLd = getServiceJsonLd(service.slug);
+  const structuredData: JsonLdObject[] = [
+    getOrganizationJsonLd(),
+    ...(serviceJsonLd ? [serviceJsonLd] : []),
+    getBreadcrumbJsonLd([
+      { name: "Home", url: absoluteUrl("/") },
+      { name: service.hero.eyebrow, url: getServiceUrl(service.slug) },
+    ]),
+  ];
+
   return (
     <>
+      {structuredData.map((jsonLd) => (
+        <script
+          key={
+            "@id" in jsonLd
+              ? String(jsonLd["@id"])
+              : jsonLd["@type"] === "BreadcrumbList"
+                ? `${getServiceUrl(service.slug)}#breadcrumb`
+                : service.slug
+          }
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
+        />
+      ))}
       <ServiceScrollReset />
       <StaggeredMenu
         position="right"

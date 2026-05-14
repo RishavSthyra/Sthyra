@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Open_Sans } from "next/font/google";
-import { FiMinus, FiPlus } from "react-icons/fi";
 import mapboxgl from "mapbox-gl";
 
 const openSans = Open_Sans({
@@ -35,6 +34,22 @@ const TERRAIN_SOURCE_ID = "project-terrain";
 const BUILDING_LAYER_ID = "project-3d-buildings";
 const TAB_IMAGE_TRIFECTA = "/images_last_frame.jpg";
 const TAB_IMAGE_AADHYA = "/aadhya_serene_2.webp";
+
+function MapMinusIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function MapPlusIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 function getFirstSymbolLayerId(map: mapboxgl.Map) {
   return map
@@ -690,7 +705,7 @@ export default function ProjectMapSection({
       >
         <div
           ref={containerRef}
-          className="project-map-container absolute inset-0 z-[1]"
+          className="project-map-container absolute inset-0"
         />
       </div>
 
@@ -817,7 +832,7 @@ export default function ProjectMapSection({
                 aria-label="Zoom out"
                 className="grid h-11 w-11 place-items-center border-r border-white/10 text-white/72 transition-colors duration-300 hover:bg-white/[0.11] hover:text-white"
               >
-                <FiMinus aria-hidden="true" className="h-4 w-4 stroke-[2.2]" />
+                <MapMinusIcon />
               </button>
               <button
                 type="button"
@@ -825,7 +840,7 @@ export default function ProjectMapSection({
                 aria-label="Zoom in"
                 className="grid h-11 w-11 place-items-center text-white/78 transition-colors duration-300 hover:bg-white/[0.11] hover:text-white"
               >
-                <FiPlus aria-hidden="true" className="h-4 w-4 stroke-[2.2]" />
+                <MapPlusIcon />
               </button>
             </div>
           </div>

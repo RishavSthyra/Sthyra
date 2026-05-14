@@ -9,11 +9,13 @@ import type { ServicePageData } from "@/lib/services";
 const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["600", "700"],
+  display: "optional",
 });
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "optional",
 });
 
 type ServicePageTemplateProps = {
@@ -44,8 +46,9 @@ function HeroTiles({ service }: ServicePageTemplateProps) {
               src={`${hero.tileBasePath}/${hero.tilePrefix}_${row + sourceRowOffset}_${col}.jpg`}
               alt=""
               fill
-              priority={row === 0 && col < 4}
+              priority={row === 0 && col < 2}
               sizes="12.5vw"
+              quality={78}
               className="object-cover scale-[1.035]"
             />
           </div>

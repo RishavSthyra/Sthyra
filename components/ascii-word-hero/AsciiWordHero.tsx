@@ -72,6 +72,14 @@ type SceneMetrics = {
   lastOverlay: number;
 };
 
+type IdleWindow = Window & {
+  requestIdleCallback?: (
+    callback: IdleRequestCallback,
+    options?: IdleRequestOptions,
+  ) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
+
 const HERO_UI_FONT_STACK =
   `"Avenir Next Condensed", "Bahnschrift SemiCondensed", "Arial Narrow", "Segoe UI", sans-serif`;
 
@@ -476,9 +484,21 @@ export default function AsciiWordHero({
         return;
       }
 
-      setSize({
-        width: Math.round(entry.contentRect.width),
-        height: Math.round(entry.contentRect.height),
+      const nextWidth = Math.round(entry.contentRect.width);
+      const nextHeight = Math.round(entry.contentRect.height);
+
+      setSize((current) => {
+        if (
+          Math.abs(current.width - nextWidth) < 2 &&
+          Math.abs(current.height - nextHeight) < 2
+        ) {
+          return current;
+        }
+
+        return {
+          width: nextWidth,
+          height: nextHeight,
+        };
       });
     });
 
@@ -495,28 +515,45 @@ export default function AsciiWordHero({
     }
 
     let cancelled = false;
+    let timeoutId: number | null = null;
+    let idleId: number | null = null;
+    const idleWindow = window as IdleWindow;
 
-    createModelMask({
-      url: modelUrl,
-      width: size.width,
-      height: size.height,
-      padding: 0.18,
-    })
-      .then((mask) => {
-        if (!cancelled) {
-          setModelMask(mask);
-        }
+    const buildMask = () => {
+      createModelMask({
+        url: modelUrl,
+        width: size.width,
+        height: size.height,
+        padding: 0.18,
       })
-      .catch((error) => {
-        console.error("Failed to build GLB mask for ASCII hero:", error);
+        .then((mask) => {
+          if (!cancelled) {
+            setModelMask(mask);
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to build GLB mask for ASCII hero:", error);
 
-        if (!cancelled) {
-          setModelMask(null);
-        }
-      });
+          if (!cancelled) {
+            setModelMask(null);
+          }
+        });
+    };
+
+    if (idleWindow.requestIdleCallback) {
+      idleId = idleWindow.requestIdleCallback(buildMask, { timeout: 900 });
+    } else {
+      timeoutId = window.setTimeout(buildMask, 220);
+    }
 
     return () => {
       cancelled = true;
+      if (idleId !== null && idleWindow.cancelIdleCallback) {
+        idleWindow.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
     };
   }, [modelUrl, size.height, size.width]);
 
@@ -677,6 +714,9 @@ export default function AsciiWordHero({
     const glitterSeedThreshold = 1 - clamp(responsiveConfig.glitterDensity, 0.01, 0.35);
     let animationFrame = 0;
     let previousTime = animationStart;
+    let previousDrawTime = animationStart;
+    let previousPointerActive = false;
+    let previousBreakProgress = -1;
 
     const draw = (timestamp: number) => {
       const delta = Math.min((timestamp - previousTime) / 1000, 0.05);
@@ -697,8 +737,34 @@ export default function AsciiWordHero({
             1,
           );
       const breakProgress = easeSoftScatter(rawBreakProgress);
+      const pointerActive = pointerRef.current.active;
+      const entrySettled =
+        elapsed > responsiveConfig.entryDuration + responsiveConfig.entryStagger + 0.38;
+      const scrollIsMoving = Math.abs(breakProgress - previousBreakProgress) > 0.0015;
+      const pointerStateChanged = pointerActive !== previousPointerActive;
+      const canThrottle =
+        !reducedMotion &&
+        entrySettled &&
+        !pointerActive &&
+        !pointerStateChanged &&
+        !scrollIsMoving &&
+        breakProgress < 0.001;
 
       previousTime = timestamp;
+
+      if (document.visibilityState === "hidden") {
+        animationFrame = window.requestAnimationFrame(draw);
+        return;
+      }
+
+      if (canThrottle && timestamp - previousDrawTime < 66) {
+        animationFrame = window.requestAnimationFrame(draw);
+        return;
+      }
+
+      previousDrawTime = timestamp;
+      previousPointerActive = pointerActive;
+      previousBreakProgress = breakProgress;
 
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
       context.clearRect(0, 0, size.width, size.height);
@@ -721,10 +787,10 @@ export default function AsciiWordHero({
       for (let index = 0; index < field.count; index += 1) {
         let hoverTargetX = 0;
         let hoverTargetY = 0;
-        const hoverRadius = pointerRef.current.active
+        const hoverRadius = pointerActive
           ? baseHoverRadius * responsiveConfig.hoverActiveRadiusMultiplier
           : baseHoverRadius;
-        const hoverRepulsion = pointerRef.current.active
+        const hoverRepulsion = pointerActive
           ? baseHoverRepulsion * responsiveConfig.hoverActiveRepulsionMultiplier
           : baseHoverRepulsion;
         const radiusSquared = hoverRadius * hoverRadius;
@@ -738,7 +804,7 @@ export default function AsciiWordHero({
             );
         const settle = easeOutPower(localEntryProgress, responsiveConfig.settleEase);
 
-        if (pointerRef.current.active && breakProgress < 0.52 && settle > 0.82) {
+        if (pointerActive && breakProgress < 0.52 && settle > 0.82) {
           const dx = field.originsX[index] - pointerRef.current.x;
           const dy = field.originsY[index] - pointerRef.current.y;
           const distanceSquared = dx * dx + dy * dy;

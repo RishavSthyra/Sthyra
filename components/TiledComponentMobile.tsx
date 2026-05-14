@@ -4,18 +4,20 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { DM_Sans, Montserrat } from "next/font/google";
-import ProjectMapSection from "@/components/ProjectMapSection";
+import LazyProjectMapSection from "@/components/LazyProjectMapSection";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["600", "700", "800"],
   variable: "--font-mobile-title",
+  display: "optional",
 });
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-mobile-body",
+  display: "optional",
 });
 
 type TiledComponentMobileProps = {
@@ -87,7 +89,7 @@ const MOBILE_SKYLINE_TILES: SkylineTile[] = [
   },
   {
     type: "image",
-    src: "https://cdn.sthyra.com/sthyra-labs/Images/create_me_an_interior_of_202604300901.jpeg",
+    src: "/Cinematic_Image_1.avif",
     alt: "Luxury entry interior",
     span: "col-span-2 row-span-2",
   },
@@ -99,19 +101,19 @@ const MOBILE_SKYLINE_TILES: SkylineTile[] = [
   },
   {
     type: "image",
-    src: "https://cdn.sthyra.com/sthyra-labs/Images/create_me_an_interior_of_202604300850.jpeg",
+    src: "/Cinematic_Image_2.avif",
     alt: "Luxury timber interior",
     span: "col-span-1 row-span-1",
   },
   {
     type: "image",
-    src: "https://cdn.sthyra.com/sthyra-labs/Images/create_me_an_interior_of_202604300851.jpeg",
+    src: "/ultrarender1.avif",
     alt: "Stone interior corridor",
     span: "col-span-1 row-span-1",
   },
   {
     type: "image",
-    src: "https://cdn.sthyra.com/sthyra-labs/Images/hf_20260508_043934_d5a4a4f1-1642-4244-9566-9709780d939e.jpg",
+    src: "/ultrarender2.avif",
     alt: "Refined luxury interior",
     span: "col-span-2 row-span-1",
   },
@@ -776,7 +778,7 @@ export default function TiledComponentMobile({
       : tile,
   );
   const transitionImages = skylineTiles
-    .filter((tile) => tile.type === "image" && tile.src?.startsWith("http"))
+    .filter((tile) => tile.type === "image" && Boolean(tile.src))
     .slice(0, 4);
 
   return (
@@ -876,8 +878,8 @@ export default function TiledComponentMobile({
                   src={transitionImages[0].src ?? ""}
                   alt={transitionImages[0].alt ?? "Luxury architectural visualization"}
                   fill
-                  unoptimized
                   sizes="(max-width: 767px) 92vw, 58vw"
+                  quality={72}
                   className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.18))]" />
@@ -895,8 +897,8 @@ export default function TiledComponentMobile({
                     src={tile.src ?? ""}
                     alt={tile.alt ?? "Luxury architectural visualization"}
                     fill
-                    unoptimized
                     sizes="(max-width: 767px) 92vw, 42vw"
+                    quality={72}
                     className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
                   />
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.18))]" />
@@ -915,8 +917,8 @@ export default function TiledComponentMobile({
                 src={tile.src ?? ""}
                 alt={tile.alt ?? "Luxury architectural visualization"}
                 fill
-                unoptimized
                 sizes="(max-width: 767px) 92vw, 92vw"
+                quality={72}
                 className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
               />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.18))]" />
@@ -942,7 +944,7 @@ export default function TiledComponentMobile({
         </div>
       </section>
 
-      <ProjectMapSection projectCoordinates={PROJECT_COORDINATES} />
+      <LazyProjectMapSection projectCoordinates={PROJECT_COORDINATES} />
 
       <section id="reasons-mobile" className="bg-black py-10 md:py-12">
         <SectionHeader eyebrow="Reasons" title="Why this visual language sells better." />

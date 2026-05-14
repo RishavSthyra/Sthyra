@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import {
   useMemo,
   useCallback,
@@ -16,12 +17,17 @@ import { useRouter } from "next/navigation";
 import { Open_Sans } from "next/font/google";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import ProjectMapSection from "@/components/ProjectMapSection";
-import TiledComponentMobile from "@/components/TiledComponentMobile";
+import LazyProjectMapSection from "@/components/LazyProjectMapSection";
+
+const TiledComponentMobile = dynamic(() => import("@/components/TiledComponentMobile"), {
+  ssr: false,
+  loading: () => <section className="min-h-screen bg-black" aria-hidden="true" />,
+});
 
 const openSans = Open_Sans({
   subsets: ["latin"],
   weight: ["600", "700"],
+  display: "optional",
 });
 
 let scrollTriggerRegistered = false;
@@ -2877,7 +2883,7 @@ export default function CreateImageFromTiles({
         </div>
       </section>
 
-      <ProjectMapSection projectCoordinates={PROJECT_SITE_COORDINATES} />
+      <LazyProjectMapSection projectCoordinates={PROJECT_SITE_COORDINATES} />
 
       <section
         id="reasons"
