@@ -288,24 +288,21 @@ const POST_SKYLINE_TILES: PostSkylineTileConfig[] = [
     row: 1,
     col: 3,
     mode: "image",
-    imageSrc:
-      "https://cdn.sthyra.com/sthyra-labs/Images/create_me_an_interior_of_202604300901.jpeg",
+    imageSrc: "/Cinematic_Image_1.avif",
     imageAlt: "Luxury entry interior",
   },
   {
     row: 1,
     col: 5,
     mode: "image",
-    imageSrc:
-      "https://cdn.sthyra.com/sthyra-labs/Images/create_me_an_interior_of_202604300850.jpeg",
+    imageSrc: "/Cinematic_Image_2.avif",
     imageAlt: "Luxury timber interior",
   },
   {
     row: 2,
     col: 4,
     mode: "image",
-    imageSrc:
-      "https://cdn.sthyra.com/sthyra-labs/Images/create_me_an_interior_of_202604300851.jpeg",
+    imageSrc: "/ultrarender1.avif",
     imageAlt: "Luxury stone interior corridor",
   },
   {
