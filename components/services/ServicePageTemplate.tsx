@@ -22,38 +22,82 @@ type ServicePageTemplateProps = {
   service: ServicePageData;
 };
 
+function getSequentialSourceColumns(totalColumns: number, visibleColumns: number) {
+  const safeVisibleColumns = Math.min(totalColumns, visibleColumns);
+  const startColumn = Math.max(0, Math.floor((totalColumns - safeVisibleColumns) / 2));
+
+  return Array.from(
+    { length: safeVisibleColumns },
+    (_, index) => startColumn + index,
+  );
+}
+
 function HeroTiles({ service }: ServicePageTemplateProps) {
   const { hero } = service;
   const sourceRowOffset = Math.max(0, 4 - hero.rows);
+  const mobileColumns = Math.min(hero.columns, 3);
+  const mobileRows = Math.min(hero.rows, 2);
+  const mobileSourceColumns = getSequentialSourceColumns(hero.columns, mobileColumns);
 
   return (
     <div className="absolute inset-0">
-      {Array.from({ length: hero.rows }).map((_, row) =>
-        Array.from({ length: hero.columns }).map((__, col) => (
-          <div
-            key={`${row}-${col}`}
-            className="service-hero-tile absolute overflow-hidden opacity-0"
-            style={{
-              left: `${(col / hero.columns) * 100}%`,
-              top: `${(row / hero.rows) * 100}%`,
-              width: `calc(${100 / hero.columns}% + 0.5px)`,
-              height: `calc(${100 / hero.rows}% + 0.5px)`,
-              animationDelay: `${(row * hero.columns + col) * 45}ms`,
-              transform: "translateZ(0)",
-            }}
-          >
-            <Image
-              src={`${hero.tileBasePath}/${hero.tilePrefix}_${row + sourceRowOffset}_${col}.jpg`}
-              alt=""
-              fill
-              priority={row === 0 && col < 2}
-              sizes="12.5vw"
-              quality={78}
-              className="object-cover scale-[1.035]"
-            />
-          </div>
-        )),
-      )}
+      <div className="absolute left-1/2 top-0 grid h-full min-w-full -translate-x-1/2 grid-cols-3 grid-rows-2 overflow-hidden [aspect-ratio:3/2] lg:hidden">
+        {Array.from({ length: mobileRows }).flatMap((_, row) =>
+          Array.from({ length: mobileColumns }).map((__, col) => {
+            const sourceCol = mobileSourceColumns[col] ?? Math.min(hero.columns - 1, col);
+
+            return (
+              <div
+                key={`mobile-${row}-${col}`}
+                className="service-hero-tile relative overflow-hidden opacity-0"
+                style={{
+                  animationDelay: `${(row * mobileColumns + col) * 75}ms`,
+                  transform: "translateZ(0)",
+                }}
+              >
+                <Image
+                  src={`${hero.tileBasePath}/${hero.tilePrefix}_${row + sourceRowOffset}_${sourceCol}.jpg`}
+                  alt=""
+                  fill
+                  priority={row === 0 && col < 2}
+                  sizes="max(34vw, 25vh)"
+                  quality={78}
+                  className="object-cover scale-[1.035]"
+                />
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <div className="absolute inset-0 hidden lg:block">
+        {Array.from({ length: hero.rows }).flatMap((_, row) =>
+          Array.from({ length: hero.columns }).map((__, col) => (
+            <div
+              key={`desktop-${row}-${col}`}
+              className="service-hero-tile absolute overflow-hidden opacity-0"
+              style={{
+                left: `${(col / hero.columns) * 100}%`,
+                top: `${(row / hero.rows) * 100}%`,
+                width: `calc(${100 / hero.columns}% + 0.5px)`,
+                height: `calc(${100 / hero.rows}% + 0.5px)`,
+                animationDelay: `${(row * hero.columns + col) * 45}ms`,
+                transform: "translateZ(0)",
+              }}
+            >
+              <Image
+                src={`${hero.tileBasePath}/${hero.tilePrefix}_${row + sourceRowOffset}_${col}.jpg`}
+                alt=""
+                fill
+                priority={row === 0 && col < 2}
+                sizes="12.5vw"
+                quality={78}
+                className="object-cover scale-[1.035]"
+              />
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
@@ -83,14 +127,22 @@ export default function ServicePageTemplate({ service }: ServicePageTemplateProp
         <HeroTiles service={service} />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.2)_0%,rgba(0,0,0,0.52)_48%,rgba(0,0,0,0.88)_100%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_46%,rgba(255,255,255,0.1),transparent_28%)]" />
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.11) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.11) 1px, transparent 1px)",
-            backgroundSize: "12.5vw 50vh",
-          }}
-        />
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div
+            className="absolute left-1/2 top-0 h-full min-w-full -translate-x-1/2 [aspect-ratio:3/2] [background-size:33.333%_50%] lg:hidden"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.11) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.11) 1px, transparent 1px)",
+            }}
+          />
+          <div
+            className="absolute inset-0 hidden lg:block lg:[background-size:12.5vw_50vh]"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.11) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.11) 1px, transparent 1px)",
+            }}
+          />
+        </div>
 
         <div className="relative z-[2] flex min-h-[50vh] items-center justify-center px-5 py-24 text-center md:px-8 md:py-28">
           <div className="service-hero-copy mx-auto grid max-w-[84rem] justify-items-center">
@@ -253,7 +305,7 @@ export default function ServicePageTemplate({ service }: ServicePageTemplateProp
             </h2>
           </div>
           <Link
-            href={`https://wa.me/+91-7075747159}`}
+            href={`https://wa.me/917075747159`}
             className="w-fit rounded-full border border-black/14 bg-black px-5 py-3 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-white transition-colors hover:bg-black/78"
           >
             Whatsapp

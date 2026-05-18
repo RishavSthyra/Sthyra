@@ -37,16 +37,31 @@ const TAB_IMAGE_AADHYA = "/aadhya_serene_2.webp";
 
 function MapMinusIcon() {
   return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5.25 12h13.5" stroke="currentColor" strokeWidth="2.45" strokeLinecap="round" />
     </svg>
   );
 }
 
 function MapPlusIcon() {
   return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 5.25v13.5M5.25 12h13.5" stroke="currentColor" strokeWidth="2.45" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function MapRecenterIcon() {
+  return (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 5.25v2.5M12 16.25v2.5M18.75 12h-2.5M7.75 12h-2.5"
+        stroke="currentColor"
+        strokeWidth="2.15"
+        strokeLinecap="round"
+      />
+      <circle cx="12" cy="12" r="4.1" stroke="currentColor" strokeWidth="2.15" />
+      <circle cx="12" cy="12" r="1.25" fill="currentColor" />
     </svg>
   );
 }
@@ -187,23 +202,6 @@ export default function ProjectMapSection({
     window.setTimeout(() => {
       snapLockRef.current = false;
     }, 1050);
-  }, []);
-
-  const goToBottomSection = useCallback(() => {
-    const reasonsSection = document.getElementById("reasons");
-
-    if (!reasonsSection) {
-      return;
-    }
-
-    window.dispatchEvent(
-      new CustomEvent("sthyra:lenis-lock", { detail: { locked: false } }),
-    );
-    window.dispatchEvent(
-      new CustomEvent("sthyra:lenis-scroll-to", {
-        detail: { target: reasonsSection.offsetTop, immediate: false },
-      }),
-    );
   }, []);
 
   const recenterMap = useCallback(() => {
@@ -692,76 +690,77 @@ export default function ProjectMapSection({
     <section
       ref={sectionRef}
       id={sectionId}
-      className={`${openSans.className} project-map-section relative z-[7] h-[100svh] overflow-hidden bg-black text-[#f5efe4]`}
+      className={`${openSans.className} project-map-section relative z-[7] bg-black text-[#f5efe4] md:h-[100svh] md:overflow-hidden`}
     >
-      <div
-        className="absolute inset-0 overflow-hidden"
-        style={{
-          WebkitMaskImage:
-            "linear-gradient(to bottom, transparent 0%, black 5%, black 94%, transparent 100%)",
-          maskImage:
-            "linear-gradient(to bottom, transparent 0%, black 5%, black 94%, transparent 100%)",
-        }}
-      >
+      <div className="project-map-viewport relative h-[100svh] overflow-hidden">
         <div
-          ref={containerRef}
-          className="project-map-container absolute inset-0"
+          className="absolute inset-0 overflow-hidden"
+          style={{
+            WebkitMaskImage:
+              "linear-gradient(to bottom, transparent 0%, black 5%, black 94%, transparent 100%)",
+            maskImage:
+              "linear-gradient(to bottom, transparent 0%, black 5%, black 94%, transparent 100%)",
+          }}
+        >
+          <div
+            ref={containerRef}
+            className="project-map-container absolute inset-0"
+          />
+        </div>
+
+        <div
+          className="pointer-events-none absolute inset-0 z-[2] bg-[radial-gradient(circle_at_50%_42%,rgba(0,0,0,0.08),transparent_28%),linear-gradient(180deg,rgba(0,0,0,0.48)_0%,rgba(0,0,0,0.24)_22%,rgba(0,0,0,0.22)_48%,rgba(0,0,0,0.18)_70%,rgba(0,0,0,0.42)_100%)]"
+          aria-hidden="true"
         />
-      </div>
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 z-[3] h-[34vh] bg-[linear-gradient(180deg,#000_0%,rgba(0,0,0,0.72)_24%,rgba(0,0,0,0.24)_68%,rgba(0,0,0,0)_100%)]"
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] h-[22vh] bg-[linear-gradient(0deg,#000_0%,rgba(0,0,0,0.5)_44%,rgba(0,0,0,0)_100%)]"
+          aria-hidden="true"
+        />
 
-      <div
-        className="pointer-events-none absolute inset-0 z-[2] bg-[radial-gradient(circle_at_50%_42%,rgba(0,0,0,0.08),transparent_28%),linear-gradient(180deg,rgba(0,0,0,0.48)_0%,rgba(0,0,0,0.24)_22%,rgba(0,0,0,0.22)_48%,rgba(0,0,0,0.18)_70%,rgba(0,0,0,0.42)_100%)]"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 z-[3] h-[34vh] bg-[linear-gradient(180deg,#000_0%,rgba(0,0,0,0.72)_24%,rgba(0,0,0,0.24)_68%,rgba(0,0,0,0)_100%)]"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] h-[22vh] bg-[linear-gradient(0deg,#000_0%,rgba(0,0,0,0.5)_44%,rgba(0,0,0,0)_100%)]"
-        aria-hidden="true"
-      />
+        {accessToken ? (
+          <>
+            <div className="absolute right-4 top-[42%] z-[80] hidden w-[27rem] -translate-y-1/2 flex-col items-end gap-3.5 overflow-visible md:right-8 md:flex">
+              {projectLocations.map((project, index) => {
+                const isActive = activeProjectId === project.id;
+                const isExpanded = expandedProjectId === project.id;
 
-      {accessToken ? (
-        <>
-          <div className="absolute right-4 top-[42%] z-[80] flex w-[27rem] -translate-y-1/2 flex-col items-end gap-3.5 overflow-visible md:right-8">
-            {projectLocations.map((project, index) => {
-              const isActive = activeProjectId === project.id;
-              const isExpanded = expandedProjectId === project.id;
-
-              return (
-                <div key={project.id} className="relative h-[9.2rem] w-full overflow-visible">
-                  <div
-                    className={[
-                      "group/project-tab absolute right-0 top-0 h-full overflow-hidden rounded-[1.35rem] border bg-black shadow-[0_26px_90px_rgba(0,0,0,0.5)] transition-[width,border-color,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:w-full focus-within:w-full",
-                      isExpanded ? "w-full" : "w-[8.4rem]",
-                      isActive
-                        ? "border-white/24 bg-black/92 text-white"
-                        : "border-white/10 bg-black/88 text-white/72 hover:border-white/22 hover:bg-black/94 hover:text-white",
-                    ].join(" ")}
-                  >
-                    <div className="grid h-full w-[27rem] grid-cols-[11.2rem_minmax(0,1fr)]">
-                      <button
-                        type="button"
-                        onClick={() => selectProject(project)}
-                        onFocus={() => setExpandedProjectId(project.id)}
-                        className="relative h-full overflow-hidden text-left"
-                        aria-label={`Go to ${project.name}`}
-                        aria-expanded={isExpanded}
-                      >
-                        <span
-                          className={[
-                            "absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover/project-tab:-translate-x-4 group-focus-within/project-tab:-translate-x-4",
-                            isExpanded ? "-translate-x-4" : "",
-                          ].join(" ")}
-                          style={{ backgroundImage: `url(${project.imageSrc})` }}
-                          aria-hidden="true"
-                        />
-                        <span
-                          className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.02),rgba(0,0,0,0.18))]"
-                          aria-hidden="true"
-                        />
-                    </button>
+                return (
+                  <div key={project.id} className="relative h-[9.2rem] w-full overflow-visible">
+                    <div
+                      className={[
+                        "group/project-tab absolute right-0 top-0 h-full overflow-hidden rounded-[1.35rem] border bg-black shadow-[0_26px_90px_rgba(0,0,0,0.5)] transition-[width,border-color,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:w-full focus-within:w-full",
+                        isExpanded ? "w-full" : "w-[8.4rem]",
+                        isActive
+                          ? "border-white/24 bg-black/92 text-white"
+                          : "border-white/10 bg-black/88 text-white/72 hover:border-white/22 hover:bg-black/94 hover:text-white",
+                      ].join(" ")}
+                    >
+                      <div className="grid h-full w-[27rem] grid-cols-[11.2rem_minmax(0,1fr)]">
+                        <button
+                          type="button"
+                          onClick={() => selectProject(project)}
+                          onFocus={() => setExpandedProjectId(project.id)}
+                          className="relative h-full overflow-hidden text-left"
+                          aria-label={`Go to ${project.name}`}
+                          aria-expanded={isExpanded}
+                        >
+                          <span
+                            className={[
+                              "absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover/project-tab:-translate-x-4 group-focus-within/project-tab:-translate-x-4",
+                              isExpanded ? "-translate-x-4" : "",
+                            ].join(" ")}
+                            style={{ backgroundImage: `url(${project.imageSrc})` }}
+                            aria-hidden="true"
+                          />
+                          <span
+                            className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.02),rgba(0,0,0,0.18))]"
+                            aria-hidden="true"
+                          />
+                        </button>
                       <div
                         className={[
                           "grid h-full content-between gap-2.5 bg-[linear-gradient(145deg,rgba(9,10,12,0.94),rgba(0,0,0,0.86))] px-4 py-3 backdrop-blur-xl transition-opacity duration-300 group-hover/project-tab:pointer-events-auto group-hover/project-tab:opacity-100 group-focus-within/project-tab:pointer-events-auto group-focus-within/project-tab:opacity-100",
@@ -805,51 +804,111 @@ export default function ProjectMapSection({
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="absolute inset-x-4 bottom-7 z-[30] flex flex-wrap items-center justify-center gap-2.5">
-            <button
-              type="button"
-              onClick={goToBottomSection}
-              className="rounded-full border border-white/18 bg-black/58 px-5 py-3 text-[0.66rem] font-semibold uppercase tracking-[0.24em] text-white/84 shadow-[0_18px_60px_rgba(0,0,0,0.34)] backdrop-blur-2xl transition-colors duration-300 hover:border-white/30 hover:bg-white/[0.12] hover:text-white"
-            >
-              View reasons
-            </button>
-            <button
-              type="button"
-              onClick={recenterMap}
-              className="rounded-full border border-white/14 bg-black/48 px-4 py-3 text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-white/72 shadow-[0_18px_60px_rgba(0,0,0,0.3)] backdrop-blur-2xl transition-colors duration-300 hover:border-white/28 hover:bg-white/[0.11] hover:text-white"
-            >
-              Re-center
-            </button>
-            <div className="flex overflow-hidden rounded-full border border-white/14 bg-black/46 shadow-[0_18px_60px_rgba(0,0,0,0.28)] backdrop-blur-2xl">
-              <button
-                type="button"
-                onClick={() => zoomMap("out")}
-                aria-label="Zoom out"
-                className="grid h-11 w-11 place-items-center border-r border-white/10 text-white/72 transition-colors duration-300 hover:bg-white/[0.11] hover:text-white"
-              >
-                <MapMinusIcon />
-              </button>
-              <button
-                type="button"
-                onClick={() => zoomMap("in")}
-                aria-label="Zoom in"
-                className="grid h-11 w-11 place-items-center text-white/78 transition-colors duration-300 hover:bg-white/[0.11] hover:text-white"
-              >
-                <MapPlusIcon />
-              </button>
+                  </div>
+                );
+              })}
             </div>
-          </div>
-        </>
-      ) : null}
 
-      {!accessToken ? (
-        <div className="pointer-events-none absolute inset-x-4 bottom-8 z-[4] mx-auto max-w-md border border-white/10 bg-black/82 px-4 py-3 text-center text-[0.74rem] leading-[1.55] tracking-[-0.01em] text-white/70 backdrop-blur-xl">
-          Add <code>NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN</code> to enable the live Mapbox scene.
+            <div className="absolute bottom-4 left-3 z-[30] flex flex-col items-start gap-1.5 md:bottom-6 md:left-6">
+              <button
+                type="button"
+                onClick={recenterMap}
+                aria-label="Re-center map"
+                className="grid h-10 w-10 place-items-center rounded-full border border-white/18 bg-[#050506]/72 text-white/84 shadow-[0_16px_44px_rgba(0,0,0,0.42),inset_0_0_0_1px_rgba(255,255,255,0.05),inset_0_10px_18px_rgba(255,255,255,0.035)] backdrop-blur-2xl transition-[border-color,background-color,color,transform] duration-300 hover:-translate-y-0.5 hover:border-white/34 hover:bg-white/[0.105] hover:text-white active:translate-y-0 md:h-11 md:w-11"
+              >
+                <MapRecenterIcon />
+              </button>
+              <div className="flex flex-col overflow-hidden rounded-[1.35rem] border border-white/18 bg-[#050506]/72 shadow-[0_16px_44px_rgba(0,0,0,0.4),inset_0_0_0_1px_rgba(255,255,255,0.045)] backdrop-blur-2xl">
+                <button
+                  type="button"
+                  onClick={() => zoomMap("in")}
+                  aria-label="Zoom in"
+                  className="grid h-10 w-10 place-items-center border-b border-white/12 text-white/84 transition-[background-color,color] duration-300 hover:bg-white/[0.105] hover:text-white md:h-11 md:w-11"
+                >
+                  <MapPlusIcon />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => zoomMap("out")}
+                  aria-label="Zoom out"
+                  className="grid h-10 w-10 place-items-center text-white/76 transition-[background-color,color] duration-300 hover:bg-white/[0.105] hover:text-white md:h-11 md:w-11"
+                >
+                  <MapMinusIcon />
+                </button>
+              </div>
+            </div>
+          </>
+        ) : null}
+
+        {!accessToken ? (
+          <div className="pointer-events-none absolute inset-x-4 bottom-8 z-[4] mx-auto max-w-md border border-white/10 bg-black/82 px-4 py-3 text-center text-[0.74rem] leading-[1.55] tracking-[-0.01em] text-white/70 backdrop-blur-xl">
+            Add <code>NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN</code> to enable the live Mapbox scene.
+          </div>
+        ) : null}
+      </div>
+
+      {accessToken ? (
+        <div className="relative z-[5] grid gap-3 border-t border-white/10 bg-black px-4 py-5 md:hidden">
+          {projectLocations.map((project, index) => {
+            const isActive = activeProjectId === project.id;
+
+            return (
+              <article
+                key={project.id}
+                className={[
+                  "grid grid-cols-[7.2rem_minmax(0,1fr)] overflow-hidden rounded-[1rem] border bg-[#090a0d] shadow-[0_20px_56px_rgba(0,0,0,0.34)]",
+                  isActive ? "border-white/22" : "border-white/10",
+                ].join(" ")}
+              >
+                <button
+                  type="button"
+                  onClick={() => selectProject(project)}
+                  className="min-h-[8.2rem] bg-cover bg-center"
+                  style={{ backgroundImage: `url(${project.imageSrc})` }}
+                  aria-label={`Go to ${project.name}`}
+                />
+                <div className="grid content-between gap-4 px-4 py-3.5">
+                  <div className="grid gap-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-[0.58rem] font-semibold uppercase tracking-[0.22em] text-white/38">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      {isActive ? (
+                        <span className="rounded-full border border-white/12 bg-white/[0.07] px-2 py-1 text-[0.5rem] font-semibold uppercase tracking-[0.14em] text-white/62">
+                          Active
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="grid gap-1.5">
+                      <span className="text-[0.95rem] font-semibold uppercase leading-[1.04] text-white">
+                        {project.name}
+                      </span>
+                      <span className="text-[0.7rem] leading-[1.4] text-white/52">
+                        {project.address}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid justify-items-start gap-2">
+                    <button
+                      type="button"
+                      onClick={() => selectProject(project)}
+                      className="text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-white/48 transition-colors hover:text-white"
+                    >
+                      Go to point
+                    </button>
+                    <a
+                      href={project.websiteUrl}
+                      target={project.websiteUrl.startsWith("http") ? "_blank" : "_self"}
+                      rel={project.websiteUrl.startsWith("http") ? "noreferrer" : undefined}
+                      className="w-fit rounded-full border border-white/14 bg-white/[0.07] px-3.5 py-1.5 text-center text-[0.55rem] font-semibold uppercase tracking-[0.16em] text-white/72 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.035)] transition-colors hover:border-white/28 hover:bg-white/[0.13] hover:text-white"
+                    >
+                      Website
+                    </a>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       ) : null}
     </section>

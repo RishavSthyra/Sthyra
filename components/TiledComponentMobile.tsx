@@ -31,15 +31,6 @@ type IntroItem = {
   text: string;
 };
 
-type SkylineTile = {
-  type: "image" | "text";
-  src?: string;
-  alt?: string;
-  title?: string;
-  text?: string;
-  span?: string;
-};
-
 type ServiceItem = {
   id: string;
   href?: string;
@@ -80,42 +71,18 @@ const MOBILE_INTRO_ITEMS: IntroItem[] = [
   },
 ];
 
-const MOBILE_SKYLINE_TILES: SkylineTile[] = [
+const MOBILE_TRANSITION_IMAGES = [
   {
-    type: "image",
-    src: `${"/SKYLINE_tiles_32"}/tile_0_2.jpg`,
-    alt: "Architectural detail tile",
-    span: "col-span-1 row-span-1",
+    src: "https://cdn.sthyra.com/sthyra-labs/Images/create_me_an_interior_of_202604300851.jpeg",
+    alt: "Premium interior visualization for an unbuilt real estate project",
   },
   {
-    type: "image",
-    src: "/Cinematic_Image_1.avif",
-    alt: "Luxury entry interior",
-    span: "col-span-2 row-span-2",
+    src: "https://cdn.sthyra.com/sthyra-labs/Images/hf_20260507_102235_b69ea62f-63ce-42d0-9b85-0fe7870d5c4e.jpg",
+    alt: "Luxury architectural exterior visualization framed by landscape",
   },
   {
-    type: "text",
-    title: "Sculpting 3D into lived spaces.",
-    text: "Sthyra creates premium architectural visualization and 3D rendering for homes, interiors, and real estate, turning design ideas into cinematic, market-ready spatial stories.",
-    span: "col-span-1 row-span-2",
-  },
-  {
-    type: "image",
-    src: "/Cinematic_Image_2.avif",
-    alt: "Luxury timber interior",
-    span: "col-span-1 row-span-1",
-  },
-  {
-    type: "image",
-    src: "/ultrarender1.avif",
-    alt: "Stone interior corridor",
-    span: "col-span-1 row-span-1",
-  },
-  {
-    type: "image",
-    src: "/ultrarender2.avif",
-    alt: "Refined luxury interior",
-    span: "col-span-2 row-span-1",
+    src: "https://cdn.sthyra.com/sthyra-labs/Images/hf_20260508_043934_d5a4a4f1-1642-4244-9566-9709780d939e.jpg",
+    alt: "Refined interior architectural visualization with cinematic lighting",
   },
 ];
 
@@ -129,8 +96,8 @@ const MOBILE_SERVICES: ServiceItem[] = [
       "Browser-based immersion designed for modern buyers, investors, and sales teams.",
       "These experiences can include interactive masterplans, tower selectors, apartment highlights, amenities, cinematic transitions, hotspots, and project storytelling.",
     ],
-    imageSrc: "/web_tiles_4x8/web_tile_1_3.jpg",
-    imageAlt: "Interactive web experience preview",
+    imageSrc: "https://cdn.sthyra.com/sthyra-labs/Images/InteractiveWebExperience.jpg",
+    imageAlt: "Interactive web experience",
     tone: "dark",
     layout: "feature",
   },
@@ -143,8 +110,8 @@ const MOBILE_SERVICES: ServiceItem[] = [
       "High-emotion visual storytelling crafted to make unbuilt spaces feel desirable and real.",
       "These films are designed for launches, presentations, social campaigns, investor meetings, and premium website hero sections.",
     ],
-    imageSrc: "/cinematic_tiles_4x8/cinematic_tile_1_3.jpg",
-    imageAlt: "Cinematic film tile",
+    imageSrc: "https://cdn.sthyra.com/sthyra-labs/Images/CinematicService.jpg",
+    imageAlt: "Cinematic film",
     tone: "light",
     layout: "text",
   },
@@ -157,7 +124,7 @@ const MOBILE_SERVICES: ServiceItem[] = [
       "Photorealistic imagery that removes doubt and elevates perceived project value.",
       "Every material, reflection, shadow, landscape layer, and atmosphere is shaped to feel believable.",
     ],
-    imageSrc: "/unreal_tiles_4x8/unreal_tile_1_3.jpg",
+    imageSrc: "https://cdn.sthyra.com/sthyra-labs/Images/ultrarealrenders%20(1).jpg",
     imageAlt: "Ultra-real render tile",
     tone: "dark",
     layout: "image-strip",
@@ -171,7 +138,7 @@ const MOBILE_SERVICES: ServiceItem[] = [
       "A living digital replica of your project, designed to make every tower, amenity, and spatial decision instantly understandable.",
       "It turns complex real estate plans into an interactive experience buyers, teams, and stakeholders can explore with confidence.",
     ],
-    imageSrc: "/pixelstreaming_tiles_4x8/pixelstreaming_tile_1_3.jpg",
+    imageSrc: "https://cdn.sthyra.com/sthyra-labs/Images/digitaltwins.png",
     imageAlt: "Pixel streaming tile",
     tone: "light",
     layout: "text",
@@ -184,8 +151,8 @@ const MOBILE_SERVICES: ServiceItem[] = [
     textLines: [
       "Immersive pre-construction sales tools that help buyers understand space, scale, views, amenities, interiors, and lifestyle before the project exists physically.",
     ],
-    imageSrc: "/vr_tiles_4x8/vr_tile_1_3.jpg",
-    imageAlt: "VR and AR immersion tile",
+    imageSrc: "https://cdn.sthyra.com/sthyra-labs/Images/arvr.png",
+    imageAlt: "VR and AR immersion",
     tone: "dark",
     layout: "feature",
   },
@@ -263,7 +230,7 @@ const MOBILE_FOOTER_LINKS = [
   { label: "Home", href: "/" },
   { label: "Services", href: "#services-mobile" },
   { label: "Reasons", href: "#reasons-mobile" },
-  { label: "Contact", href: "https://wa.me/+91-7075747159" },
+  { label: "Contact", href: "https://wa.me/917075747159" },
 ];
 
 const MOBILE_SOCIAL_LINKS = [
@@ -410,7 +377,7 @@ function MobileIntroHero() {
 function ServiceCarouselCard({ service, index }: { service: ServiceItem; index: number }) {
   const isCta = service.layout === "cta";
   const cardTone = isCta ? "bg-[#f4efe7] text-black" : "bg-[#050505] text-[#f7f1e7]";
-  const href = isCta ? "https://wa.me/+91-7075747159" : service.href ?? "#";
+  const href = isCta ? "https://wa.me/917075747159" : service.href ?? "#";
 
   return (
     <Link
@@ -659,7 +626,7 @@ function Footer() {
           </div>
 
           <a
-            href="https://wa.me/+91-7075747159"
+            href="https://wa.me/917075747159"
             className="group border-b border-white/10 bg-[#f4efe7] px-4 py-6 text-black transition-colors duration-300 hover:bg-white sm:px-6 md:px-8"
           >
             <div className="flex items-start justify-between gap-4">
@@ -733,6 +700,8 @@ export default function TiledComponentMobile({
   SECONDARY_BASEURL = "/SKYLINE_tiles_32",
   PROJECT_COORDINATES = [77.5946, 12.9716],
 }: TiledComponentMobileProps) {
+  void SECONDARY_BASEURL;
+
   const [heroReady, setHeroReady] = useState(false);
   const heroStackRef = useRef<HTMLDivElement>(null);
 
@@ -747,6 +716,43 @@ export default function TiledComponentMobile({
   }, []);
 
   useEffect(() => {
+    let frame = 0;
+    let targetProgress = 0;
+    let displayedProgress = 0;
+
+    const clampProgress = (value: number) => Math.min(1, Math.max(0, value));
+    const easeProgress = (value: number) => value * value * (3 - 2 * value);
+
+    const writeProgress = (progress: number) => {
+      const stack = heroStackRef.current;
+
+      if (!stack) {
+        return;
+      }
+
+      stack.style.setProperty("--mobile-reveal-progress", easeProgress(progress).toFixed(4));
+    };
+
+    const tick = () => {
+      displayedProgress += (targetProgress - displayedProgress) * 0.085;
+
+      if (Math.abs(targetProgress - displayedProgress) < 0.001) {
+        displayedProgress = targetProgress;
+        writeProgress(displayedProgress);
+        frame = 0;
+        return;
+      }
+
+      writeProgress(displayedProgress);
+      frame = window.requestAnimationFrame(tick);
+    };
+
+    const startTick = () => {
+      if (frame === 0) {
+        frame = window.requestAnimationFrame(tick);
+      }
+    };
+
     const updateRevealProgress = () => {
       const stack = heroStackRef.current;
 
@@ -756,10 +762,10 @@ export default function TiledComponentMobile({
 
       const viewportHeight = window.innerHeight || 1;
       const { top } = stack.getBoundingClientRect();
-      const revealDistance = viewportHeight * 0.2;
-      const progress = Math.min(1, Math.max(0, -top / revealDistance));
+      const revealDistance = Math.max(1, stack.offsetHeight - viewportHeight);
 
-      stack.style.setProperty("--mobile-reveal-progress", progress.toFixed(4));
+      targetProgress = clampProgress(-top / revealDistance);
+      startTick();
     };
 
     updateRevealProgress();
@@ -769,21 +775,18 @@ export default function TiledComponentMobile({
     return () => {
       window.removeEventListener("scroll", updateRevealProgress);
       window.removeEventListener("resize", updateRevealProgress);
+
+      if (frame !== 0) {
+        window.cancelAnimationFrame(frame);
+      }
     };
   }, []);
 
-  const skylineTiles = MOBILE_SKYLINE_TILES.map((tile) =>
-    tile.src?.startsWith("/SKYLINE_tiles_32")
-      ? { ...tile, src: tile.src.replace("/SKYLINE_tiles_32", SECONDARY_BASEURL) }
-      : tile,
-  );
-  const transitionImages = skylineTiles
-    .filter((tile) => tile.type === "image" && Boolean(tile.src))
-    .slice(0, 4);
+  const transitionImages = MOBILE_TRANSITION_IMAGES;
 
   return (
     <div className={`${montserrat.variable} ${dmSans.variable} mobile-home overflow-x-hidden bg-black text-[#f7f1e7] lg:hidden`}>
-      <div ref={heroStackRef} className="relative z-0 h-[100svh] bg-black [--mobile-reveal-progress:0]">
+      <div ref={heroStackRef} className="relative z-0 h-[300svh] bg-black [--mobile-reveal-progress:0]">
         <div className="sticky top-0 h-[100svh] overflow-hidden">
           <MobileIntroHero />
           <section
@@ -1009,7 +1012,7 @@ export default function TiledComponentMobile({
             </div>
 
             <a
-              href="https://wa.me/+91-7075747159"
+              href="https://wa.me/917075747159"
               className="group flex min-h-[19rem] flex-col justify-between border-t border-white/[0.08] px-5 py-6 text-[#f7f1e7] transition-colors duration-300 hover:bg-white/[0.035] md:min-h-0 md:border-l md:border-t-0 md:px-7 md:py-8"
             >
               <div className="flex items-start justify-between gap-5">
