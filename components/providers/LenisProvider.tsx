@@ -27,6 +27,10 @@ export default function LenisProvider({ children }: LenisProviderProps) {
       wheelMultiplier: isTouchViewport ? 0.88 : 0.92,
       syncTouch: isTouchViewport,
       touchMultiplier: isTouchViewport ? 1.42 : 1,
+      prevent: (node) =>
+        node.closest(
+          "[data-lenis-prevent], .site-horizontal-scroll, .mobile-transition-carousel",
+        ) !== null,
       easing: (value) =>
         isTouchViewport ? 1 - Math.pow(1 - value, 2.4) : 1 - Math.pow(1 - value, 3),
     });

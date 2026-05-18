@@ -871,8 +871,9 @@ export default function TiledComponentMobile({
         />
 
         <div
+          data-lenis-prevent
           aria-label="Visualization image carousel"
-          className="mobile-transition-carousel mt-8 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:scroll-px-6 sm:px-6 md:mt-10 md:gap-4 md:scroll-px-8 md:px-8 [&::-webkit-scrollbar]:hidden"
+          className="site-horizontal-scroll mobile-transition-carousel mt-8 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:scroll-px-6 sm:px-6 md:mt-10 md:gap-4 md:scroll-px-8 md:px-8 [&::-webkit-scrollbar]:hidden"
         >
           {transitionImages.map((tile, index) => (
             <figure
@@ -905,8 +906,9 @@ export default function TiledComponentMobile({
         />
 
         <div
+          data-lenis-prevent
           aria-label="Services carousel"
-          className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-3 [-ms-overflow-style:none] [scrollbar-width:none] sm:scroll-px-6 sm:px-6 md:mt-10 md:gap-5 md:scroll-px-8 md:px-8 [&::-webkit-scrollbar]:hidden"
+          className="site-horizontal-scroll mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-3 [-ms-overflow-style:none] [scrollbar-width:none] sm:scroll-px-6 sm:px-6 md:mt-10 md:gap-5 md:scroll-px-8 md:px-8 [&::-webkit-scrollbar]:hidden"
         >
           {MOBILE_SERVICES.map((service, index) => (
             <ServiceCarouselCard key={service.id} service={service} index={index} />

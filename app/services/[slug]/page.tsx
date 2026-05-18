@@ -22,13 +22,22 @@ type ServicePageProps = {
   }>;
 };
 
+const serviceMenuItems = SERVICE_PAGES.map((service) => ({
+  label: service.hero.eyebrow,
+  ariaLabel: `View ${service.hero.eyebrow}`,
+  link: `/services/${service.slug}`,
+}));
+
 const menuItems = [
   { label: "Home", ariaLabel: "Go to home page", link: "/" },
-  // { label: "About", ariaLabel: "Learn about us", link: "/about" },
-  { label: "Services", ariaLabel: "View our services", link: "/services" },
-  // { label: "Contact", ariaLabel: "Get in touch", link: "/contact" },
+  {
+    label: "Services",
+    ariaLabel: "Browse services",
+    link: "/services",
+    subItems: serviceMenuItems,
+  },
+  { label: "Contact", ariaLabel: "Contact Sthyra", link: "/contact" },
 ];
-
 
 const socialItems = [
   { label: "Instagram", link: "https://instagram.com" },

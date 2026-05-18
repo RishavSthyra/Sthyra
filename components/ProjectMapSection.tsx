@@ -736,7 +736,7 @@ export default function ProjectMapSection({
       id={sectionId}
       className={`${openSans.className} project-map-section relative z-[7] bg-black text-[#f5efe4] md:h-[100svh] md:overflow-hidden`}
     >
-      <div className="project-map-viewport relative h-[100svh] overflow-hidden">
+      <div className="project-map-viewport relative h-[60svh] overflow-hidden md:h-[100svh]">
         <div
           className="absolute inset-0 overflow-hidden"
           style={{

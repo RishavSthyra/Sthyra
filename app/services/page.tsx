@@ -24,9 +24,20 @@ const dmSans = DM_Sans({
   display: "optional",
 });
 
+const serviceMenuItems = SERVICE_PAGES.map((service) => ({
+  label: service.hero.eyebrow,
+  ariaLabel: `View ${service.hero.eyebrow}`,
+  link: `/services/${service.slug}`,
+}));
+
 const menuItems = [
   { label: "Home", ariaLabel: "Go to home page", link: "/" },
-  { label: "Services", ariaLabel: "View all services", link: "/services" },
+  {
+    label: "Services",
+    ariaLabel: "Browse services",
+    link: "/services",
+    subItems: serviceMenuItems,
+  },
   { label: "Contact", ariaLabel: "Contact Sthyra", link: "/contact" },
 ];
 
@@ -397,12 +408,15 @@ export default function ServicesPage() {
 
         <section id="service-index" className="bg-black px-5 py-12 sm:px-8 md:px-10 md:py-18 lg:px-14">
           <div className="mx-auto max-w-[118rem]">
-            <div className="service-work-strip grid gap-4 md:grid-cols-2 lg:flex lg:h-[30rem]">
+            <div
+              data-lenis-prevent
+              className="site-horizontal-scroll service-work-strip -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-5 px-5 pb-2 sm:-mx-8 sm:scroll-px-8 sm:px-8 md:-mx-10 md:scroll-px-10 md:px-10 lg:mx-0 lg:h-[30rem] lg:overflow-visible lg:px-0 lg:pb-0"
+            >
               {SERVICE_PAGES.map((service, index) => (
                 <Link
                   key={service.slug}
                   href={`/services/${service.slug}`}
-                  className="service-work-card group service-hero-copy-item relative min-h-[21rem] overflow-hidden border border-white/10 bg-white/[0.025] opacity-0 transition-[border-color,filter,flex] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-white/30 md:min-h-[23rem] lg:min-h-0 lg:flex-[1]"
+                  className="service-work-card group service-hero-copy-item relative min-h-[21rem] w-[78vw] shrink-0 snap-center overflow-hidden border border-white/10 bg-white/[0.025] opacity-0 transition-[border-color,filter,flex] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-white/30 sm:w-[58vw] md:min-h-[23rem] md:w-[42vw] lg:min-h-0 lg:w-auto lg:flex-[1] lg:snap-none"
                   style={{ animationDelay: `${260 + index * 95}ms` }}
                 >
                   <Image
@@ -410,10 +424,10 @@ export default function ServicesPage() {
                     alt={service.imagePlaceholders[0]?.imageAlt ?? service.hero.eyebrow}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                    className="object-cover opacity-[0.66] grayscale transition duration-700 group-hover:scale-[1.045] group-hover:opacity-[0.88] group-hover:grayscale-0"
+                    className="object-cover opacity-[0.78] transition duration-700 group-hover:scale-[1.045] group-hover:opacity-[0.9]"
                   />
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.42)_46%,rgba(0,0,0,0.9)_100%)]" />
-                  <div className="absolute inset-0 flex flex-col justify-between p-5 sm:p-6">
+                  <div className="absolute inset-0 p-5 sm:p-6">
                     <div className="flex items-center justify-between gap-4">
                       <span className="text-[0.58rem] font-semibold uppercase tracking-[0.28em] text-white/46">
                         {String(index + 1).padStart(2, "0")}
@@ -423,14 +437,14 @@ export default function ServicesPage() {
                       </span>
                     </div>
 
-                    <div>
+                    <div className="absolute inset-x-5 bottom-5 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-3 group-focus-visible:-translate-y-3 sm:inset-x-6 sm:bottom-6">
                       <p className="m-0 text-[0.56rem] font-semibold uppercase tracking-[0.26em] text-white/52">
                         {service.hero.eyebrow}
                       </p>
-                      <h2 className={`${montserrat.className} mt-4 max-w-[14ch] text-[clamp(1.05rem,1.25vw,1.55rem)] font-semibold leading-[1] tracking-[-0.038em] text-white`}>
+                      <h2 className={`${montserrat.className} mt-4 max-w-[14ch] text-[clamp(1.02rem,1.08vw,1.32rem)] font-semibold leading-[1.02] tracking-[-0.034em] text-white`}>
                         {service.hero.eyebrow}
                       </h2>
-                      <p className="mt-4 max-w-[28rem] translate-y-2 text-[0.78rem] leading-[1.55] tracking-[-0.006em] text-white/0 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:text-white/64 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:text-white/64 group-focus-visible:opacity-100">
+                      <p className="mt-3 max-w-[20rem] translate-y-2 text-[0.74rem] leading-[1.5] tracking-[-0.004em] text-white/0 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:text-white/64 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:text-white/64 group-focus-visible:opacity-100">
                         {serviceSummaries[index] ?? "Premium spatial storytelling for property teams."}
                       </p>
                     </div>
@@ -466,28 +480,31 @@ export default function ServicesPage() {
               <h2 className={`${montserrat.className} m-0 max-w-[15ch] text-[clamp(1.55rem,2.35vw,2.75rem)] font-semibold leading-[0.96] tracking-[-0.052em] text-[#f5efe4]`}>
                 Premium outputs for launch, sales, and buyer confidence.
               </h2>
-              <div className="service-work-strip grid gap-3 sm:grid-cols-2 lg:flex lg:h-[24rem]">
+              <div
+                data-lenis-prevent
+                className="site-horizontal-scroll service-work-strip -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-5 px-5 pb-2 sm:-mx-8 sm:scroll-px-8 sm:px-8 md:-mx-10 md:scroll-px-10 md:px-10 lg:mx-0 lg:h-[24rem] lg:overflow-visible lg:px-0 lg:pb-0"
+              >
                 {outputItems.map((item) => (
                   <article
                     key={item.title}
-                    className="service-work-card group relative min-h-[18rem] overflow-hidden border border-white/10 bg-white/[0.025] transition-[filter,flex,border-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-white/28 lg:min-h-0 lg:flex-[1]"
+                    className="service-work-card group relative min-h-[18rem] w-[72vw] shrink-0 snap-center overflow-hidden border border-white/10 bg-white/[0.025] transition-[filter,flex,border-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-white/28 sm:w-[48vw] md:w-[38vw] lg:min-h-0 lg:w-auto lg:flex-[1] lg:snap-none"
                   >
                     <Image
                       src={item.imageSrc}
                       alt=""
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 30vw"
-                      className="object-cover opacity-[0.68] grayscale transition duration-700 group-hover:scale-[1.045] group-hover:opacity-[0.86] group-hover:grayscale-0"
+                      className="object-cover opacity-[0.78] transition duration-700 group-hover:scale-[1.045] group-hover:opacity-[0.9]"
                     />
                     <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.04)_0%,rgba(0,0,0,0.48)_48%,rgba(0,0,0,0.9)_100%)]" />
-                    <div className="absolute inset-x-0 bottom-0 p-5">
+                    <div className="absolute inset-x-0 bottom-0 p-5 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-3">
                       <p className="m-0 text-[0.56rem] font-semibold uppercase tracking-[0.26em] text-white/48">
                         Output
                       </p>
-                      <h3 className="mt-3 max-w-[13ch] text-[clamp(1.02rem,1.18vw,1.5rem)] font-semibold leading-[1] tracking-[-0.038em] text-white">
+                      <h3 className="mt-3 max-w-[13ch] text-[clamp(1rem,1.08vw,1.32rem)] font-semibold leading-[1.02] tracking-[-0.034em] text-white">
                         {item.title}
                       </h3>
-                      <p className="mt-3 max-w-[20rem] translate-y-2 text-[0.76rem] leading-[1.55] tracking-[-0.006em] text-white/0 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:text-white/62 group-hover:opacity-100">
+                      <p className="mt-3 max-w-[18rem] translate-y-2 text-[0.74rem] leading-[1.5] tracking-[-0.004em] text-white/0 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:text-white/62 group-hover:opacity-100">
                         {item.body}
                       </p>
                     </div>

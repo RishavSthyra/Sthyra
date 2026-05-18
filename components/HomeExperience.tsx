@@ -86,6 +86,15 @@ export default function HomeExperience() {
   }, []);
 
   useEffect(() => {
+    if (usesDesktopHero !== true) {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+      window.dispatchEvent(
+        new CustomEvent("sthyra:lenis-lock", { detail: { locked: false } }),
+      );
+      return;
+    }
+
     window.dispatchEvent(
       new CustomEvent("sthyra:lenis-lock", { detail: { locked: shouldHoldForDesktopHero } }),
     );
@@ -106,7 +115,7 @@ export default function HomeExperience() {
         new CustomEvent("sthyra:lenis-lock", { detail: { locked: false } }),
       );
     };
-  }, [shouldHoldForDesktopHero]);
+  }, [shouldHoldForDesktopHero, usesDesktopHero]);
 
   useEffect(() => {
     if (!heroReady) {

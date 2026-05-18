@@ -62,6 +62,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased">
+      <head>
+        <link rel="preconnect" href="https://cdn.sthyra.com" crossOrigin="" />
+        <link rel="preconnect" href="https://api.mapbox.com" crossOrigin="" />
+        <link rel="preload" as="image" href="/images_last_frame.jpg" />
+        <link rel="preload" as="image" href="/Cinematic_Image_1.avif" />
+        <link rel="preload" as="image" href="/ultrarender1.avif" />
+        <link rel="preload" as="image" href="/cinematic_page_tiles/cinematic_tile_0_2.jpg" />
+        <link rel="preload" as="image" href="/cinematic_page_tiles/cinematic_tile_0_3.jpg" />
+      </head>
       <Script
         src="https://www.googletagmanager.com/gtag/js?id=AW-18170775934"
         strategy="afterInteractive"
