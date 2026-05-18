@@ -409,7 +409,6 @@ export default function ServicesPage() {
         <section id="service-index" className="bg-black px-5 py-12 sm:px-8 md:px-10 md:py-18 lg:px-14">
           <div className="mx-auto max-w-[118rem]">
             <div
-              data-lenis-prevent
               className="site-horizontal-scroll service-work-strip -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-5 px-5 pb-2 sm:-mx-8 sm:scroll-px-8 sm:px-8 md:-mx-10 md:scroll-px-10 md:px-10 lg:mx-0 lg:h-[30rem] lg:overflow-visible lg:px-0 lg:pb-0"
             >
               {SERVICE_PAGES.map((service, index) => (
@@ -481,7 +480,6 @@ export default function ServicesPage() {
                 Premium outputs for launch, sales, and buyer confidence.
               </h2>
               <div
-                data-lenis-prevent
                 className="site-horizontal-scroll service-work-strip -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-5 px-5 pb-2 sm:-mx-8 sm:scroll-px-8 sm:px-8 md:-mx-10 md:scroll-px-10 md:px-10 lg:mx-0 lg:h-[24rem] lg:overflow-visible lg:px-0 lg:pb-0"
               >
                 {outputItems.map((item) => (

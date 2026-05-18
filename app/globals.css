@@ -67,6 +67,7 @@ body {
 }
 
 @supports (overflow: clip) {
+
   html,
   body,
   .mobile-home {
@@ -387,6 +388,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .mobile-section-reveal,
   .contact-hero-copy,
   .contact-form-card,
@@ -619,6 +621,14 @@ body {
   transition: transform 0.08s ease-out;
 }
 
+@media (max-width: 767px) {
+  .project-map-section .mapboxgl-ctrl-bottom-right {
+    display: none;
+    bottom: .75rem;
+    right: .75rem;
+  }
+}
+
 .project-map-popup-shell {
   display: grid;
   gap: 0;
@@ -698,7 +708,9 @@ body {
   }
 }
 
-@media (max-width: 767px), (prefers-reduced-motion: reduce) {
+@media (max-width: 767px),
+(prefers-reduced-motion: reduce) {
+
   .project-map-marker::before,
   .project-map-marker::after {
     animation: none;

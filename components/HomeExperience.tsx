@@ -89,15 +89,8 @@ export default function HomeExperience() {
     if (usesDesktopHero !== true) {
       document.body.style.overflow = "";
       document.documentElement.style.overflow = "";
-      window.dispatchEvent(
-        new CustomEvent("sthyra:lenis-lock", { detail: { locked: false } }),
-      );
       return;
     }
-
-    window.dispatchEvent(
-      new CustomEvent("sthyra:lenis-lock", { detail: { locked: shouldHoldForDesktopHero } }),
-    );
 
     if (!shouldHoldForDesktopHero) {
       return;
@@ -111,9 +104,6 @@ export default function HomeExperience() {
     return () => {
       document.body.style.overflow = previousBodyOverflow;
       document.documentElement.style.overflow = previousHtmlOverflow;
-      window.dispatchEvent(
-        new CustomEvent("sthyra:lenis-lock", { detail: { locked: false } }),
-      );
     };
   }, [shouldHoldForDesktopHero, usesDesktopHero]);
 

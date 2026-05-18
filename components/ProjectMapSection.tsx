@@ -66,21 +66,6 @@ function MapRecenterIcon() {
   );
 }
 
-function MapDownIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M12 4.75v13.5M6.75 13.25 12 18.5l5.25-5.25"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-
 function getFirstSymbolLayerId(map: mapboxgl.Map) {
   return map
     .getStyle()
@@ -102,7 +87,6 @@ export default function ProjectMapSection({
   const openPopupByIdRef = useRef<(projectId: string) => void>(() => {});
   const orbitTimerRef = useRef<number | null>(null);
   const orbitActiveRef = useRef(false);
-  const lenisUnlockTimerRef = useRef<number | null>(null);
   const snapLockRef = useRef(false);
   const activeProjectIdRef = useRef("");
   const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN?.trim() ?? "";
@@ -210,14 +194,7 @@ export default function ProjectMapSection({
     snapLockRef.current = true;
     const sectionTop = sectionRef.current?.offsetTop ?? 0;
 
-    window.dispatchEvent(
-      new CustomEvent("sthyra:lenis-lock", { detail: { locked: false } }),
-    );
-    window.dispatchEvent(
-      new CustomEvent("sthyra:lenis-scroll-to", {
-        detail: { target: sectionTop, immediate: false },
-      }),
-    );
+    window.scrollTo({ top: sectionTop, behavior: "smooth" });
     window.setTimeout(() => {
       snapLockRef.current = false;
     }, 1050);
@@ -261,22 +238,6 @@ export default function ProjectMapSection({
     },
     [flyToProject, setActiveProject, snapToMap, startProjectOrbit],
   );
-
-  const scrollPastMap = useCallback(() => {
-    const section = sectionRef.current;
-
-    if (!section) {
-      return;
-    }
-
-    const target = section.offsetTop + section.offsetHeight;
-
-    window.dispatchEvent(
-      new CustomEvent("sthyra:lenis-scroll-to", {
-        detail: { target, immediate: false },
-      }),
-    );
-  }, []);
 
   useEffect(() => {
     setActiveProjectId((current) =>
@@ -400,37 +361,11 @@ export default function ProjectMapSection({
     }
     map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
 
-    const lockPageScroll = () => {
-      if (lenisUnlockTimerRef.current !== null) {
-        window.clearTimeout(lenisUnlockTimerRef.current);
-      }
-
-      window.dispatchEvent(
-        new CustomEvent("sthyra:lenis-lock", { detail: { locked: true } }),
-      );
-    };
-
-    const unlockPageScroll = (delay = 260) => {
-      if (lenisUnlockTimerRef.current !== null) {
-        window.clearTimeout(lenisUnlockTimerRef.current);
-      }
-
-      lenisUnlockTimerRef.current = window.setTimeout(() => {
-        window.dispatchEvent(
-          new CustomEvent("sthyra:lenis-lock", { detail: { locked: false } }),
-        );
-        lenisUnlockTimerRef.current = null;
-      }, delay);
-    };
-
     const handleInteractionStart = () => {
       stopProjectOrbit();
-      lockPageScroll();
     };
 
     const handleInteractionEnd = () => {
-      unlockPageScroll(220);
-
       const activeProject = projectLocations.find(
         (project) => project.id === activeProjectIdRef.current,
       );
@@ -697,16 +632,8 @@ export default function ProjectMapSection({
       map.off("moveend", keepActivePopupOpen);
       visibilityObserver.disconnect();
 
-      if (lenisUnlockTimerRef.current !== null) {
-        window.clearTimeout(lenisUnlockTimerRef.current);
-        lenisUnlockTimerRef.current = null;
-      }
-
       stopProjectOrbit();
 
-      window.dispatchEvent(
-        new CustomEvent("sthyra:lenis-lock", { detail: { locked: false } }),
-      );
       markerHandles.forEach(({ marker, markerElement, openPopup, openPopupAndOrbit }) => {
         markerElement.removeEventListener("mouseenter", openPopup);
         markerElement.removeEventListener("focus", openPopup);
@@ -736,7 +663,7 @@ export default function ProjectMapSection({
       id={sectionId}
       className={`${openSans.className} project-map-section relative z-[7] bg-black text-[#f5efe4] md:h-[100svh] md:overflow-hidden`}
     >
-      <div className="project-map-viewport relative h-[60svh] overflow-hidden md:h-[100svh]">
+      <div className="project-map-viewport relative h-[70svh] overflow-hidden md:h-[100svh]">
         <div
           className="absolute inset-0 overflow-hidden"
           style={{
@@ -890,15 +817,6 @@ export default function ProjectMapSection({
           </div>
         ) : null}
 
-        <button
-          type="button"
-          onClick={scrollPastMap}
-          aria-label="Go to next section"
-          className="absolute bottom-3 right-3 z-[75] inline-flex min-h-8 items-center gap-1.5 rounded-full border border-white/16 bg-[#050506]/84 px-3 text-[0.52rem] font-semibold uppercase tracking-[0.16em] text-white/78 shadow-[0_12px_32px_rgba(0,0,0,0.42),inset_0_0_0_1px_rgba(255,255,255,0.045)] backdrop-blur-2xl transition-[border-color,background-color,color,transform] duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/[0.105] hover:text-white active:translate-y-0 md:bottom-6 md:right-6 md:min-h-9 md:px-3.5"
-        >
-          <span>Down</span>
-          <MapDownIcon />
-        </button>
       </div>
 
       {accessToken ? (

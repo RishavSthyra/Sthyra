@@ -734,7 +734,7 @@ export default function TiledComponentMobile({
     };
 
     const tick = () => {
-      displayedProgress += (targetProgress - displayedProgress) * 0.24;
+      displayedProgress += (targetProgress - displayedProgress) * 0.46;
 
       if (Math.abs(targetProgress - displayedProgress) < 0.001) {
         displayedProgress = targetProgress;
@@ -786,7 +786,7 @@ export default function TiledComponentMobile({
 
   return (
     <div className={`${montserrat.variable} ${dmSans.variable} mobile-home overflow-x-hidden bg-black text-[#f7f1e7] lg:hidden`}>
-      <div ref={heroStackRef} className="relative z-0 h-[172svh] bg-black [--mobile-reveal-progress:0]">
+      <div ref={heroStackRef} className="relative z-0 h-[128svh] bg-black [--mobile-reveal-progress:0]">
         <div className="sticky top-0 h-[100svh] overflow-hidden">
           <MobileIntroHero />
           <section
@@ -871,7 +871,6 @@ export default function TiledComponentMobile({
         />
 
         <div
-          data-lenis-prevent
           aria-label="Visualization image carousel"
           className="site-horizontal-scroll mobile-transition-carousel mt-8 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:scroll-px-6 sm:px-6 md:mt-10 md:gap-4 md:scroll-px-8 md:px-8 [&::-webkit-scrollbar]:hidden"
         >
@@ -906,7 +905,6 @@ export default function TiledComponentMobile({
         />
 
         <div
-          data-lenis-prevent
           aria-label="Services carousel"
           className="site-horizontal-scroll mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-3 [-ms-overflow-style:none] [scrollbar-width:none] sm:scroll-px-6 sm:px-6 md:mt-10 md:gap-5 md:scroll-px-8 md:px-8 [&::-webkit-scrollbar]:hidden"
         >
