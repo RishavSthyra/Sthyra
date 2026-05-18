@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import LenisProvider from "@/components/providers/LenisProvider";
 import { HOME_SEO, SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/seo";
@@ -61,6 +62,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased">
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=AW-18170775934"
+        strategy="afterInteractive"
+      />
+      <Script id="google-ads-gtag" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'AW-18170775934');
+        `}
+      </Script>
       <body className="min-h-full overflow-x-hidden bg-black font-sans text-white">
         <LenisProvider>{children}</LenisProvider>
       </body>

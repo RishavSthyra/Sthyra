@@ -36,6 +36,7 @@ const menuItems = [
     ariaLabel: "Browse services",
     subItems: serviceMenuItems,
   },
+  { label: "Contact", ariaLabel: "Contact Sthyra", link: "/contact" },
 ];
 
 const socialItems = [

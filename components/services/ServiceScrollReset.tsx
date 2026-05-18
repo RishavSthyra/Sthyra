@@ -21,13 +21,7 @@ export default function ServiceScrollReset() {
   useLayoutEffect(() => {
     scrollToPageStart();
 
-    const frame = window.requestAnimationFrame(scrollToPageStart);
-    const timer = window.setTimeout(scrollToPageStart, 80);
-
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.clearTimeout(timer);
-    };
+    return undefined;
   }, [pathname]);
 
   return null;

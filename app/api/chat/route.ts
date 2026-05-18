@@ -5,6 +5,14 @@ type ChatMessage = {
   content: string;
 };
 
+type ChatIntent = {
+  primaryIntent: string;
+  serviceInterest: string;
+  pricingInterest: boolean;
+  bookingInterest: boolean;
+  leadQuality: "early" | "warm" | "hot";
+};
+
 const STHYRA_KNOWLEDGE = {
   company:
     "Sthyra is a premium architectural visualization and digital spatial storytelling studio based in Bangalore, India.",
@@ -113,6 +121,64 @@ function buildConversationSignals(history: ChatMessage[]) {
   }
 
   return Array.from(signals).join(" ");
+}
+
+function detectChatIntent(message: string, history: ChatMessage[]): ChatIntent {
+  const combinedText = [...history, { role: "user" as const, content: message }]
+    .filter((item) => item.role === "user")
+    .map((item) => item.content.toLowerCase())
+    .join(" ");
+
+  const pricingInterest = /(price|pricing|cost|budget|quote|package)/.test(combinedText);
+  const bookingInterest = /(book|call|meeting|consult|talk|schedule|contact|email|phone)/.test(combinedText);
+  const hasProjectSignal =
+    /(project|site|property|apartment|villa|township|commercial|interior|exterior|launch|developer|architect|sales)/.test(
+      combinedText,
+    );
+
+  let serviceInterest = "General inquiry";
+
+  if (/(website|interactive|web|masterplan|selector|hotspot)/.test(combinedText)) {
+    serviceInterest = "Interactive Web Experiences";
+  } else if (/(film|video|cinematic|launch|campaign)/.test(combinedText)) {
+    serviceInterest = "Cinematic Real Estate Films";
+  } else if (/(render|image|visual|interior|exterior|photoreal)/.test(combinedText)) {
+    serviceInterest = "Ultra Real Renders";
+  } else if (/(vr|ar|immersive)/.test(combinedText)) {
+    serviceInterest = "VR and AR Experiences";
+  } else if (/(digital twin|twin)/.test(combinedText)) {
+    serviceInterest = "Digital Twins";
+  } else if (/(pixel streaming|real time|realtime|unreal)/.test(combinedText)) {
+    serviceInterest = "Pixel Streaming";
+  }
+
+  let primaryIntent = "General inquiry";
+
+  if (bookingInterest) {
+    primaryIntent = "Book consultation";
+  } else if (pricingInterest) {
+    primaryIntent = "Pricing";
+  } else if (serviceInterest !== "General inquiry") {
+    primaryIntent = "Service exploration";
+  } else if (/(portfolio|work|example|case study|sample)/.test(combinedText)) {
+    primaryIntent = "Portfolio request";
+  }
+
+  let leadQuality: ChatIntent["leadQuality"] = "early";
+
+  if (bookingInterest || (pricingInterest && hasProjectSignal)) {
+    leadQuality = "hot";
+  } else if (pricingInterest || hasProjectSignal || serviceInterest !== "General inquiry") {
+    leadQuality = "warm";
+  }
+
+  return {
+    primaryIntent,
+    serviceInterest,
+    pricingInterest,
+    bookingInterest,
+    leadQuality,
+  };
 }
 
 function buildSystemPrompt(history: ChatMessage[]) {
@@ -272,10 +338,72 @@ function getFallbackResponse(message: string, history: ChatMessage[]) {
   return "Sthyra helps developers, architects, and luxury property brands make unbuilt spaces feel clear, premium, and ready to present. Tell me what you are planning, and I’ll help you find the right service.";
 }
 
+function buildConversationText(history: ChatMessage[], latestMessage: string, assistantReply: string) {
+  return [
+    ...history,
+    { role: "user" as const, content: latestMessage },
+    { role: "assistant" as const, content: assistantReply },
+  ]
+    .slice(-12)
+    .map((item) => `${item.role}: ${item.content}`)
+    .join("\n\n");
+}
+
+async function sendChatLeadToWebhook({
+  request,
+  message,
+  assistantReply,
+  history,
+  intent,
+}: {
+  request: NextRequest;
+  message: string;
+  assistantReply: string;
+  history: ChatMessage[];
+  intent: ChatIntent;
+}) {
+  const webhookUrl = process.env.STHYRA_CHAT_WEBHOOK_URL?.trim();
+
+  if (!webhookUrl) {
+    return;
+  }
+
+  const payload = {
+    createdAt: new Date().toISOString(),
+    pageUrl: request.headers.get("referer") ?? "",
+    userAgent: request.headers.get("user-agent") ?? "",
+    ipHint:
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      request.headers.get("x-real-ip") ??
+      "",
+    message,
+    assistantReply,
+    primaryIntent: intent.primaryIntent,
+    serviceInterest: intent.serviceInterest,
+    pricingInterest: intent.pricingInterest ? "Yes" : "No",
+    bookingInterest: intent.bookingInterest ? "Yes" : "No",
+    leadQuality: intent.leadQuality,
+    conversation: buildConversationText(history, message, assistantReply),
+  };
+
+  try {
+    await fetch(webhookUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    console.error("Failed to send chat lead webhook:", error);
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { message, history } = await request.json();
     const chatHistory = normalizeHistory(history);
+    const intent = detectChatIntent(message, chatHistory);
 
     if (!message) {
       return NextResponse.json(
@@ -287,8 +415,17 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
 
     if (!apiKey) {
+      const fallbackMessage = getFallbackResponse(message, chatHistory);
+      await sendChatLeadToWebhook({
+        request,
+        message,
+        assistantReply: fallbackMessage,
+        history: chatHistory,
+        intent,
+      });
+
       return NextResponse.json({
-        message: getFallbackResponse(message, chatHistory),
+        message: fallbackMessage,
       });
     }
 
@@ -353,6 +490,14 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    await sendChatLeadToWebhook({
+      request,
+      message,
+      assistantReply: aiMessage,
+      history: chatHistory,
+      intent,
+    });
 
     return NextResponse.json({ message: aiMessage });
   } catch (error) {

@@ -66,6 +66,21 @@ function MapRecenterIcon() {
   );
 }
 
+function MapDownIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 4.75v13.5M6.75 13.25 12 18.5l5.25-5.25"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+
 function getFirstSymbolLayerId(map: mapboxgl.Map) {
   return map
     .getStyle()
@@ -246,6 +261,22 @@ export default function ProjectMapSection({
     },
     [flyToProject, setActiveProject, snapToMap, startProjectOrbit],
   );
+
+  const scrollPastMap = useCallback(() => {
+    const section = sectionRef.current;
+
+    if (!section) {
+      return;
+    }
+
+    const target = section.offsetTop + section.offsetHeight;
+
+    window.dispatchEvent(
+      new CustomEvent("sthyra:lenis-scroll-to", {
+        detail: { target, immediate: false },
+      }),
+    );
+  }, []);
 
   useEffect(() => {
     setActiveProjectId((current) =>
@@ -858,10 +889,20 @@ export default function ProjectMapSection({
             Add <code>NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN</code> to enable the live Mapbox scene.
           </div>
         ) : null}
+
+        <button
+          type="button"
+          onClick={scrollPastMap}
+          aria-label="Go to next section"
+          className="absolute bottom-3 right-3 z-[75] inline-flex min-h-8 items-center gap-1.5 rounded-full border border-white/16 bg-[#050506]/84 px-3 text-[0.52rem] font-semibold uppercase tracking-[0.16em] text-white/78 shadow-[0_12px_32px_rgba(0,0,0,0.42),inset_0_0_0_1px_rgba(255,255,255,0.045)] backdrop-blur-2xl transition-[border-color,background-color,color,transform] duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/[0.105] hover:text-white active:translate-y-0 md:bottom-6 md:right-6 md:min-h-9 md:px-3.5"
+        >
+          <span>Down</span>
+          <MapDownIcon />
+        </button>
       </div>
 
       {accessToken ? (
-        <div className="relative z-[5] grid gap-3 border-t border-white/10 bg-black px-4 py-5 md:hidden">
+        <div className="relative z-[5] grid gap-3 border-t border-white/10 bg-black px-4 pb-5 pt-0 md:hidden">
           {projectLocations.map((project, index) => {
             const isActive = activeProjectId === project.id;
 

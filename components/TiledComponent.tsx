@@ -243,7 +243,10 @@ const FOOTER_SOCIAL_LINKS = [
   { label: "LinkedIn", href: "https://linkedin.com" },
 ];
 
-const FOOTER_POLICY_LINKS = ["Privacy policy", "Terms & conditions"];
+const FOOTER_POLICY_LINKS = [
+  { label: "Privacy policy", href: "/privacy-policy" },
+  { label: "Terms & conditions", href: "/terms-and-conditions" },
+];
 
 const INTRO_HEADLINE = [
   "We bridge the gap between blueprint",
@@ -3161,9 +3164,13 @@ export default function CreateImageFromTiles({
           <div className="flex min-h-[9rem] items-end border-b border-r border-white/10 bg-black px-8 py-8 md:px-10 xl:px-11">
             <div className="flex flex-col gap-3 text-[clamp(0.84rem,0.9vw,0.98rem)] leading-[1.25] tracking-[-0.02em] text-white/90">
               {FOOTER_POLICY_LINKS.map((item) => (
-                <p key={item} className="m-0">
-                  {item}
-                </p>
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="w-fit transition-colors duration-300 hover:text-white/64"
+                >
+                  {item.label}
+                </Link>
               ))}
             </div>
           </div>

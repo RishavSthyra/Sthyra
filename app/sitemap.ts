@@ -28,6 +28,34 @@ export default function sitemap(): MetadataRoute.Sitemap {
         absoluteUrl("/Cinematic_Image_1.avif"),
       ],
     },
+    {
+      url: absoluteUrl("/contact"),
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.8,
+      images: [absoluteUrl("/images_last_frame.jpg")],
+    },
+    {
+      url: absoluteUrl("/services"),
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.9,
+      images: [absoluteUrl("/images_last_frame.jpg")],
+    },
+    {
+      url: absoluteUrl("/privacy-policy"),
+      lastModified,
+      changeFrequency: "yearly",
+      priority: 0.4,
+      images: [absoluteUrl("/images_last_frame.jpg")],
+    },
+    {
+      url: absoluteUrl("/terms-and-conditions"),
+      lastModified,
+      changeFrequency: "yearly",
+      priority: 0.4,
+      images: [absoluteUrl("/images_last_frame.jpg")],
+    },
     ...serviceUrls,
   ];
 }

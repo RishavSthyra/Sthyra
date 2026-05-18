@@ -240,8 +240,8 @@ const MOBILE_SOCIAL_LINKS = [
 ];
 
 const MOBILE_POLICY_LINKS = [
-  { label: "Privacy policy", href: "#" },
-  { label: "Terms & conditions", href: "#" },
+  { label: "Privacy policy", href: "/privacy-policy" },
+  { label: "Terms & conditions", href: "/terms-and-conditions" },
 ];
 
 function EditorialLabel({ children, light = false }: { children: string; light?: boolean }) {
@@ -734,7 +734,7 @@ export default function TiledComponentMobile({
     };
 
     const tick = () => {
-      displayedProgress += (targetProgress - displayedProgress) * 0.085;
+      displayedProgress += (targetProgress - displayedProgress) * 0.24;
 
       if (Math.abs(targetProgress - displayedProgress) < 0.001) {
         displayedProgress = targetProgress;
@@ -786,7 +786,7 @@ export default function TiledComponentMobile({
 
   return (
     <div className={`${montserrat.variable} ${dmSans.variable} mobile-home overflow-x-hidden bg-black text-[#f7f1e7] lg:hidden`}>
-      <div ref={heroStackRef} className="relative z-0 h-[300svh] bg-black [--mobile-reveal-progress:0]">
+      <div ref={heroStackRef} className="relative z-0 h-[172svh] bg-black [--mobile-reveal-progress:0]">
         <div className="sticky top-0 h-[100svh] overflow-hidden">
           <MobileIntroHero />
           <section
@@ -863,68 +863,35 @@ export default function TiledComponentMobile({
         </div>
       </section>
 
-      <section className="bg-black py-12 md:py-16">
+      <section className="bg-black py-10 md:py-14">
         <SectionHeader
           eyebrow="Transition"
           title="Friction exists in the imagination."
           text="Sculpting 3D into lived spaces."
         />
 
-        <div className="mx-4 mt-8 grid gap-3 sm:mx-6 md:mx-8 md:mt-10 md:gap-4">
-          <div className="grid gap-3 md:grid-cols-[1.42fr_1fr] md:items-stretch md:gap-4">
-            {transitionImages[0] ? (
-              <figure
-                className="mobile-section-reveal relative m-0 aspect-[0.86] overflow-hidden border border-white/[0.08] bg-[#070707] md:h-full md:min-h-[38rem] md:aspect-auto"
-                style={{ animationDelay: "120ms" }}
-              >
-                <Image
-                  src={transitionImages[0].src ?? ""}
-                  alt={transitionImages[0].alt ?? "Luxury architectural visualization"}
-                  fill
-                  sizes="(max-width: 767px) 92vw, 58vw"
-                  quality={72}
-                  className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
-                />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.18))]" />
-              </figure>
-            ) : null}
-
-            <div className="grid gap-3 md:grid-rows-2 md:gap-4">
-              {transitionImages.slice(1, 3).map((tile, index) => (
-                <figure
-                  key={`${tile.src}-${index + 1}`}
-                  className="mobile-section-reveal relative m-0 aspect-[1.28] overflow-hidden border border-white/[0.08] bg-[#070707] md:h-full md:aspect-auto"
-                  style={{ animationDelay: `${230 + index * 110}ms` }}
-                >
-                  <Image
-                    src={tile.src ?? ""}
-                    alt={tile.alt ?? "Luxury architectural visualization"}
-                    fill
-                    sizes="(max-width: 767px) 92vw, 42vw"
-                    quality={72}
-                    className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
-                  />
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.18))]" />
-                </figure>
-              ))}
-            </div>
-          </div>
-
-          {transitionImages.slice(3, 4).map((tile, index) => (
+        <div
+          aria-label="Visualization image carousel"
+          className="mobile-transition-carousel mt-8 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:scroll-px-6 sm:px-6 md:mt-10 md:gap-4 md:scroll-px-8 md:px-8 [&::-webkit-scrollbar]:hidden"
+        >
+          {transitionImages.map((tile, index) => (
             <figure
-              key={`${tile.src}-${index + 3}`}
-              className="mobile-section-reveal relative m-0 aspect-[1.55] overflow-hidden border border-white/[0.08] bg-[#070707] md:aspect-[2.35]"
-              style={{ animationDelay: "460ms" }}
+              key={`${tile.src}-${index}`}
+              className="mobile-section-reveal relative m-0 aspect-[0.82] w-[78vw] max-w-[25rem] shrink-0 snap-center overflow-hidden border border-white/[0.08] bg-[#070707] shadow-[0_24px_70px_rgba(0,0,0,0.38)] sm:w-[58vw] md:aspect-[1.05] md:w-[42vw] md:max-w-[34rem]"
+              style={{ animationDelay: `${120 + index * 100}ms` }}
             >
               <Image
                 src={tile.src ?? ""}
                 alt={tile.alt ?? "Luxury architectural visualization"}
                 fill
-                sizes="(max-width: 767px) 92vw, 92vw"
+                sizes="(max-width: 767px) 78vw, (max-width: 1023px) 58vw, 42vw"
                 quality={72}
                 className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
               />
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.18))]" />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.22))]" />
+              <span className="absolute bottom-4 left-4 text-[0.58rem] font-semibold uppercase tracking-[0.22em] text-white/54">
+                {String(index + 1).padStart(2, "0")}
+              </span>
             </figure>
           ))}
         </div>

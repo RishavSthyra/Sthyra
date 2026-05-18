@@ -16,13 +16,19 @@ export default function LenisProvider({ children }: LenisProviderProps) {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
+    const isTouchViewport =
+      window.matchMedia("(max-width: 1024px)").matches ||
+      window.matchMedia("(pointer: coarse)").matches;
+
     const lenis = new Lenis({
       autoRaf: false,
-      duration: 1.9,
+      duration: isTouchViewport ? 0.82 : 1.12,
       smoothWheel: true,
-      wheelMultiplier: 0.58,
-      touchMultiplier: 0.72,
-      easing: (value) => 1 - Math.pow(1 - value, 4),
+      wheelMultiplier: isTouchViewport ? 0.88 : 0.92,
+      syncTouch: isTouchViewport,
+      touchMultiplier: isTouchViewport ? 1.42 : 1,
+      easing: (value) =>
+        isTouchViewport ? 1 - Math.pow(1 - value, 2.4) : 1 - Math.pow(1 - value, 3),
     });
 
     let frame = 0;
