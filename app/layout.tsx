@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
+import LenisProvider from "@/components/providers/LenisProvider";
 import { HOME_SEO, SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -83,7 +84,7 @@ export default function RootLayout({
         `}
       </Script>
       <body className="min-h-full overflow-x-hidden bg-black font-sans text-white">
-        {children}
+        <LenisProvider>{children}</LenisProvider>
       </body>
     </html>
   );

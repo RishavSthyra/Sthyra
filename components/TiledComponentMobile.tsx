@@ -703,7 +703,6 @@ export default function TiledComponentMobile({
   void SECONDARY_BASEURL;
 
   const [heroReady, setHeroReady] = useState(false);
-  const heroStackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -715,91 +714,17 @@ export default function TiledComponentMobile({
     };
   }, []);
 
-  useEffect(() => {
-    let frame = 0;
-    let targetProgress = 0;
-    let displayedProgress = 0;
-
-    const clampProgress = (value: number) => Math.min(1, Math.max(0, value));
-    const easeProgress = (value: number) => value * value * (3 - 2 * value);
-
-    const writeProgress = (progress: number) => {
-      const stack = heroStackRef.current;
-
-      if (!stack) {
-        return;
-      }
-
-      stack.style.setProperty("--mobile-reveal-progress", easeProgress(progress).toFixed(4));
-    };
-
-    const tick = () => {
-      displayedProgress += (targetProgress - displayedProgress) * 0.46;
-
-      if (Math.abs(targetProgress - displayedProgress) < 0.001) {
-        displayedProgress = targetProgress;
-        writeProgress(displayedProgress);
-        frame = 0;
-        return;
-      }
-
-      writeProgress(displayedProgress);
-      frame = window.requestAnimationFrame(tick);
-    };
-
-    const startTick = () => {
-      if (frame === 0) {
-        frame = window.requestAnimationFrame(tick);
-      }
-    };
-
-    const updateRevealProgress = () => {
-      const stack = heroStackRef.current;
-
-      if (!stack) {
-        return;
-      }
-
-      const viewportHeight = window.innerHeight || 1;
-      const { top } = stack.getBoundingClientRect();
-      const revealDistance = Math.max(1, stack.offsetHeight - viewportHeight);
-
-      targetProgress = clampProgress(-top / revealDistance);
-      startTick();
-    };
-
-    updateRevealProgress();
-    window.addEventListener("scroll", updateRevealProgress, { passive: true });
-    window.addEventListener("resize", updateRevealProgress);
-
-    return () => {
-      window.removeEventListener("scroll", updateRevealProgress);
-      window.removeEventListener("resize", updateRevealProgress);
-
-      if (frame !== 0) {
-        window.cancelAnimationFrame(frame);
-      }
-    };
-  }, []);
-
   const transitionImages = MOBILE_TRANSITION_IMAGES;
 
   return (
     <div className={`${montserrat.variable} ${dmSans.variable} mobile-home overflow-x-hidden bg-black text-[#f7f1e7] lg:hidden`}>
-      <div ref={heroStackRef} className="relative z-0 h-[128svh] bg-black [--mobile-reveal-progress:0]">
-        <div className="sticky top-0 h-[100svh] overflow-hidden">
-          <MobileIntroHero />
-          <section
-            className="absolute inset-0 z-10 border-t border-white/10 bg-black shadow-[0_-28px_80px_rgba(0,0,0,0.34)] will-change-transform"
-            style={{
-              transform: "translate3d(0, calc((1 - var(--mobile-reveal-progress, 0)) * 100%), 0)",
-            }}
-          >
-            <div className="relative h-full overflow-hidden pb-0 pt-0">
+      <MobileIntroHero />
+      <section className="relative z-10 min-h-[100svh] border-t border-white/10 bg-black shadow-[0_-28px_80px_rgba(0,0,0,0.34)]">
+            <div className="relative min-h-[100svh] overflow-hidden pb-0 pt-0">
               <div
                 className={[
-                  "relative h-full overflow-hidden border-y border-white/10 transition-[transform,opacity] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
-                  heroReady ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0",
+                  "relative min-h-[100svh] overflow-hidden border-y border-white/10 transition-[transform,opacity] duration-[700ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  heroReady ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0",
                 ].join(" ")}
               >
                 <HeroTileGrid baseUrl={BASEURL} />
@@ -816,9 +741,7 @@ export default function TiledComponentMobile({
                 </div>
               </div>
             </div>
-          </section>
-        </div>
-      </div>
+      </section>
 
       {/* <div
         className={[
