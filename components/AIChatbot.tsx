@@ -29,7 +29,7 @@ type BookingFormData = {
 const INITIAL_MESSAGE: Message = {
   id: "init",
   role: "assistant",
-  content: "Hey! I'm here to help with any questions about our architectural visualization services. What would you like to know?",
+  content: "Hi, I can help you understand Sthyra's visualization services and what might fit your project. What are you planning?",
   timestamp: new Date(),
 };
 
@@ -116,14 +116,23 @@ export default function AIChatbot() {
 
   const generateId = () => Math.random().toString(36).substring(2, 9);
 
-  const sendToAI = async (userMessage: string) => {
+  const sendToAI = async (userMessage: string, conversation: Message[] = messages) => {
     setIsLoading(true);
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage }),
+        body: JSON.stringify({
+          message: userMessage,
+          history: conversation
+            .filter((message) => message.id !== "init")
+            .slice(-10)
+            .map((message) => ({
+              role: message.role,
+              content: message.content,
+            })),
+        }),
       });
 
       if (!response.ok) {
@@ -147,7 +156,7 @@ export default function AIChatbot() {
         {
           id: generateId(),
           role: "assistant",
-          content: "Sorry, having trouble connecting. Email us at info@sthyra.com",
+          content: "I’m having trouble connecting right now. You can email info@sthyra.com and the team will help you directly.",
           timestamp: new Date(),
         },
       ]);
@@ -166,17 +175,18 @@ export default function AIChatbot() {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const nextMessages = [...messages, userMessage];
+    setMessages(nextMessages);
     setInputValue("");
-    await sendToAI(userMessage.content);
+    await sendToAI(userMessage.content, nextMessages);
   };
 
   const handleQuickAction = async (action: string) => {
     const actionMessages: Record<string, string> = {
-      services: "We offer: Cinematic Films, Interactive Web Experiences, Ultra-Real Renders, VR/AR Experiences, Digital Twins & Pixel Streaming. Each is designed for pre-construction sales & launches.",
-      book: "Great! Fill in your details and we'll contact you within 24 hours to schedule.",
-      pricing: "Pricing depends on project scope. Best way to get accurate numbers is a quick call. Want me to help you book one?",
-      contact: "Email: info@sthyra.com - We typically respond within 24 hours.",
+      services: "What services does Sthyra offer, and which one should I choose?",
+      book: "I want to book a consultation.",
+      pricing: "How does pricing work for a Sthyra project?",
+      contact: "How can I contact Sthyra?",
     };
 
     const userMessage: Message = {
@@ -186,8 +196,9 @@ export default function AIChatbot() {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
-    await sendToAI(actionMessages[action] || "How can I help?");
+    const nextMessages = [...messages, userMessage];
+    setMessages(nextMessages);
+    await sendToAI(actionMessages[action] || "How can Sthyra help my project?", nextMessages);
   };
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
@@ -206,7 +217,7 @@ export default function AIChatbot() {
         {
           id: generateId(),
           role: "assistant",
-          content: `Thanks ${bookingData.name}! We'll email ${bookingData.email} within 24 hours to confirm your consultation.`,
+          content: `Thanks ${bookingData.name}. We’ll email ${bookingData.email} within 24 hours to confirm your consultation.`,
           timestamp: new Date(),
         },
       ]);
@@ -216,7 +227,7 @@ export default function AIChatbot() {
         {
           id: generateId(),
           role: "assistant",
-          content: "Booking issue. Email us directly at info@sthyra.com",
+          content: "There was an issue with the booking form. Please email info@sthyra.com and the team will help you directly.",
           timestamp: new Date(),
         },
       ]);

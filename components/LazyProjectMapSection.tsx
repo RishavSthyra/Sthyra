@@ -36,7 +36,7 @@ export default function LazyProjectMapSection(props: LazyProjectMapSectionProps)
         }
       },
       {
-        rootMargin: "900px 0px",
+        rootMargin: "160px 0px",
       },
     );
 

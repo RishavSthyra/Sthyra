@@ -129,12 +129,16 @@ export default function ProjectMapSection({
   }, []);
 
   const flyToProject = useCallback((project: ProjectLocation, duration = 1500) => {
+    const isCompactDevice =
+      window.matchMedia("(max-width: 767px)").matches ||
+      ((navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8) <= 4;
+
     mapRef.current?.easeTo({
       center: project.coordinates,
-      zoom: 15.35,
-      pitch: 79,
+      zoom: isCompactDevice ? 13.85 : 15.35,
+      pitch: isCompactDevice ? 38 : 79,
       bearing: -22,
-      duration,
+      duration: isCompactDevice ? Math.min(duration, 720) : duration,
       essential: true,
     });
   }, []);
@@ -356,8 +360,13 @@ export default function ProjectMapSection({
 
     mapRef.current = map;
     map.scrollZoom.disable();
-    map.dragRotate.enable();
-    map.touchZoomRotate.enableRotation();
+    if (isCompactDevice) {
+      map.dragRotate.disable();
+      map.touchZoomRotate.disableRotation();
+    } else {
+      map.dragRotate.enable();
+      map.touchZoomRotate.enableRotation();
+    }
     map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
 
     const lockPageScroll = () => {
@@ -422,7 +431,7 @@ export default function ProjectMapSection({
     container.addEventListener("mousemove", handleMapMousemove);
 
     map.once("style.load", () => {
-      if (!map.getSource(TERRAIN_SOURCE_ID)) {
+      if (!isCompactDevice && !map.getSource(TERRAIN_SOURCE_ID)) {
         map.addSource(TERRAIN_SOURCE_ID, {
           type: "raster-dem",
           url: "mapbox://mapbox.mapbox-terrain-dem-v1",
@@ -439,10 +448,12 @@ export default function ProjectMapSection({
         "horizon-blend": 0.2,
         "star-intensity": 0,
       });
-      map.setTerrain({
-        source: TERRAIN_SOURCE_ID,
-        exaggeration: isCompactDevice ? 1.22 : 1.65,
-      });
+      if (!isCompactDevice) {
+        map.setTerrain({
+          source: TERRAIN_SOURCE_ID,
+          exaggeration: 1.65,
+        });
+      }
 
       if (
         !isCompactDevice &&
@@ -503,10 +514,10 @@ export default function ProjectMapSection({
 
       map.easeTo({
         center: computedCenter,
-        zoom: isCompactDevice ? 14.35 : 15.15,
-        pitch: isCompactDevice ? 66 : 79,
+        zoom: isCompactDevice ? 13.75 : 15.15,
+        pitch: isCompactDevice ? 38 : 79,
         bearing: -22,
-        duration: isCompactDevice ? 1200 : 2600,
+        duration: isCompactDevice ? 700 : 2600,
         essential: true,
       });
     });
@@ -595,12 +606,14 @@ export default function ProjectMapSection({
         map.easeTo({
           center: project.coordinates,
           zoom: 15.35,
-          pitch: 79,
+          pitch: isCompactDevice ? 38 : 79,
           bearing: -22,
-          duration: 1500,
+          duration: isCompactDevice ? 700 : 1500,
           essential: true,
         });
-        startProjectOrbit(project);
+        if (!isCompactDevice) {
+          startProjectOrbit(project);
+        }
       };
 
       markerElement.addEventListener("mouseenter", openPopup);

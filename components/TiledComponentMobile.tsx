@@ -613,13 +613,13 @@ function Footer() {
   return (
     <footer id="contact" className="border-t border-white/10 bg-black">
       <div className="grid">
-        <div className="grid gap-0 md:grid-cols-[1.1fr_0.9fr]">
-          <div className="border-b border-white/10 px-4 py-6 sm:px-6 md:px-8">
+        <div className="grid gap-0 md:grid-cols-[1.08fr_0.92fr]">
+          <div className="border-b border-white/10 px-4 py-8 sm:px-6 md:px-8 md:py-10">
             <EditorialLabel>Contact</EditorialLabel>
-            <h3 className="mt-4 max-w-[10ch] text-[clamp(1.55rem,4.9vw,2.45rem)] font-semibold leading-[0.9] tracking-[-0.078em] text-[#f7f1e7]">
-              Bangalore-based architectural immersion.
+            <h3 className="mt-5 max-w-[12ch] text-balance text-[clamp(2.25rem,10.5vw,4.1rem)] font-semibold leading-[0.84] tracking-[-0.078em] text-[#f7f1e7] md:max-w-[11ch] md:text-[clamp(2.7rem,4.5vw,4.7rem)]">
+              Bangalore architectural immersion.
             </h3>
-            <p className="mt-4 max-w-[36ch] text-[0.82rem] leading-[1.62] tracking-[-0.014em] text-white/60">
+            <p className="mt-6 max-w-[31ch] text-[0.96rem] leading-[1.55] tracking-[-0.014em] text-white/62 md:max-w-[38ch] md:text-[1.02rem]">
               Premium visualization, cinematic renders, and interactive spatial stories for
               unbuilt spaces.
             </p>
@@ -627,16 +627,16 @@ function Footer() {
 
           <a
             href="https://wa.me/917075747159"
-            className="group border-b border-white/10 bg-[#f4efe7] px-4 py-6 text-black transition-colors duration-300 hover:bg-white sm:px-6 md:px-8"
+            className="group flex min-h-[16rem] flex-col justify-between border-b border-white/10 bg-[#f4efe7] px-4 py-7 text-black transition-colors duration-300 hover:bg-white sm:px-6 md:min-h-0 md:px-8 md:py-10"
           >
             <div className="flex items-start justify-between gap-4">
-              <EditorialLabel light>CTA</EditorialLabel>
-              <div className="relative h-10 w-10 overflow-hidden text-black">
-                <ArrowIcon className="absolute inset-0 h-10 w-10 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-4 group-hover:-translate-y-4" />
-                <ArrowIcon className="absolute inset-0 h-10 w-10 -translate-x-4 translate-y-4 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0 group-hover:translate-y-0" />
+              <EditorialLabel light>Start a project</EditorialLabel>
+              <div className="relative grid h-[3.25rem] w-[3.25rem] shrink-0 place-items-center overflow-hidden rounded-full border border-black/14 text-black md:h-14 md:w-14">
+                <ArrowIcon className="absolute h-8 w-8 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-5 group-hover:-translate-y-5" />
+                <ArrowIcon className="absolute h-8 w-8 -translate-x-5 translate-y-5 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0 group-hover:translate-y-0" />
               </div>
             </div>
-            <h3 className="mt-8 max-w-[7ch] text-[clamp(1.8rem,5.4vw,3rem)] font-semibold leading-[0.88] tracking-[-0.08em]">
+            <h3 className="mt-10 max-w-[7ch] text-[clamp(3rem,14vw,5.4rem)] font-semibold uppercase leading-[0.8] tracking-[-0.08em] md:text-[clamp(3.4rem,5.4vw,5.6rem)]">
               LET’S
               <br />
               TALK
@@ -984,14 +984,14 @@ export default function TiledComponentMobile({
           title="Your product deserves the right stage. Let’s design it together."
         />
 
-        <div className="mx-4 mt-8 overflow-hidden border border-white/[0.08] bg-[#050505] sm:mx-6 md:mx-8 md:mt-10">
-          <div className="grid md:grid-cols-[1.08fr_0.92fr]">
-            <div className="bg-[#f4efe7] px-5 py-6 text-black md:px-7 md:py-8">
+        <div className="mx-4 mt-8 overflow-hidden border border-white/[0.1] bg-[#050505] shadow-[0_32px_90px_rgba(0,0,0,0.34)] sm:mx-6 md:mx-8 md:mt-10">
+          <div className="grid md:min-h-[30rem] md:grid-cols-[1.02fr_0.98fr]">
+            <div className="bg-[#f4efe7] px-5 py-7 text-black sm:px-6 md:flex md:flex-col md:justify-between md:px-8 md:py-9">
               <EditorialLabel light>What we will shape</EditorialLabel>
-              <h3 className="mt-7 max-w-[12ch] text-[clamp(2rem,8.4vw,4.2rem)] font-semibold leading-[0.88] tracking-[-0.07em] md:text-[clamp(3rem,5vw,5.2rem)]">
+              <h3 className="mt-7 max-w-[13ch] text-balance text-[clamp(2.05rem,8.2vw,3.8rem)] font-semibold leading-[0.9] tracking-[-0.07em] md:mt-0 md:text-[clamp(2.8rem,4.55vw,4.9rem)]">
                 A sharper sales stage for your project.
               </h3>
-              <div className="mt-8 grid border-t border-black/12">
+              <div className="mt-8 grid border-t border-black/12 md:mt-10">
               {[
                 "Project visual strategy",
                 "Interactive sales journey",
@@ -1000,7 +1000,7 @@ export default function TiledComponentMobile({
               ].map((item, index) => (
                 <p
                   key={item}
-                  className="m-0 flex items-center justify-between gap-4 border-b border-black/12 py-3.5 text-[0.86rem] leading-[1.5] tracking-[-0.014em] text-black/70 md:text-[0.95rem]"
+                  className="m-0 flex min-h-12 items-center justify-between gap-4 border-b border-black/12 py-3.5 text-[0.88rem] leading-[1.35] tracking-[-0.014em] text-black/70 md:min-h-14 md:text-[0.96rem]"
                 >
                   <span>{item}</span>
                   <span className="text-[0.58rem] font-semibold uppercase tracking-[0.22em] text-black/34">
@@ -1013,19 +1013,19 @@ export default function TiledComponentMobile({
 
             <a
               href="https://wa.me/917075747159"
-              className="group flex min-h-[19rem] flex-col justify-between border-t border-white/[0.08] px-5 py-6 text-[#f7f1e7] transition-colors duration-300 hover:bg-white/[0.035] md:min-h-0 md:border-l md:border-t-0 md:px-7 md:py-8"
+              className="group flex min-h-[24rem] flex-col justify-between border-t border-white/[0.08] bg-[linear-gradient(145deg,#050505_0%,#010101_100%)] px-5 py-7 text-[#f7f1e7] transition-colors duration-300 hover:bg-white/[0.035] sm:px-6 md:min-h-0 md:border-l md:border-t-0 md:px-8 md:py-9"
             >
               <div className="flex items-start justify-between gap-5">
                 <EditorialLabel>Private briefing</EditorialLabel>
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-white/14 transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1">
-                  <ArrowIcon className="h-6 w-6" />
+                <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full border border-white/14 bg-white/[0.025] text-white/90 shadow-[0_18px_50px_rgba(0,0,0,0.36)] transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1 md:h-16 md:w-16">
+                  <ArrowIcon className="h-7 w-7 md:h-8 md:w-8" />
                 </span>
               </div>
               <div>
-                <p className="m-0 max-w-[28ch] text-[0.95rem] leading-[1.6] tracking-[-0.014em] text-white/58">
+                <p className="m-0 max-w-[31ch] text-[1rem] leading-[1.55] tracking-[-0.014em] text-white/62 md:text-[1.06rem]">
                   Bring the brief, the site, or the ambition. We’ll define the visual system that makes it feel inevitable.
                 </p>
-                <h3 className="mt-8 max-w-[8ch] text-[clamp(2.2rem,9vw,4.7rem)] font-semibold uppercase leading-[0.84] tracking-[-0.072em]">
+                <h3 className="mt-10 max-w-[8ch] text-[clamp(2.9rem,13vw,5.4rem)] font-semibold uppercase leading-[0.8] tracking-[-0.072em] md:text-[clamp(3.8rem,6vw,6rem)]">
                   LET’S DO THIS
                 </h3>
               </div>

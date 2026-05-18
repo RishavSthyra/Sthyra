@@ -13,6 +13,11 @@ const CreateImageFromTiles = dynamic(() => import("@/components/TiledComponent")
   ),
 });
 
+const MobileHomeExperience = dynamic(() => import("@/components/TiledComponentMobile"), {
+  ssr: false,
+  loading: () => <section className="min-h-screen bg-black" aria-hidden="true" />,
+});
+
 const AIChatbot = dynamic(() => import("@/components/AIChatbot"), {
   ssr: false,
   loading: () => null,
@@ -163,14 +168,21 @@ export default function HomeExperience() {
         isFixed
       />
       {usesDesktopHero !== false ? <DesktopAsciiHero onReady={handleHeroReady} /> : null}
-      <CreateImageFromTiles
-        BASEURL="/villa_tiles_32"
-        SECONDARY_BASEURL="/SKYLINE_tiles_32"
-        NO_OF_ROWS={4}
-        NO_OF_COLUMNS={8}
-        TILE_HEIGHT={768}
-        TILE_WIDTH={768}
-      />
+      {usesDesktopHero === false ? (
+        <MobileHomeExperience
+          BASEURL="/villa_tiles_32"
+          SECONDARY_BASEURL="/SKYLINE_tiles_32"
+        />
+      ) : (
+        <CreateImageFromTiles
+          BASEURL="/villa_tiles_32"
+          SECONDARY_BASEURL="/SKYLINE_tiles_32"
+          NO_OF_ROWS={4}
+          NO_OF_COLUMNS={8}
+          TILE_HEIGHT={768}
+          TILE_WIDTH={768}
+        />
+      )}
       {showChatbot ? <AIChatbot /> : null}
     </main>
   );
