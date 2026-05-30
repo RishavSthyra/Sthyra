@@ -90,16 +90,25 @@ const outputItems = [
 ];
 
 export const metadata: Metadata = {
-  title: "Architectural Visualization Services",
+  title: "Architectural Visualization Services in Bangalore | Sthyra",
   description:
-    "Explore Sthyra services for cinematic real estate films, interactive web experiences, ultra-real renders, digital twins, AR, VR, and premium spatial storytelling.",
+    "Bangalore's premier architectural visualization services. Explore Sthyra's cinematic real estate films, interactive web experiences, ultra-real renders, digital twins, AR, VR, and premium spatial storytelling for developers and architects.",
+  keywords: [
+    "architectural visualization services bangalore",
+    "3D rendering bangalore",
+    "real estate films bangalore",
+    "interactive web experiences bangalore",
+    "digital twins bangalore",
+    "AR VR real estate bangalore",
+    "luxury property visualization bangalore",
+  ],
   alternates: {
     canonical: "/services",
   },
   openGraph: {
-    title: "Architectural Visualization Services | Sthyra",
+    title: "Architectural Visualization Services in Bangalore | Sthyra",
     description:
-      "Premium visualization services for developers, architects, sales teams, investors, and luxury property brands.",
+      "Premium visualization services for developers, architects, sales teams, investors, and luxury property brands in Bangalore and globally.",
     type: "website",
     url: "/services",
     siteName: "Sthyra",
@@ -108,7 +117,7 @@ export const metadata: Metadata = {
         url: absoluteUrl("/images_last_frame.jpg"),
         width: 1200,
         height: 630,
-        alt: "Sthyra architectural visualization services",
+        alt: "Sthyra architectural visualization services in Bangalore",
       },
     ],
   },

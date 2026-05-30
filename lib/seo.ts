@@ -8,10 +8,20 @@ export const SITE_NAME = "Sthyra";
 
 export const HOME_SEO = {
   title:
-    "Architectural Visualization, 3D Rendering & Real Estate Digital Twins | Sthyra",
+    "Architectural Visualization Studio in Bangalore | 3D Rendering & Real Estate Digital Twins | Sthyra",
   description:
-    "Sthyra creates cinematic real estate films, ultra-real 3D renders, interactive property websites, digital twins, and AR/VR walkthroughs for developers, architects, and luxury property brands.",
+    "Bangalore's top architectural visualization studio. Sthyra creates cinematic real estate films, ultra-real 3D renders, interactive property websites, digital twins, and AR/VR walkthroughs for developers, architects, and luxury property brands in India and globally.",
   keywords: [
+    "architectural visualization studio bangalore",
+    "3D rendering services bangalore",
+    "real estate rendering bangalore",
+    "real estate digital twins bangalore",
+    "interactive real estate websites bangalore",
+    "virtual property walkthroughs bangalore",
+    "cinematic real estate films bangalore",
+    "AR VR real estate experiences bangalore",
+    "pre construction real estate marketing bangalore",
+    "luxury property marketing visuals bangalore",
     "architectural visualization studio",
     "3D rendering services",
     "real estate rendering",
@@ -20,8 +30,6 @@ export const HOME_SEO = {
     "virtual property walkthroughs",
     "cinematic real estate films",
     "AR VR real estate experiences",
-    "pre construction real estate marketing",
-    "luxury property marketing visuals",
   ],
 };
 
@@ -34,44 +42,55 @@ export const SEO_RESEARCH_NOTES = [
 
 export const SERVICE_SEO_KEYWORDS: Record<string, string[]> = {
   "cinematic-real-estate-films": [
+    "cinematic real estate films bangalore",
+    "real estate video marketing bangalore",
+    "architectural walkthrough animation bangalore",
+    "property launch films bangalore",
+    "luxury property video bangalore",
     "cinematic real estate films",
     "real estate video marketing",
     "architectural walkthrough animation",
     "property launch films",
-    "pre construction real estate video",
     "luxury property video",
   ],
   "interactive-real-estate-web-experiences": [
+    "interactive real estate websites bangalore",
+    "3D property websites bangalore",
+    "real estate web experiences bangalore",
+    "virtual walkthrough website bangalore",
+    "interactive property marketing bangalore",
     "interactive real estate websites",
     "3D property websites",
     "real estate web experiences",
-    "virtual walkthrough website",
-    "interactive property marketing",
-    "real estate microsite design",
   ],
   "real-estate-digital-twins": [
+    "real estate digital twins bangalore",
+    "digital twins for real estate bangalore",
+    "interactive 3D property models bangalore",
+    "interactive masterplan bangalore",
+    "sales gallery digital twin bangalore",
     "real estate digital twins",
     "digital twins for real estate",
-    "interactive 3D property models",
-    "interactive masterplan",
-    "3D real estate visualization platform",
-    "sales gallery digital twin",
   ],
   "ultra-real-real-estate-renders": [
+    "real estate renders bangalore",
+    "architectural visualization bangalore",
+    "photorealistic architectural rendering bangalore",
+    "interior rendering bangalore",
+    "exterior rendering bangalore",
     "real estate renders",
     "architectural visualization",
     "photorealistic architectural rendering",
-    "interior rendering",
-    "exterior rendering",
-    "property marketing visuals",
   ],
   "ar-vr-real-estate-experiences": [
+    "VR real estate tours bangalore",
+    "AR real estate visualization bangalore",
+    "virtual property walkthroughs bangalore",
+    "immersive real estate marketing bangalore",
+    "360 real estate tours bangalore",
     "VR real estate tours",
     "AR real estate visualization",
     "virtual property walkthroughs",
-    "immersive real estate marketing",
-    "360 real estate tours",
-    "pre construction VR tour",
   ],
 };
 
@@ -197,5 +216,72 @@ export function getBreadcrumbJsonLd(items: Array<{ name: string; url: string }>)
       name: item.name,
       item: item.url,
     })),
+  };
+}
+
+export function getLocalBusinessJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": `${SITE_URL}/#localbusiness`,
+    name: SITE_NAME,
+    alternateName: "STHYRA",
+    description: HOME_SEO.description,
+    url: SITE_URL,
+    logo: absoluteUrl("/sthyra_logo_new.png"),
+    image: absoluteUrl("/images_last_frame.jpg"),
+    telephone: "+91-7075747159",
+    email: "info@sthyra.com",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "MG Road, Brigade Road Area",
+      addressLocality: "Bangalore",
+      addressRegion: "Karnataka",
+      postalCode: "560001",
+      addressCountry: "IN",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: 12.9716,
+      longitude: 77.5946,
+    },
+    openingHoursSpecification: {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      opens: "09:00",
+      closes: "18:00",
+    },
+    priceRange: "$$$$",
+    areaServed: ["India", "United States", "United Arab Emirates", "United Kingdom"],
+    sameAs: ["https://in.linkedin.com/company/sthyra"],
+  };
+}
+
+export function getFAQJsonLd(faqs: Array<{ question: string; answer: string }>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
+}
+
+export function getImageJsonLd(imageUrl: string, caption: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ImageObject",
+    url: imageUrl,
+    contentUrl: imageUrl,
+    caption: caption,
+    creator: {
+      "@type": "Organization",
+      name: SITE_NAME,
+    },
   };
 }

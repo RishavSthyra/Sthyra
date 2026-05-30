@@ -53,6 +53,12 @@ export const metadata: Metadata = {
     description: HOME_SEO.description,
     images: [absoluteUrl("/images_last_frame.jpg")],
   },
+  other: {
+    "geo.region": "IN-KA",
+    "geo.placename": "Bangalore",
+    "geo.position": "12.9716;77.5946",
+    ICBM: "12.9716, 77.5946",
+  },
 };
 
 export default function RootLayout({

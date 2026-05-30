@@ -51,9 +51,9 @@ export type ServicePageData = {
 export const SERVICE_PAGES: ServicePageData[] = [
   {
     slug: "cinematic-real-estate-films",
-    seoTitle: "Cinematic Real Estate Films for Luxury Property Marketing | Sthyra",
+    seoTitle: "Cinematic Real Estate Films Bangalore | Luxury Property Videos | Sthyra",
     metaDescription:
-      "Sthyra creates cinematic real estate films, architectural walkthroughs, and luxury property videos that help developers showcase unbuilt spaces, launch projects, and accelerate buyer confidence.",
+      "Bangalore's top choice for cinematic real estate films and architectural walkthroughs. Sthyra creates luxury property videos, launch films, and architectural animations that help developers in Bangalore and India showcase unbuilt spaces with emotional impact.",
     hero: {
       eyebrow: "Cinematic Real Estate Films",
       h1: "Cinematic Real Estate Films That Make Future Spaces Feel Real",
@@ -211,9 +211,9 @@ export const SERVICE_PAGES: ServicePageData[] = [
   },
   {
     slug: "interactive-real-estate-web-experiences",
-    seoTitle: "Interactive Real Estate Web Experiences for Property Marketing | Sthyra",
+    seoTitle: "Interactive Real Estate Websites Bangalore | 3D Property Web Experiences | Sthyra",
     metaDescription:
-      "Sthyra creates interactive real estate websites, 3D web experiences, virtual walkthroughs, and immersive property platforms that help developers showcase projects, explain spaces, and convert buyers online.",
+      "Bangalore's leading provider of interactive real estate websites and 3D web experiences. Sthyra creates immersive property platforms, virtual walkthroughs, and interactive marketing sites that help developers in Bangalore and India convert more buyers online.",
     hero: {
       eyebrow: "Interactive Real Estate Web Experiences",
       h1: "Interactive Real Estate Web Experiences That Turn Projects Into Journeys",
@@ -375,9 +375,9 @@ export const SERVICE_PAGES: ServicePageData[] = [
   },
   {
     slug: "real-estate-digital-twins",
-    seoTitle: "Digital Twins for Real Estate Developments | Sthyra",
+    seoTitle: "Real Estate Digital Twins Bangalore | Interactive 3D Property Models | Sthyra",
     metaDescription:
-      "Sthyra creates real estate digital twins, interactive 3D project models, tower visualizations, and masterplan platforms that help developers explain, showcase, and sell projects with clarity.",
+      "Create digital twins for your real estate project with Sthyra, Bangalore's top architectural visualization studio. Interactive 3D models, masterplan platforms, and sales gallery digital twins help developers and architects in Bangalore showcase projects with clarity.",
     hero: {
       eyebrow: "Real Estate Digital Twins",
       h1: "Real Estate Digital Twins That Make Projects Instantly Understandable",
@@ -539,9 +539,9 @@ export const SERVICE_PAGES: ServicePageData[] = [
   },
   {
     slug: "ultra-real-real-estate-renders",
-    seoTitle: "Ultra-Real Real Estate Renders for Property Marketing | Sthyra",
+    seoTitle: "Ultra-Real Real Estate Renders Bangalore | Architectural Visualization | Sthyra",
     metaDescription:
-      "Sthyra creates ultra-real real estate renders, photorealistic architectural visualizations, interior renders, exterior renders, and property marketing visuals that help developers showcase and sell projects before they are built.",
+      "Get photorealistic real estate renders in Bangalore from Sthyra. We create stunning architectural visualizations, interior renders, exterior renders, and property marketing visuals for developers, architects, and luxury property brands across India.",
     hero: {
       eyebrow: "Ultra-Real Real Estate Renders",
       h1: "Ultra-Real Real Estate Renders That Make Future Spaces Feel Built",
@@ -706,9 +706,9 @@ export const SERVICE_PAGES: ServicePageData[] = [
   },
   {
     slug: "ar-vr-real-estate-experiences",
-    seoTitle: "AR & VR Real Estate Experiences for Property Marketing | Sthyra",
+    seoTitle: "AR VR Real Estate Experiences Bangalore | Virtual Property Tours | Sthyra",
     metaDescription:
-      "Sthyra creates AR and VR real estate experiences, virtual property tours, immersive walkthroughs, and augmented reality project visualizations that help developers showcase and sell spaces before they are built.",
+      "Experience AR and VR real estate tours in Bangalore. Sthyra creates immersive virtual property walkthroughs, augmented reality experiences, and 360 tours for real estate developers and architects to help buyers explore projects before construction.",
     hero: {
       eyebrow: "AR & VR Real Estate Experiences",
       h1: "AR & VR Real Estate Experiences That Let Buyers Step Inside the Future",

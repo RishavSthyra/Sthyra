@@ -5,14 +5,21 @@ import ContactForm from "@/components/ContactForm";
 import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Contact Sthyra",
+  title: "Contact Sthyra | Bangalore Architectural Visualization Studio",
   description:
-    "Contact Sthyra for premium architectural visualization, cinematic real estate films, ultra-real renders, interactive web experiences, digital twins, VR, AR, and pixel streaming.",
+    "Contact Sthyra, Bangalore's premier architectural visualization studio. Get in touch for cinematic real estate films, 3D renders, interactive websites, digital twins, VR, AR, and spatial storytelling for your property project.",
+  keywords: [
+    "contact architectural visualization bangalore",
+    "real estate visualization studio contact",
+    "Sthyra contact",
+    "get quote architectural rendering bangalore",
+    "consult real estate visualization bangalore",
+  ],
   alternates: {
     canonical: "/contact",
   },
   openGraph: {
-    title: "Contact Sthyra",
+    title: "Contact Sthyra | Bangalore Architectural Visualization Studio",
     description:
       "Share your real estate visualization brief with Sthyra's Bangalore-based architectural storytelling studio.",
     url: "/contact",
