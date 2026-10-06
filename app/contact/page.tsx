@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import ContactForm from "@/components/ContactForm";
+import StaggeredMenu from "@/components/ui/StaggeredMenu";
+import { SERVICE_PAGES } from "@/lib/services";
 import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -47,6 +49,30 @@ const FOOTER_SOCIAL_LINKS = [
   { label: "Instagram", href: "https://instagram.com" },
   { label: "LinkedIn", href: "https://linkedin.com" },
   { label: "X", href: "https://twitter.com" },
+];
+
+const serviceMenuItems = SERVICE_PAGES.map((service) => ({
+  label: service.hero.eyebrow,
+  ariaLabel: `View ${service.hero.eyebrow}`,
+  link: `/services/${service.slug}`,
+}));
+
+const menuItems = [
+  { label: "Home", ariaLabel: "Go to home page", link: "/" },
+  { label: "Portfolio", ariaLabel: "View our portfolio", link: "/portfolio" },
+  {
+    label: "Services",
+    ariaLabel: "Browse services",
+    link: "/services",
+    subItems: serviceMenuItems,
+  },
+  { label: "Contact", ariaLabel: "Contact Sthyra", link: "/contact" },
+];
+
+const menuSocialItems = [
+  { label: "Instagram", link: "https://instagram.com" },
+  { label: "X", link: "https://twitter.com" },
+  { label: "LinkedIn", link: "https://linkedin.com" },
 ];
 
 function EditorialLabel({ children, light = false }: { children: React.ReactNode; light?: boolean }) {
@@ -187,6 +213,21 @@ function ContactFooter() {
 export default function ContactPage() {
   return (
     <main className="min-h-screen bg-black text-[#f7f1e7]">
+      <StaggeredMenu
+        position="right"
+        items={menuItems}
+        socialItems={menuSocialItems}
+        displaySocials
+        displayItemNumbering
+        menuButtonColor="#f7f7f5"
+        openMenuButtonColor="#ffffff"
+        changeMenuColorOnOpen
+        colors={["#171717", "#0d0d0d", "#050505"]}
+        logoUrl="https://cdn.sthyra.com/sthyra-labs/Images/sthyra_logo_new.png"
+        accentColor="#ffffff"
+        isFixed
+      />
+
       <section className="relative isolate min-h-[100svh] overflow-hidden">
         <Image
           src="/images_last_frame.jpg"
@@ -198,25 +239,7 @@ export default function ContactPage() {
         />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.9)_0%,rgba(0,0,0,0.66)_44%,rgba(0,0,0,0.92)_100%),linear-gradient(180deg,rgba(0,0,0,0.34)_0%,#000_100%)]" />
 
-        <header className="relative z-10 flex items-center justify-between px-4 py-5 sm:px-6 md:px-8">
-          <Link href="/" aria-label="Go to Sthyra home" className="relative h-9 w-[8.6rem]">
-            <Image
-              src="/sthyra_logo_new.png"
-              alt="Sthyra"
-              fill
-              sizes="140px"
-              className="object-contain object-left brightness-125"
-            />
-          </Link>
-          <Link
-            href="/"
-            className="border border-white/14 bg-white/[0.04] px-4 py-2 text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-white/72 transition-colors duration-300 hover:border-white/28 hover:text-white"
-          >
-            Home
-          </Link>
-        </header>
-
-        <div className="relative z-10 grid min-h-[calc(100svh-5rem)] content-end px-4 pb-8 pt-10 sm:px-6 md:px-8 md:pb-10 lg:content-center">
+        <div className="relative z-10 grid min-h-[100svh] content-end px-4 pb-8 pt-24 sm:px-6 md:px-8 md:pb-10 lg:content-center">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,0.86fr)_minmax(28rem,0.54fr)] lg:items-center">
             <div className="contact-hero-copy max-w-[50rem]">
               <EditorialLabel>Private project intake</EditorialLabel>
