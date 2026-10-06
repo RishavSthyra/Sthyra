@@ -29,7 +29,9 @@ export default function LenisProvider({ children }: LenisProviderProps) {
       wheelMultiplier: 0.94,
       touchMultiplier: 1,
       prevent: (node) =>
-        node.closest(".site-horizontal-scroll, .mobile-transition-carousel") !== null,
+        node.closest(
+          ".site-horizontal-scroll, .mobile-transition-carousel, .portfolio-option-wheel",
+        ) !== null,
       easing: (value) => 1 - Math.pow(1 - value, 3),
     });
 

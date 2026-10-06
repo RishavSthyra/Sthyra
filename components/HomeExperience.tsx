@@ -31,6 +31,7 @@ const serviceMenuItems = SERVICE_PAGES.map((service) => ({
 
 const menuItems = [
   { label: "Home", ariaLabel: "Go to home page", link: "/" },
+  { label: "Portfolio", ariaLabel: "View our portfolio", link: "/portfolio" },
   {
     label: "Services",
     ariaLabel: "Browse services",

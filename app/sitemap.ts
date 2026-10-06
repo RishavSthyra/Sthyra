@@ -43,6 +43,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       images: [absoluteUrl("/images_last_frame.jpg")],
     },
     {
+      url: absoluteUrl("/portfolio"),
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.9,
+      images: [absoluteUrl("/images_last_frame.jpg")],
+    },
+    {
       url: absoluteUrl("/privacy-policy"),
       lastModified,
       changeFrequency: "yearly",

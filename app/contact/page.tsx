@@ -36,6 +36,7 @@ export const metadata: Metadata = {
 
 const FOOTER_NAV_LINKS = [
   { label: "Home", href: "/" },
+  { label: "Portfolio", href: "/portfolio" },
   { label: "Services", href: "/services" },
   { label: "Contact", href: "/contact" },
   { label: "Privacy policy", href: "/privacy-policy" },
