@@ -19,6 +19,7 @@ export type InfiniteSliderProject = {
   year: string;
   description: string;
   href?: string;
+  linkLabel?: string;
 };
 
 type InfiniteSliderProps = { projects: InfiniteSliderProject[] };
@@ -311,7 +312,7 @@ export function ArgentLoopInfiniteSlider({ projects }: InfiniteSliderProps) {
                           data-no-gallery-drag
                           className="pointer-events-auto mt-3 inline-flex items-center gap-2 border-b border-black/45 pb-1 text-[0.56rem] tracking-[0.12em] transition-opacity hover:opacity-55 sm:text-[0.64rem]"
                         >
-                          Open walkthrough
+                          {project.linkLabel ?? "View project"}
                           <FiArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
                         </a>
                       ) : null}

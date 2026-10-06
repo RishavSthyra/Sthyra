@@ -42,6 +42,12 @@ const projectsByCategory = new Map<GalleryCategory, InfiniteSliderProject[]>(
         project.imageAlt ??
         "Architectural visualization",
       href: project.externalUrl,
+      linkLabel:
+        project.category === "web"
+          ? "Open web app"
+          : project.category === "walkthrough"
+            ? "Open walkthrough"
+            : undefined,
     })),
   ]),
 );

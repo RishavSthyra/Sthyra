@@ -129,6 +129,7 @@ const interactiveWebProjects: PortfolioProject[] = [
     imageAlt: "Aadhya Serene interactive real estate web application",
     description:
       "A focused digital experience for a 1.5-acre residential community, bringing its architecture, amenities, and everyday character into view.",
+    externalUrl: "https://app.aadhyaserene.com/",
   },
   {
     id: 302,
@@ -141,6 +142,7 @@ const interactiveWebProjects: PortfolioProject[] = [
     imageAlt: "Trifecta Veranza interactive real estate web application",
     description:
       "An immersive presentation of a six-acre development with two landmark towers rising 36 floors above the surrounding landscape.",
+    externalUrl: "https://trifecta-veranza.vercel.app/",
   },
   {
     id: 303,
@@ -153,6 +155,7 @@ const interactiveWebProjects: PortfolioProject[] = [
     imageAlt: "Tula Whisper of Trees interactive real estate web application",
     description:
       "An immersive journey through a seven-acre community shaped by a rich variety of trees, landscapes, and living experiences.",
+    externalUrl: "https://tula-peach.vercel.app/",
   },
 ];
 
