@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { FiArrowUpRight } from "react-icons/fi";
 import {
   useCallback,
   useEffect,
@@ -299,7 +300,9 @@ export function ArgentLoopInfiniteSlider({ projects }: InfiniteSliderProps) {
                       <p className="m-0">{project.year}</p>
                     </div>
                     <div>
-                      <p className="m-0 max-w-[30rem] leading-[1.24]">{project.description}</p>
+                      <p className="m-0 max-w-[28rem] text-balance text-[0.64rem] font-normal normal-case leading-[1.5] tracking-[0.005em] text-black/68 sm:text-[0.72rem] lg:text-[0.78rem]">
+                        {project.description}
+                      </p>
                       {project.href ? (
                         <a
                           href={project.href}
@@ -309,7 +312,7 @@ export function ArgentLoopInfiniteSlider({ projects }: InfiniteSliderProps) {
                           className="pointer-events-auto mt-3 inline-flex items-center gap-2 border-b border-black/45 pb-1 text-[0.56rem] tracking-[0.12em] transition-opacity hover:opacity-55 sm:text-[0.64rem]"
                         >
                           Open walkthrough
-                          <span aria-hidden="true">↗</span>
+                          <FiArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
                         </a>
                       ) : null}
                     </div>

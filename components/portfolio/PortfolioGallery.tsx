@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
 import {
   ArgentLoopInfiniteSlider,
   type InfiniteSliderProject,
@@ -48,7 +49,7 @@ const projectsByCategory = new Map<GalleryCategory, InfiniteSliderProject[]>(
 export default function PortfolioGallery() {
   const [activeCategory, setActiveCategory] =
     useState<GalleryCategory>("renders");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const activeProjects = useMemo(
     () => projectsByCategory.get(activeCategory) ?? [],
     [activeCategory],
@@ -74,9 +75,11 @@ export default function PortfolioGallery() {
           aria-expanded={isSidebarOpen}
           className="absolute right-[-2.75rem] top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-r-full border border-l-0 border-black/12 bg-[#f6f5f0]/95 text-lg text-black shadow-[12px_0_30px_rgba(0,0,0,0.12)] backdrop-blur-xl transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
         >
-          <span aria-hidden="true" className="-translate-y-px">
-            {isSidebarOpen ? "←" : "→"}
-          </span>
+          {isSidebarOpen ? (
+            <FiArrowLeft aria-hidden="true" className="h-5 w-5" />
+          ) : (
+            <FiArrowRight aria-hidden="true" className="h-5 w-5" />
+          )}
         </button>
 
         <div>
@@ -93,7 +96,7 @@ export default function PortfolioGallery() {
           role="tablist"
           aria-label="Filter portfolio by service"
         >
-          {categories.map((category, index) => {
+          {categories.map((category) => {
             const isActive = category.id === activeCategory;
             return (
               <button
@@ -104,17 +107,12 @@ export default function PortfolioGallery() {
                 aria-controls="portfolio-gallery-panel"
                 tabIndex={isSidebarOpen ? 0 : -1}
                 onClick={() => setActiveCategory(category.id)}
-                className={`group grid grid-cols-[2.2rem_minmax(0,1fr)] items-start border-t border-black/12 py-4 text-left transition-opacity last:border-b ${
+                className={`group block border-t border-black/12 py-4 text-left transition-opacity last:border-b ${
                   isActive ? "opacity-100" : "opacity-38 hover:opacity-70"
                 }`}
               >
-                <span className="font-mono text-[0.52rem] tracking-[0.08em]">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <span>
-                  <span className="block text-[0.67rem] font-semibold uppercase leading-[1.15] tracking-[0.04em]">
-                    {category.label}
-                  </span>
+                <span className="block text-[0.67rem] font-semibold uppercase leading-[1.15] tracking-[0.04em]">
+                  {category.label}
                 </span>
               </button>
             );
@@ -131,7 +129,7 @@ export default function PortfolioGallery() {
         aria-label="Filter portfolio by service"
         className="absolute inset-x-3 top-[4.4rem] z-30 flex overflow-x-auto border border-black/10 bg-[#f6f5f0]/94 p-1 text-[#111] shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:hidden"
       >
-        {categories.map((category, index) => {
+        {categories.map((category) => {
           const isActive = category.id === activeCategory;
           return (
             <button
@@ -147,9 +145,6 @@ export default function PortfolioGallery() {
                   : "text-black/45 hover:text-black"
               }`}
             >
-              <span className="mr-1.5 font-mono text-[0.46rem] opacity-55">
-                {String(index + 1).padStart(2, "0")}
-              </span>
               {category.label}
             </button>
           );

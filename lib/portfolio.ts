@@ -206,7 +206,7 @@ const ultraRealRenderProjects: PortfolioProject[] = ultraRealRenderAssets.map(
     assetPath: `ultra-real-renders/${fileName}`,
     imageAlt: `Ultra-real architectural visualization ${index + 1}`,
     description:
-      "Photoreal architectural imagery crafted with precise materials, cinematic light, and carefully composed spatial storytelling.",
+      "Light, material, and atmosphere come together to make an unbuilt place feel convincingly real.",
     width,
     height,
   }),
