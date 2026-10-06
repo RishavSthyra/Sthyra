@@ -122,76 +122,37 @@ const interactiveWebProjects: PortfolioProject[] = [
     id: 301,
     category: "web",
     service: "Interactive web app",
-    title: "Immersive property platform",
+    title: "Aadhya Serene",
     year: "2026",
     tone: "",
-    assetPath: "/webimage1.jpg",
-    imageAlt: "Interactive real estate experience shown on a laptop",
+    assetPath: "web-apps/Aadhya%20Serene%20Webapp.png",
+    imageAlt: "Aadhya Serene interactive real estate web application",
     description:
-      "A cinematic property platform that turns architectural storytelling into a responsive, guided buyer journey across every device.",
+      "A focused digital experience for a 1.5-acre residential community, bringing its architecture, amenities, and everyday character into view.",
   },
   {
     id: 302,
     category: "web",
     service: "Interactive web app",
-    title: "Spatial web experience",
+    title: "Trifecta Veranza",
     year: "2026",
     tone: "",
-    assetPath: "/webimage2.jpg",
-    imageAlt: "Atmospheric architectural web experience",
+    assetPath: "web-apps/Trifecta.png",
+    imageAlt: "Trifecta Veranza interactive real estate web application",
     description:
-      "Interactive project storytelling combines premium visuals, intuitive navigation, and responsive interfaces for confident online property exploration.",
+      "An immersive presentation of a six-acre development with two landmark towers rising 36 floors above the surrounding landscape.",
   },
   {
     id: 303,
     category: "web",
     service: "Interactive web app",
-    title: "Browser-based sales journey",
+    title: "Tula Whisper of Trees",
     year: "2026",
     tone: "",
-    assetPath: "/webimage3.avif",
-    imageAlt: "Browser-based real estate sales experience",
+    assetPath: "web-apps/Tula%20Web%20app.png",
+    imageAlt: "Tula Whisper of Trees interactive real estate web application",
     description:
-      "A polished browser experience connecting project imagery, amenities, layouts, and calls to action in one seamless journey.",
-  },
-];
-
-const digitalTwinProjects: PortfolioProject[] = [
-  {
-    id: 401,
-    category: "twins",
-    service: "Digital twin",
-    title: "Aadhya Serene",
-    year: "2026",
-    tone: "",
-    assetPath: "/Aadhya-Serene.jpeg",
-    imageAlt: "Aadhya Serene interactive development model",
-    description:
-      "An interactive development model designed to explain buildings, landscape, amenities, and spatial relationships with immediate visual clarity.",
-  },
-  {
-    id: 402,
-    category: "twins",
-    service: "Digital twin",
-    title: "Interactive project model",
-    year: "2026",
-    tone: "",
-    assetPath: "/aadhya_serene_2.webp",
-    imageAlt: "Interactive project model and masterplan experience",
-    description:
-      "A navigable project replica helping buyers and sales teams explore masterplans, buildings, views, and amenities in real time.",
-  },
-  {
-    id: 403,
-    category: "twins",
-    service: "Digital twin",
-    title: "Real-time sales experience",
-    year: "2026",
-    tone: "",
-    assetPath: "/ultrarender1.avif",
-    imageAlt: "Real-time architectural digital twin sales experience",
-    description:
-      "A presentation-ready spatial interface combining accurate 3D content, guided navigation, and premium visuals for property sales teams.",
+      "An immersive journey through a seven-acre community shaped by a rich variety of trees, landscapes, and living experiences.",
   },
 ];
 
@@ -216,5 +177,4 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
   ...ultraRealRenderProjects,
   ...walkthroughProjects,
   ...interactiveWebProjects,
-  ...digitalTwinProjects,
 ];

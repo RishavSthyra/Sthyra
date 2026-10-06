@@ -57,10 +57,43 @@ export default function PortfolioGallery() {
 
   return (
     <div className="relative h-[100svh] overflow-hidden">
-      <ArgentLoopInfiniteSlider
-        key={activeCategory}
-        projects={activeProjects}
-      />
+      {activeCategory === "twins" ? (
+        <section
+          className="relative flex h-[100svh] items-center justify-center overflow-hidden bg-[#d9d8d3] px-4 pt-20 text-[#111] sm:px-8 sm:pt-16 lg:pt-0"
+          aria-labelledby="digital-twins-coming-soon"
+        >
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 opacity-45 [background-image:linear-gradient(rgba(17,17,17,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(17,17,17,0.07)_1px,transparent_1px)] [background-size:4.5rem_4.5rem]"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute left-1/2 top-1/2 h-[min(72vw,52rem)] w-[min(72vw,52rem)] -translate-x-1/2 -translate-y-1/2 rounded-full border border-black/10"
+          />
+          <div className="relative z-10 w-full max-w-[68rem] border border-black/10 bg-[#f6f5f0] px-6 py-10 shadow-[0_26px_90px_rgba(0,0,0,0.12)] sm:px-10 sm:py-14 lg:px-14 lg:py-16">
+            <p className="m-0 text-[0.58rem] font-semibold uppercase tracking-[0.2em] text-black/42">
+              Digital twins / Sthyra
+            </p>
+            <h2
+              id="digital-twins-coming-soon"
+              className="mt-8 max-w-[50rem] text-[clamp(2.8rem,7vw,7rem)] font-semibold uppercase leading-[0.84] tracking-[-0.075em]"
+            >
+              Coming
+              <br />
+              soon.
+            </h2>
+            <p className="mb-0 mt-9 max-w-[30rem] text-[0.76rem] font-normal leading-[1.55] text-black/58 sm:text-[0.86rem]">
+              We&apos;re preparing a new collection of interactive spatial
+              experiences. The first digital twins will be revealed here soon.
+            </p>
+          </div>
+        </section>
+      ) : (
+        <ArgentLoopInfiniteSlider
+          key={activeCategory}
+          projects={activeProjects}
+        />
+      )}
 
       <aside
         aria-label="Portfolio services"
