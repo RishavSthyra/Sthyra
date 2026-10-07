@@ -292,13 +292,12 @@ export function ArgentLoopInfiniteSlider({ projects }: InfiniteSliderProps) {
                         </h2>
                       ) : null}
                     </div>
-                    <div>
-                      <div className="mb-2.5 flex items-center gap-2 text-[0.56rem] font-semibold uppercase tracking-[0.08em] text-black/72 sm:text-[0.64rem]">
+                    <div className="pb-[clamp(1rem,3vh,2.25rem)]">
+                      <div className="mb-2.5 flex items-center gap-3 text-[0.56rem] font-bold uppercase tracking-[0.08em] text-black/82 sm:text-[0.64rem]">
                         <p className="m-0">{project.category}</p>
-                        <span aria-hidden="true" className="h-px w-3 bg-black/28" />
-                        <p className="m-0 font-mono font-normal">{project.year}</p>
+                        <p className="m-0 font-mono font-semibold">{project.year}</p>
                       </div>
-                      <p className="m-0 max-w-[28rem] text-balance text-[0.64rem] font-normal normal-case leading-[1.5] tracking-[0.005em] text-black/68 sm:text-[0.72rem] lg:text-[0.78rem]">
+                      <p className="m-0 max-w-[28rem] text-balance text-[0.64rem] font-medium normal-case leading-[1.5] tracking-[0.005em] text-black/78 sm:text-[0.72rem] lg:text-[0.78rem]">
                         {project.description}
                       </p>
                       {project.href ? (
