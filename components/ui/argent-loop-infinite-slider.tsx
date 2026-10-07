@@ -157,12 +157,6 @@ export function ArgentLoopInfiniteSlider({ projects }: InfiniteSliderProps) {
       projectRefs.current.forEach((element, index) => {
         const y = index * slider.projectHeight + slider.currentY;
         element.style.transform = `translate3d(0, ${y}px, 0)`;
-        const image = element.querySelector<HTMLElement>("[data-slider-image]");
-        if (image) {
-          image.style.transform = reducedMotion.matches
-            ? "scale(1.08)"
-            : `translate3d(0, ${-y * 0.12}px, 0) scale(1.14)`;
-        }
       });
 
       previewRefs.current.forEach((element, index) => {
@@ -252,7 +246,7 @@ export function ArgentLoopInfiniteSlider({ projects }: InfiniteSliderProps) {
               }}
               className="absolute inset-0 overflow-hidden bg-[#d8d6d1] will-change-transform"
             >
-              <div data-slider-image className="absolute -inset-[8%] will-change-transform">
+              <div className="absolute inset-0">
                 <Image
                   src={project.image}
                   alt=""
@@ -292,15 +286,18 @@ export function ArgentLoopInfiniteSlider({ projects }: InfiniteSliderProps) {
                       <p className="m-0 font-mono tracking-[0.02em]">
                         {String(number).padStart(2, "0")}
                       </p>
-                      <h2 className="mt-1 max-w-[28rem] text-balance text-[0.68rem] font-semibold uppercase leading-[1.05] sm:text-[0.86rem] lg:text-[1rem]">
-                        {project.title}
-                      </h2>
+                      {project.category !== "Ultra-real render" ? (
+                        <h2 className="mt-1 max-w-[28rem] text-balance text-[0.68rem] font-semibold uppercase leading-[1.05] sm:text-[0.86rem] lg:text-[1rem]">
+                          {project.title}
+                        </h2>
+                      ) : null}
                     </div>
                     <div>
-                      <p className="m-0">{project.category}</p>
-                      <p className="m-0">{project.year}</p>
-                    </div>
-                    <div>
+                      <div className="mb-2.5 flex items-center gap-2 text-[0.56rem] font-semibold uppercase tracking-[0.08em] text-black/72 sm:text-[0.64rem]">
+                        <p className="m-0">{project.category}</p>
+                        <span aria-hidden="true" className="h-px w-3 bg-black/28" />
+                        <p className="m-0 font-mono font-normal">{project.year}</p>
+                      </div>
                       <p className="m-0 max-w-[28rem] text-balance text-[0.64rem] font-normal normal-case leading-[1.5] tracking-[0.005em] text-black/68 sm:text-[0.72rem] lg:text-[0.78rem]">
                         {project.description}
                       </p>
