@@ -41,9 +41,8 @@ const menuItems = [
 ];
 
 const socialItems = [
-  { label: "Instagram", link: "https://instagram.com" },
-  { label: "X", link: "https://twitter.com" },
-  { label: "LinkedIn", link: "https://linkedin.com" },
+  { label: "Instagram", link: "https://www.instagram.com/sthyrastudios?stkn=OGF3dzJudWc5c211" },
+  { label: "LinkedIn", link: "https://linkedin.com/company/sthyra/?originalSubdomain=in" },
 ];
 
 export default function HomeExperience() {

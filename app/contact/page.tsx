@@ -46,9 +46,8 @@ const FOOTER_NAV_LINKS = [
 ];
 
 const FOOTER_SOCIAL_LINKS = [
-  { label: "Instagram", href: "https://instagram.com" },
-  { label: "LinkedIn", href: "https://linkedin.com" },
-  { label: "X", href: "https://twitter.com" },
+  { label: "Instagram", href: "https://www.instagram.com/sthyrastudios?stkn=OGF3dzJudWc5c211" },
+  { label: "LinkedIn", href: "https://linkedin.com/company/sthyra/?originalSubdomain=in" },
 ];
 
 const serviceMenuItems = SERVICE_PAGES.map((service) => ({
@@ -70,9 +69,8 @@ const menuItems = [
 ];
 
 const menuSocialItems = [
-  { label: "Instagram", link: "https://instagram.com" },
-  { label: "X", link: "https://twitter.com" },
-  { label: "LinkedIn", link: "https://linkedin.com" },
+  { label: "Instagram", link: "https://www.instagram.com/sthyrastudios?stkn=OGF3dzJudWc5c211" },
+  { label: "LinkedIn", link: "https://linkedin.com/company/sthyra/?originalSubdomain=in" },
 ];
 
 function EditorialLabel({ children, light = false }: { children: React.ReactNode; light?: boolean }) {

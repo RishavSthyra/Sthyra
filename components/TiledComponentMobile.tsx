@@ -234,9 +234,8 @@ const MOBILE_FOOTER_LINKS = [
 ];
 
 const MOBILE_SOCIAL_LINKS = [
-  { label: "Instagram", href: "https://instagram.com" },
-  { label: "X", href: "https://twitter.com" },
-  { label: "LinkedIn", href: "https://linkedin.com" },
+  { label: "Instagram", href: "https://www.instagram.com/sthyrastudios?stkn=OGF3dzJudWc5c211" },
+  { label: "LinkedIn", href: "https://linkedin.com/company/sthyra/?originalSubdomain=in" },
 ];
 
 const MOBILE_POLICY_LINKS = [

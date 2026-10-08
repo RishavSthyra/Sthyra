@@ -238,9 +238,8 @@ const FOOTER_NAV_LINKS = [
 ];
 
 const FOOTER_SOCIAL_LINKS = [
-  { label: "Instagram", href: "https://instagram.com" },
-  { label: "X", href: "https://twitter.com" },
-  { label: "LinkedIn", href: "https://linkedin.com" },
+  { label: "Instagram", href: "https://www.instagram.com/sthyrastudios?stkn=OGF3dzJudWc5c211" },
+  { label: "LinkedIn", href: "https://linkedin.com/company/sthyra/?originalSubdomain=in" },
 ];
 
 const FOOTER_POLICY_LINKS = [

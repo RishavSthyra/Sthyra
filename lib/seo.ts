@@ -132,7 +132,10 @@ export function getOrganizationJsonLd() {
       "Cinematic real estate films",
       "AR and VR real estate experiences",
     ],
-    sameAs: ["https://in.linkedin.com/company/sthyra"],
+    sameAs: [
+      "https://linkedin.com/company/sthyra/?originalSubdomain=in",
+      "https://www.instagram.com/sthyrastudios?stkn=OGF3dzJudWc5c211",
+    ],
   };
 }
 
@@ -253,7 +256,10 @@ export function getLocalBusinessJsonLd() {
     },
     priceRange: "$$$$",
     areaServed: ["India", "United States", "United Arab Emirates", "United Kingdom"],
-    sameAs: ["https://in.linkedin.com/company/sthyra"],
+    sameAs: [
+      "https://linkedin.com/company/sthyra/?originalSubdomain=in",
+      "https://www.instagram.com/sthyrastudios?stkn=OGF3dzJudWc5c211",
+    ],
   };
 }
 
