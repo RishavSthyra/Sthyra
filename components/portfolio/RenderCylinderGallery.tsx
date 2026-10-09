@@ -111,6 +111,10 @@ function RenderGalleryCard({
       );
     },
   );
+  const filter = useTransform(
+    brightness,
+    (value) => `brightness(${value})`,
+  );
 
   if (!project.assetPath) return null;
 
@@ -138,11 +142,7 @@ function RenderGalleryCard({
         rotateX,
         opacity,
 
-        filter: useTransform(
-          brightness,
-          (value) =>
-            `brightness(${value})`,
-        ),
+        filter,
 
         transformStyle: "preserve-3d",
         backfaceVisibility: "hidden",

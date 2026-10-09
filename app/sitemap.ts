@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SERVICE_PAGES } from "@/lib/services";
+import { PORTFOLIO_STORIES } from "@/lib/portfolio-projects";
 import { SITE_URL, absoluteUrl, getServiceUrl } from "@/lib/seo";
 
 const lastModified = new Date();
@@ -14,6 +15,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       absoluteUrl(`${service.hero.tileBasePath}/${service.hero.tilePrefix}_0_0.jpg`),
       absoluteUrl(service.imagePlaceholders[0]?.imageSrc ?? "/images_last_frame.jpg"),
     ],
+  }));
+
+  const portfolioUrls = PORTFOLIO_STORIES.map((project) => ({
+    url: absoluteUrl(`/portfolio/${project.slug}`),
+    lastModified,
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+    images: [project.heroImage, project.webAppImage, ...project.renders],
   }));
 
   return [
@@ -63,6 +72,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.4,
       images: [absoluteUrl("/images_last_frame.jpg")],
     },
+    ...portfolioUrls,
     ...serviceUrls,
   ];
 }

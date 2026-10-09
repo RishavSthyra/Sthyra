@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -12,6 +13,7 @@ type LenisProviderProps = {
 
 export default function LenisProvider({ children }: LenisProviderProps) {
   useResponsiveScale();
+  const pathname = usePathname();
 
   useEffect(() => {
     const desktopQuery = window.matchMedia("(min-width: 1025px) and (pointer: fine)");
@@ -36,6 +38,7 @@ export default function LenisProvider({ children }: LenisProviderProps) {
     });
 
     let frame = 0;
+    let resizeFrame = 0;
 
     const update = (time: number) => {
       lenis.raf(time);
@@ -49,7 +52,12 @@ export default function LenisProvider({ children }: LenisProviderProps) {
     lenis.on("scroll", ScrollTrigger.update);
     frame = window.requestAnimationFrame(update);
     ScrollTrigger.addEventListener("refresh", handleRefresh);
-    ScrollTrigger.refresh();
+    resizeFrame = window.requestAnimationFrame(() => {
+      resizeFrame = window.requestAnimationFrame(() => {
+        lenis.resize();
+        ScrollTrigger.refresh();
+      });
+    });
 
     return () => {
       ScrollTrigger.removeEventListener("refresh", handleRefresh);
@@ -58,9 +66,13 @@ export default function LenisProvider({ children }: LenisProviderProps) {
         window.cancelAnimationFrame(frame);
       }
 
+      if (resizeFrame !== 0) {
+        window.cancelAnimationFrame(resizeFrame);
+      }
+
       lenis.destroy();
     };
-  }, []);
+  }, [pathname]);
 
   return children;
 }
