@@ -7,6 +7,7 @@ import { useLayoutEffect, useRef, type MouseEvent } from "react";
 import { FiArrowLeft, FiArrowRight, FiArrowUpRight } from "react-icons/fi";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import HomePageFooter from "@/components/HomePageFooter";
 import type { PortfolioStory } from "@/lib/portfolio-projects";
 
 type ProjectStoryExperienceProps = {
@@ -16,11 +17,11 @@ type ProjectStoryExperienceProps = {
 
 const renderLayouts = [
   "lg:col-span-7",
-  "lg:col-span-5 lg:mt-[18vw]",
-  "lg:col-span-5 lg:col-start-2 lg:mt-[5vw]",
+  "lg:col-span-5 lg:mt-[8vw]",
+  "lg:col-span-5 lg:col-start-2 lg:mt-[2vw]",
   "lg:col-span-6 lg:col-start-7",
   "lg:col-span-8",
-  "lg:col-span-4 lg:mt-[15vw]",
+  "lg:col-span-4 lg:mt-[7vw]",
 ];
 
 export default function ProjectStoryExperience({
@@ -53,6 +54,11 @@ export default function ProjectStoryExperience({
             "[data-hero-line]",
             { yPercent: 105, duration: 0.82, stagger: 0.045 },
             0.3,
+          )
+          .from(
+            "[data-hero-meta]",
+            { opacity: 0, y: 12, duration: 0.5 },
+            0.48,
           );
 
         gsap.fromTo(
@@ -74,17 +80,44 @@ export default function ProjectStoryExperience({
         gsap.utils.toArray<HTMLElement>("[data-story-reveal]").forEach((item) => {
           gsap.from(item, {
             opacity: 0,
-            y: 24,
-            duration: 0.78,
+            y: 16,
+            duration: 0.72,
             ease: "power3.out",
             scrollTrigger: { trigger: item, start: "top 90%", once: true },
           });
         });
 
-        gsap.utils.toArray<HTMLElement>("[data-render-frame]").forEach((frame) => {
+        gsap.utils.toArray<HTMLElement>("[data-section-title]").forEach((title) => {
+          gsap.from(title, {
+            opacity: 0,
+            y: 22,
+            clipPath: "inset(0 0 100% 0)",
+            duration: 0.9,
+            ease: "expo.out",
+            scrollTrigger: { trigger: title, start: "top 88%", once: true },
+          });
+        });
+
+        gsap.from("[data-project-fact]", {
+          opacity: 0,
+          y: 12,
+          duration: 0.55,
+          stagger: 0.07,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: "[data-project-facts]",
+            start: "top 90%",
+            once: true,
+          },
+        });
+
+        gsap.utils.toArray<HTMLElement>("[data-render-frame]").forEach((frame, index) => {
           const image = frame.querySelector<HTMLElement>("[data-render-image]");
           gsap.from(frame, {
-            clipPath: "inset(0 0 100% 0)",
+            clipPath:
+              index % 2 === 0
+                ? "inset(0 100% 0 0)"
+                : "inset(0 0 0 100%)",
             duration: 1,
             ease: "expo.inOut",
             scrollTrigger: { trigger: frame, start: "top 92%", once: true },
@@ -108,7 +141,18 @@ export default function ProjectStoryExperience({
           }
         });
 
-        gsap.utils.toArray<HTMLElement>("[data-experience-image]").forEach((image) => {
+        gsap.utils.toArray<HTMLElement>("[data-experience-frame]").forEach((frame, index) => {
+          const image = frame.querySelector<HTMLElement>("[data-experience-image]");
+          gsap.from(frame, {
+            clipPath:
+              index % 2 === 0
+                ? "inset(0 100% 0 0)"
+                : "inset(0 0 0 100%)",
+            duration: 1.05,
+            ease: "expo.inOut",
+            scrollTrigger: { trigger: frame, start: "top 88%", once: true },
+          });
+          if (!image) return;
           gsap.fromTo(
             image,
             { scale: 1.045 },
@@ -123,6 +167,17 @@ export default function ProjectStoryExperience({
               },
             },
           );
+        });
+
+        gsap.from("[data-next-project]", {
+          clipPath: "inset(0 0 100% 0)",
+          duration: 1.05,
+          ease: "expo.inOut",
+          scrollTrigger: {
+            trigger: "[data-next-project]",
+            start: "top 90%",
+            once: true,
+          },
         });
       });
 
@@ -195,7 +250,7 @@ export default function ProjectStoryExperience({
     <main ref={rootRef} className="overflow-hidden bg-[#f3f1eb] text-[#11110f]">
       <section
         data-project-hero
-        className="relative min-h-[100svh] overflow-hidden bg-[#d7d3ca]"
+        className="relative min-h-[92svh] overflow-hidden bg-[#d7d3ca]"
       >
         <div data-hero-image className="absolute -inset-y-[8%] inset-x-0 will-change-transform">
           <Image
@@ -210,8 +265,14 @@ export default function ProjectStoryExperience({
         </div>
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/55 to-transparent" />
 
-        <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-7 text-white sm:px-7 sm:pb-9 lg:px-10 lg:pb-11">
-          <h1 className="m-0 max-w-[15ch] text-[clamp(3.2rem,7vw,7rem)] font-semibold uppercase leading-[0.84] tracking-[-0.07em]">
+        <div className="absolute inset-x-0 bottom-0 z-10 mx-auto w-full max-w-[92rem] px-4 pb-8 text-white sm:px-7 sm:pb-10 lg:px-10 lg:pb-12">
+          <p
+            data-hero-meta
+            className="mb-5 mt-0 text-[0.76rem] font-medium tracking-[0.04em] text-white/75"
+          >
+            {project.location} · {project.acreage} · {project.year}
+          </p>
+          <h1 className="m-0 max-w-[13ch] text-[clamp(2.2rem,5.5vw,5.6rem)] font-semibold leading-[0.92] tracking-[-0.06em] sm:max-w-[16ch]">
             {project.name.split(" ").map((word) => (
               <span key={word} className="mr-[0.18em] inline-block overflow-hidden">
                 <span data-hero-line className="inline-block">{word}</span>
@@ -221,69 +282,90 @@ export default function ProjectStoryExperience({
         </div>
       </section>
 
-      <section className="px-4 py-[10svh] sm:px-7 lg:px-10 lg:py-[13svh]">
-        <div className="grid gap-12 lg:grid-cols-12">
-          <div className="lg:col-span-10 lg:col-start-2">
+      <section className="px-4 py-[9svh] sm:px-7 lg:px-10 lg:py-[11svh]">
+        <div className="mx-auto grid w-full max-w-[88rem] gap-12 lg:grid-cols-12">
+          <div className="lg:col-span-7 lg:col-start-2">
             <h2
-              data-story-reveal
-              className="m-0 max-w-[18ch] text-[clamp(2.2rem,4.6vw,4.8rem)] font-semibold uppercase leading-[0.92] tracking-[-0.055em]"
+              data-section-title
+              className="m-0 max-w-[19ch] text-[clamp(2rem,3.8vw,4rem)] font-semibold leading-[0.96] tracking-[-0.05em]"
             >
               {project.statement}
             </h2>
-            <div className="mt-10 grid gap-10 md:grid-cols-2 lg:mt-14">
-              <p
-                data-story-reveal
-                className="m-0 max-w-[38rem] text-[clamp(1rem,1.45vw,1.3rem)] font-medium leading-[1.5] tracking-[-0.025em]"
+            <p
+              data-story-reveal
+              className="mb-0 mt-10 max-w-[38rem] text-[clamp(1rem,1.25vw,1.18rem)] font-normal leading-[1.65] tracking-[-0.018em] text-black/72 lg:mt-12"
+            >
+              {project.overview}
+            </p>
+          </div>
+
+          <dl
+            data-project-facts
+            className="m-0 grid content-start grid-cols-2 border-t border-black/15 lg:col-span-3 lg:col-start-10"
+          >
+            {project.facts.map((fact) => (
+              <div
+                key={fact.label}
+                data-project-fact
+                className="border-b border-black/15 py-4 odd:pr-4 even:border-l even:pl-4"
               >
-                {project.overview}
-              </p>
-              <div data-story-reveal className="flex flex-wrap content-start gap-x-8 gap-y-4">
-                {project.facts.map((fact) => (
-                  <span key={fact.label} className="text-sm font-semibold text-black/65">
-                    {fact.value}
-                  </span>
-                ))}
+                <dt className="text-[0.68rem] font-medium text-black/42">
+                  {fact.label}
+                </dt>
+                <dd className="mb-0 ml-0 mt-1.5 text-[0.86rem] font-semibold tracking-[-0.015em] text-black/78">
+                  {fact.value}
+                </dd>
               </div>
-            </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
+      <section className="bg-[#faf9f5] px-4 py-[9svh] sm:px-7 lg:px-10 lg:py-[11svh]">
+        <div className="mx-auto w-full max-w-[88rem]">
+          <div className="mb-[6svh] grid gap-8 lg:grid-cols-12">
+            <h2
+              data-section-title
+              className="m-0 max-w-[17ch] text-[clamp(2.25rem,4.2vw,4.4rem)] font-semibold leading-[0.94] tracking-[-0.055em] lg:col-span-9 lg:col-start-2"
+            >
+              The project before it exists.
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-x-5 gap-y-[5svh] lg:grid-cols-12">
+            {project.renders.map((image, index) => (
+              <figure
+                key={image}
+                data-render-frame
+                className={`m-0 ${renderLayouts[index]}`}
+              >
+                <div className="relative aspect-[4/3] overflow-hidden bg-[#ddd9d0]">
+                  <div
+                    data-render-image
+                    className="absolute -inset-y-[6%] inset-x-0 will-change-transform"
+                  >
+                    <Image
+                      src={image}
+                      alt={`${project.name} architectural render ${index + 1}`}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 66vw"
+                      unoptimized
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+                <figcaption className="mt-2.5 flex items-center justify-between text-[0.66rem] font-medium tracking-[0.03em] text-black/42">
+                  <span>{project.name}</span>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                </figcaption>
+              </figure>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="bg-[#faf9f5] px-4 py-[10svh] sm:px-7 lg:px-10 lg:py-[13svh]">
-        <div className="mb-[8svh] grid gap-8 lg:grid-cols-12">
-          <h2
-            data-story-reveal
-            className="m-0 max-w-[16ch] text-[clamp(2.6rem,5vw,5.2rem)] font-semibold uppercase leading-[0.88] tracking-[-0.06em] lg:col-span-10 lg:col-start-2"
-          >
-            The project before it exists.
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 gap-x-4 gap-y-[8svh] lg:grid-cols-12">
-          {project.renders.map((image, index) => (
-            <figure
-              key={image}
-              data-render-frame
-              className={`m-0 ${renderLayouts[index]}`}
-            >
-              <div className="relative aspect-[4/3] overflow-hidden bg-[#ddd9d0]">
-                <div data-render-image className="absolute -inset-y-[6%] inset-x-0 will-change-transform">
-                  <Image
-                    src={image}
-                    alt={`${project.name} architectural render ${index + 1}`}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 66vw"
-                    unoptimized
-                    className="object-cover"
-                  />
-                </div>
-              </div>
-            </figure>
-          ))}
-        </div>
-      </section>
-
       <ExperienceSection
+        label="Interactive platform"
         title="One clear place for the complete project story."
         copy={project.webAppCopy}
         image={project.webAppImage}
@@ -293,6 +375,7 @@ export default function ProjectStoryExperience({
       />
 
       <ExperienceSection
+        label="Immersive walkthrough"
         title="Move through the development before arriving."
         copy={project.walkthroughCopy}
         image={project.walkthroughImage}
@@ -302,41 +385,66 @@ export default function ProjectStoryExperience({
         reverse
       />
 
-      <section className="bg-[#faf9f5] px-4 py-[10svh] sm:px-7 lg:px-10 lg:py-[13svh]">
-        <div className="grid gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-4">
-            <h2
-              data-story-reveal
-              className="m-0 max-w-[15ch] text-[clamp(2.2rem,3.7vw,3.8rem)] font-semibold uppercase leading-[0.92] tracking-[-0.052em]"
-            >
-              Built to be felt, not simply viewed.
-            </h2>
-            <p
-              data-story-reveal
-              className="mt-8 max-w-[30rem] text-base font-medium leading-[1.5] tracking-[-0.02em] text-black/68"
-            >
-              {project.cinematicCopy}
-            </p>
+      <section className="bg-[#faf9f5] px-4 py-[9svh] sm:px-7 lg:px-10 lg:py-[11svh]">
+        <div className="mx-auto w-full max-w-[88rem]">
+          <div className="grid items-end gap-8 lg:grid-cols-12">
+            <div className="lg:col-span-6 lg:col-start-2">
+              <p
+                data-story-reveal
+                className="mb-4 mt-0 text-[0.72rem] font-medium tracking-[0.04em] text-black/45"
+              >
+                Cinematic direction
+              </p>
+              <h2
+                data-section-title
+                className="m-0 max-w-[17ch] text-[clamp(2rem,3.25vw,3.4rem)] font-semibold leading-[0.96] tracking-[-0.048em]"
+              >
+                Built to be felt, not simply viewed.
+              </h2>
+            </div>
+            <div className="lg:col-span-4 lg:col-start-9">
+              <p
+                data-story-reveal
+                className="m-0 max-w-[32rem] text-[0.96rem] font-normal leading-[1.62] tracking-[-0.015em] text-black/68"
+              >
+                {project.cinematicCopy}
+              </p>
+            </div>
           </div>
           <div
             data-render-frame
-            className="relative mt-4 aspect-[16/10] overflow-hidden bg-[#ddd9d0] lg:col-span-7 lg:col-start-6 lg:mt-0"
+            className="relative mt-12 aspect-[16/8] overflow-hidden bg-[#ddd9d0] lg:mt-16"
           >
             <div data-render-image className="absolute -inset-y-[6%] inset-x-0 will-change-transform">
               <Image
                 src={project.cinematicImage}
                 alt={`${project.name} cinematic art direction`}
-              fill
-              sizes="(max-width: 1024px) 100vw, 60vw"
-              unoptimized={project.cinematicImage.startsWith("http")}
-              className="object-cover"
+                fill
+                sizes="100vw"
+                unoptimized={project.cinematicImage.startsWith("http")}
+                className="object-cover"
               />
             </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-[#f3f1eb] px-4 py-[10svh] sm:px-7 lg:px-10 lg:py-[13svh]">
+      <section className="bg-[#f3f1eb] px-4 pb-6 pt-[9svh] sm:px-7 lg:px-10 lg:pt-[11svh]">
+        <div className="mx-auto mb-5 flex w-full max-w-[88rem] items-center justify-between">
+          <Link
+            href="/portfolio"
+            onClick={(event) =>
+              navigateWithTransition(event, "/portfolio", "Selected projects")
+            }
+            className="inline-flex items-center gap-2 text-[0.76rem] font-semibold tracking-[-0.01em] text-black transition-opacity hover:opacity-50"
+          >
+            <FiArrowLeft className="h-4 w-4" aria-hidden="true" />
+            All projects
+          </Link>
+          <span className="text-[0.7rem] font-medium text-black/42">
+            Next project
+          </span>
+        </div>
         <Link
           href={`/portfolio/${nextProject.slug}`}
           onClick={(event) =>
@@ -346,24 +454,31 @@ export default function ProjectStoryExperience({
               nextProject.name,
             )
           }
-          className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
+          data-next-project
+          className="group relative mx-auto block min-h-[58svh] w-full max-w-[88rem] overflow-hidden bg-[#d7d3ca] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
         >
-          <div className="flex items-end justify-between gap-8">
-            <p className="m-0 max-w-[15ch] text-[clamp(3rem,6vw,6rem)] font-semibold uppercase leading-[0.86] tracking-[-0.068em]">
+          <Image
+            src={nextProject.heroImage}
+            alt={`${nextProject.name} project preview`}
+            fill
+            sizes="100vw"
+            unoptimized
+            className="object-cover transition-transform duration-1000 ease-out group-hover:scale-[1.025]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/72 via-black/5 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-8 p-6 text-white sm:p-9 lg:p-11">
+            <p className="m-0 max-w-[16ch] text-[clamp(2.2rem,4.5vw,4.8rem)] font-semibold leading-[0.92] tracking-[-0.058em]">
               {nextProject.name}
             </p>
-            <FiArrowRight className="mb-2 h-7 w-7 shrink-0 transition-transform duration-500 group-hover:translate-x-2 sm:h-10 sm:w-10" aria-hidden="true" />
+            <FiArrowRight
+              className="mb-1 h-7 w-7 shrink-0 transition-transform duration-500 group-hover:translate-x-2 sm:h-9 sm:w-9"
+              aria-hidden="true"
+            />
           </div>
         </Link>
-        <Link
-          href="/portfolio"
-          onClick={(event) => navigateWithTransition(event, "/portfolio", "Selected projects")}
-          className="mt-16 inline-flex items-center gap-3 rounded-full bg-[#11110f] px-5 py-3 text-sm font-semibold text-white"
-        >
-          <FiArrowLeft className="h-4 w-4" aria-hidden="true" />
-          All projects
-        </Link>
       </section>
+
+      <HomePageFooter />
 
       <div
         ref={entranceRef}
@@ -377,7 +492,7 @@ export default function ProjectStoryExperience({
       >
         <p
           ref={exitLabelRef}
-          className="m-0 max-w-[14ch] text-center text-[clamp(2.6rem,5vw,5rem)] font-semibold uppercase leading-[0.88] tracking-[-0.06em]"
+          className="m-0 max-w-[16ch] text-center text-[clamp(2.4rem,4.6vw,4.6rem)] font-semibold leading-[0.92] tracking-[-0.055em]"
         />
       </div>
     </main>
@@ -385,6 +500,7 @@ export default function ProjectStoryExperience({
 }
 
 type ExperienceSectionProps = {
+  label: string;
   title: string;
   copy: string;
   image: string;
@@ -395,6 +511,7 @@ type ExperienceSectionProps = {
 };
 
 function ExperienceSection({
+  label,
   title,
   copy,
   image,
@@ -404,18 +521,28 @@ function ExperienceSection({
   reverse = false,
 }: ExperienceSectionProps) {
   return (
-    <section className="bg-[#f3f1eb] px-4 py-[10svh] sm:px-7 lg:px-10 lg:py-[13svh]">
-      <div className="grid items-start gap-10 lg:grid-cols-12 lg:gap-4">
-        <div className={reverse ? "lg:col-span-4 lg:col-start-9" : "lg:col-span-4"}>
-          <h2
+    <section className="border-t border-black/10 bg-[#f3f1eb] px-4 py-[9svh] sm:px-7 lg:px-10 lg:py-[11svh]">
+      <div className="mx-auto grid w-full max-w-[88rem] items-start gap-10 lg:grid-cols-12 lg:gap-5">
+        <div
+          className={`lg:sticky lg:top-28 ${
+            reverse ? "lg:col-span-4 lg:col-start-9" : "lg:col-span-4"
+          }`}
+        >
+          <p
             data-story-reveal
-            className="m-0 max-w-[15ch] text-[clamp(2.2rem,3.7vw,3.8rem)] font-semibold uppercase leading-[0.92] tracking-[-0.052em]"
+            className="mb-4 mt-0 text-[0.72rem] font-medium tracking-[0.04em] text-black/45"
+          >
+            {label}
+          </p>
+          <h2
+            data-section-title
+            className="m-0 max-w-[17ch] text-[clamp(1.9rem,2.9vw,3rem)] font-semibold leading-[0.98] tracking-[-0.045em]"
           >
             {title}
           </h2>
           <p
             data-story-reveal
-            className="mt-8 max-w-[29rem] text-base font-medium leading-[1.5] tracking-[-0.02em] text-black/68"
+            className="mt-7 max-w-[29rem] text-[0.94rem] font-normal leading-[1.62] tracking-[-0.015em] text-black/68"
           >
             {copy}
           </p>
@@ -424,7 +551,7 @@ function ExperienceSection({
             href={href}
             target="_blank"
             rel="noreferrer"
-            className="group mt-9 inline-flex items-center gap-3 rounded-full bg-[#11110f] px-5 py-3 text-sm font-semibold text-white"
+            className="group mt-8 inline-flex items-center gap-3 border-b border-black/35 pb-1.5 text-[0.78rem] font-semibold text-black transition-colors hover:border-black hover:text-black/55"
           >
             {linkLabel}
             <FiArrowUpRight
@@ -438,6 +565,7 @@ function ExperienceSection({
           target="_blank"
           rel="noreferrer"
           aria-label={`${linkLabel} in a new tab`}
+          data-experience-frame
           className={`group relative aspect-[16/10] overflow-hidden bg-[#ddd9d0] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black ${
             reverse
               ? "lg:col-span-7 lg:col-start-1 lg:row-start-1"
@@ -454,7 +582,7 @@ function ExperienceSection({
               className="object-cover transition-[filter] duration-700 group-hover:brightness-[0.92]"
             />
           </div>
-          <span className="absolute bottom-4 right-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#faf9f5] text-black transition-transform duration-500 group-hover:rotate-45 sm:bottom-5 sm:right-5">
+          <span className="absolute bottom-4 right-4 flex h-11 w-11 items-center justify-center bg-[#faf9f5] text-black transition-transform duration-500 group-hover:rotate-45 sm:bottom-5 sm:right-5">
             <FiArrowUpRight className="h-4 w-4" aria-hidden="true" />
           </span>
         </a>

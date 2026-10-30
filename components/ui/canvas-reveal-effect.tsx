@@ -12,6 +12,7 @@ export const CanvasRevealEffect = ({
   containerClassName,
   dotSize,
   showGradient = true,
+  revealOrigin = "center",
 }: {
   /**
    * 0.1 - slower
@@ -23,7 +24,21 @@ export const CanvasRevealEffect = ({
   containerClassName?: string;
   dotSize?: number;
   showGradient?: boolean;
+  revealOrigin?:
+    | "center"
+    | "top-left"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right";
 }) => {
+  const revealPoint = {
+    center: "u_resolution / 2.0 / u_total_size",
+    "top-left": "vec2(0.0, u_resolution.y / u_total_size)",
+    "top-right": "u_resolution / u_total_size",
+    "bottom-left": "vec2(0.0, 0.0)",
+    "bottom-right": "vec2(u_resolution.x / u_total_size, 0.0)",
+  }[revealOrigin];
+
   return (
     <div className={cn("h-full relative bg-white w-full", containerClassName)}>
       <div className="h-full w-full">
@@ -35,7 +50,7 @@ export const CanvasRevealEffect = ({
           }
           shader={`
               float animation_speed_factor = ${animationSpeed.toFixed(1)};
-              float intro_offset = distance(u_resolution / 2.0 / u_total_size, st2) * 0.01 + (random(st2) * 0.15);
+              float intro_offset = distance(${revealPoint}, st2) * 0.01 + (random(st2) * 0.15);
               opacity *= step(intro_offset, u_time * animation_speed_factor);
               opacity *= clamp((1.0 - step(intro_offset + 0.1, u_time * animation_speed_factor)) * 1.25, 1.0, 1.25);
             `}
