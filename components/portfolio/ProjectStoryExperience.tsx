@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useLayoutEffect, useRef, type MouseEvent } from "react";
+import { useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import { FiArrowLeft, FiArrowRight, FiArrowUpRight } from "react-icons/fi";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -28,6 +28,7 @@ export default function ProjectStoryExperience({
   project,
   nextProject,
 }: ProjectStoryExperienceProps) {
+  const [isAdditionalGalleryOpen, setIsAdditionalGalleryOpen] = useState(false);
   const rootRef = useRef<HTMLElement | null>(null);
   const entranceRef = useRef<HTMLDivElement | null>(null);
   const exitRef = useRef<HTMLDivElement | null>(null);
@@ -250,7 +251,8 @@ export default function ProjectStoryExperience({
     <main ref={rootRef} className="overflow-hidden bg-[#f3f1eb] text-[#11110f]">
       <section
         data-project-hero
-        className="relative min-h-[92svh] overflow-hidden bg-[#d7d3ca]"
+        className="relative h-[100dvh] min-h-[100svh] overflow-hidden bg-[#d7d3ca]"
+        style={{ height: "100vh", minHeight: "100vh" }}
       >
         <div data-hero-image className="absolute -inset-y-[8%] inset-x-0 will-change-transform">
           <Image
@@ -354,13 +356,61 @@ export default function ProjectStoryExperience({
                     />
                   </div>
                 </div>
-                <figcaption className="mt-2.5 flex items-center justify-between text-[0.66rem] font-medium tracking-[0.03em] text-black/42">
-                  <span>{project.name}</span>
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                </figcaption>
               </figure>
             ))}
           </div>
+
+          {project.additionalRenders?.length ? (
+            <div className="mt-[6svh]">
+              {!isAdditionalGalleryOpen ? (
+                <button
+                  type="button"
+                  aria-expanded={false}
+                  onClick={() => setIsAdditionalGalleryOpen(true)}
+                  className="inline-flex items-center gap-3 border-b border-black/45 pb-2 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-black/72 transition-colors hover:border-black hover:text-black"
+                >
+                  <span>Show more</span>
+                  <span aria-hidden="true">+</span>
+                </button>
+              ) : null}
+
+              {isAdditionalGalleryOpen ? (
+                <>
+                  <div className="mt-[5svh] grid grid-cols-1 gap-x-5 gap-y-[5svh] lg:grid-cols-12">
+                    {project.additionalRenders.map((image, index) => (
+                      <figure
+                        key={image}
+                        data-render-frame
+                        className={`m-0 ${renderLayouts[index % renderLayouts.length]}`}
+                      >
+                        <div className="relative aspect-[4/3] overflow-hidden bg-[#ddd9d0]">
+                          <div data-render-image className="absolute -inset-y-[6%] inset-x-0 will-change-transform">
+                            <Image
+                              src={image}
+                              alt={`${project.name} additional architectural render ${index + 1}`}
+                              fill
+                              sizes="(max-width: 1024px) 100vw, 66vw"
+                              unoptimized
+                              className="object-cover"
+                            />
+                          </div>
+                        </div>
+                      </figure>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    aria-expanded={true}
+                    onClick={() => setIsAdditionalGalleryOpen(false)}
+                    className="mt-[6svh] inline-flex items-center gap-3 border-b border-black/45 pb-2 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-black/72 transition-colors hover:border-black hover:text-black"
+                  >
+                    <span>Show less</span>
+                    <span aria-hidden="true">−</span>
+                  </button>
+                </>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </section>
 

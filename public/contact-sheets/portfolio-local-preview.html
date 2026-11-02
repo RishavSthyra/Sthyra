@@ -1,0 +1,45 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Sthyra portfolio · local Trifecta preview</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f5f3ee; color: #171715; font-family: Arial, sans-serif; }
+  nav { position: sticky; top: 0; z-index: 5; display: flex; justify-content: space-between; padding: 22px 34px; background: rgba(245,243,238,.92); border-bottom: 1px solid #1717151f; backdrop-filter: blur(14px); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+  nav div:last-child { display: flex; gap: 26px; color: #6f6b63; }
+  section { padding: 96px 7vw; }
+  .hero { min-height: 72vh; display: flex; flex-direction: column; justify-content: flex-end; background: linear-gradient(160deg,#e3e0d8,#f5f3ee 62%); }
+  .eyebrow { color: #77736a; font-size: 12px; letter-spacing: .15em; text-transform: uppercase; }
+  h1 { max-width: 880px; margin: 18px 0 26px; font-size: clamp(58px, 10vw, 148px); line-height: .84; letter-spacing: -.075em; }
+  h2 { max-width: 760px; margin: 0 0 30px; font-size: clamp(38px, 6vw, 82px); line-height: .9; letter-spacing: -.06em; }
+  p { max-width: 580px; color: #5f5c55; font-size: 17px; line-height: 1.65; }
+  .meta { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; margin-top: 42px; max-width: 820px; border-top: 1px solid #17171533; }
+  .meta div { padding: 18px 14px 18px 0; border-bottom: 1px solid #17171533; }
+  .meta small { display: block; color: #89857d; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; }
+  .meta strong { display: block; margin-top: 8px; font-size: 17px; }
+  .gallery { padding-top: 42px; }
+  .grid { display: grid; grid-template-columns: repeat(12,1fr); gap: 26px; }
+  figure { margin: 0; grid-column: span 6; }
+  figure:nth-child(3n) { grid-column: 2 / span 5; }
+  figure:nth-child(4n) { grid-column: 7 / span 6; }
+  .frame { aspect-ratio: 4/3; overflow: hidden; background: #ddd9d0; }
+  img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  button { margin: 54px 0 0; border: 0; border-bottom: 1px solid #555149; padding: 0 0 10px; background: transparent; cursor: pointer; color: #2a2925; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+  button span { margin-left: 12px; font-size: 18px; font-weight: 400; }
+  [hidden] { display: none; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 7vw; align-items: center; background: #e8e5dc; }
+  .wide { padding-top: 30px; }
+  .wide .frame { aspect-ratio: 16/8; }
+  footer { padding: 64px 7vw; background: #191917; color: #f5f3ee; }
+  @media(max-width:720px){nav{padding:18px}.hero{min-height:70vh}section{padding:64px 20px}.meta{grid-template-columns:repeat(2,1fr)}.grid{display:block}figure{margin-bottom:34px}.split{display:block}.split .frame{margin-top:30px}nav div:last-child{gap:10px}}
+</style>
+<nav><div>Sthyra</div><div><span>Portfolio</span><span>Services</span><span>Contact</span></div></nav>
+<main>
+  <section class="hero"><div class="eyebrow">Residential development · Bengaluru, India</div><h1>Trifecta<br>Veranza</h1><p>Two towers. Thirty-six floors. One connected spatial story.</p><div class="meta"><div><small>Scale</small><strong>6 acres</strong></div><div><small>Architecture</small><strong>2 towers</strong></div><div><small>Height</small><strong>36 floors</strong></div><div><small>Scope</small><strong>Full digital launch</strong></div></div></section>
+  <section class="gallery"><div class="eyebrow">Selected renders</div><h2>The project before it exists.</h2><div class="grid" id="main"></div><button id="toggle" aria-expanded="false">Show more <span>+</span></button><div class="grid" id="additional" hidden></div></section>
+  <section class="split"><div><div class="eyebrow">Interactive platform</div><h2>One clear place for the complete project story.</h2><p>A guided project platform makes a large vertical community clear, navigable, and compelling before a physical visit.</p></div><div class="frame"><img src="https://cdn.sthyra.com/portfolio/web-apps/Trifecta.png" alt="Trifecta interactive platform"></div></section>
+  <section class="split"><div class="frame"><img src="https://cdn.sthyra.com/portfolio/walkthrough/walkthrough_trifecta.png" alt="Trifecta walkthrough"></div><div><div class="eyebrow">Immersive walkthrough</div><h2>Move through the development before arriving.</h2><p>A panoramic exterior journey connects arrival, landscape, amenities, and movement across the development.</p></div></section>
+  <section class="wide"><div class="eyebrow">Cinematic direction</div><h2>Measured camera language and changing light.</h2><p>Material detail turns the development into a launch narrative rather than a sequence of views.</p><div class="frame"><img src="/Cinematic_Image_1.avif" alt="Trifecta cinematic direction"></div></section>
+</main><footer>Sthyra · selected projects</footer>
+<script>
+const base='/portfolio/trifecta/base/'; const main=['03_EntranceShots.-0001.avif','04_FootBAll.-0001.avif','05_baSKETabLL.-0001.avif','06_CricketzCloseup.-0001.avif','07_CricketCloseup2.-0001.avif','CineShot12.0000.avif']; const additional=[['tula-current','CineShot06.0000.avif'],['tula-current','CineShot07.0299.avif'],['tula-current','CineShot08.0000.avif'],['tula-current','CineShot09.0024.avif'],['tula-current','CineShot10.0000.avif'],['tula-current','CineShot10.0300.avif'],['serene-current','01_CarView.0000.avif'],['serene-current','CineShot01.0261.avif'],['serene-current','CineShot03.0000.avif'],['serene-current','CineShot04.0299.avif'],['serene-current','CineShot05.0000.avif'],['serene-current','CineShot13.0000.avif']]; function card(src,label){return `<figure><div class="frame"><img src="${src}" alt="${label}"></div></figure>`} document.querySelector('#main').innerHTML=main.map(n=>card(base+n,'Trifecta Veranza')).join(''); document.querySelector('#additional').innerHTML=additional.map(([f,n])=>card('/portfolio/trifecta/'+f+'/'+n,f==='tula-current'?'Tula reused Trifecta asset':'Serene reused Trifecta asset')).join(''); const b=document.querySelector('#toggle'); b.onclick=()=>{const open=b.getAttribute('aria-expanded')==='true';b.setAttribute('aria-expanded',String(!open));document.querySelector('#additional').hidden=open;b.firstChild.textContent=open?'Show more ':'Show less ';b.querySelector('span').textContent=open?'+':'−'};
+</script>

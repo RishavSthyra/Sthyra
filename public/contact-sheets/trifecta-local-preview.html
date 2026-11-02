@@ -1,0 +1,40 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Trifecta local Show More preview</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #faf9f5; color: #181816; font-family: Arial, sans-serif; }
+  section { max-width: 1400px; margin: 0 auto; padding: 72px 32px; }
+  .eyebrow { color: #77736a; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; }
+  h1 { max-width: 640px; margin: 20px 0 52px; font-size: clamp(42px, 6vw, 88px); line-height: .92; letter-spacing: -.06em; }
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
+  figure { margin: 0; grid-column: span 6; }
+  figure:nth-child(3n) { grid-column: 2 / span 5; }
+  figure:nth-child(4n) { grid-column: 7 / span 6; }
+  .frame { aspect-ratio: 4 / 3; overflow: hidden; background: #ddd9d0; }
+  img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .toggle { margin: 56px 0 0; border: 0; border-bottom: 1px solid #555149; padding: 0 0 10px; background: transparent; cursor: pointer; color: #2a2925; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+  .toggle span { margin-left: 12px; font-size: 18px; font-weight: 400; }
+  [hidden] { display: none; }
+  @media (max-width: 720px) { section { padding: 44px 18px; } .grid { display: block; } figure { margin-bottom: 34px; } }
+</style>
+<section>
+  <div class="eyebrow">Trifecta Veranza · local interaction preview</div>
+  <h1>The project before it exists.</h1>
+  <div class="grid" id="main"></div>
+  <button class="toggle" id="toggle" type="button" aria-expanded="false">Show more <span>+</span></button>
+  <div class="grid" id="additional" hidden></div>
+</section>
+<script>
+const base = '/portfolio/trifecta/base/';
+const main = ['03_EntranceShots.-0001.avif','04_FootBAll.-0001.avif','05_baSKETabLL.-0001.avif','06_CricketzCloseup.-0001.avif','07_CricketCloseup2.-0001.avif','CineShot12.0000.avif'];
+const additional = [
+  ['tula-current','CineShot06.0000.avif'],['tula-current','CineShot07.0299.avif'],['tula-current','CineShot08.0000.avif'],['tula-current','CineShot09.0024.avif'],['tula-current','CineShot10.0000.avif'],['tula-current','CineShot10.0300.avif'],
+  ['serene-current','01_CarView.0000.avif'],['serene-current','CineShot01.0261.avif'],['serene-current','CineShot03.0000.avif'],['serene-current','CineShot04.0299.avif'],['serene-current','CineShot05.0000.avif'],['serene-current','CineShot13.0000.avif']
+];
+function card(src, label) { return `<figure><div class="frame"><img src="${src}" alt="${label}"></div></figure>`; }
+document.querySelector('#main').innerHTML = main.map((name) => card(base + name, 'Trifecta Veranza')).join('');
+document.querySelector('#additional').innerHTML = additional.map(([folder, name]) => card('/portfolio/trifecta/' + folder + '/' + name, folder === 'tula-current' ? 'Tula reused Trifecta asset' : 'Serene reused Trifecta asset')).join('');
+const button = document.querySelector('#toggle');
+button.addEventListener('click', () => { const open = button.getAttribute('aria-expanded') === 'true'; button.setAttribute('aria-expanded', String(!open)); document.querySelector('#additional').hidden = open; button.firstChild.textContent = open ? 'Show more ' : 'Show less '; button.querySelector('span').textContent = open ? '+' : '−'; });
+</script>

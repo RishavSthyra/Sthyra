@@ -13,7 +13,7 @@ type CreateModelMaskOptions = {
 };
 
 type ThreeModule = typeof import("three");
-type GLTFLoaderConstructor = typeof import("three/examples/jsm/loaders/GLTFLoader.js").GLTFLoader;
+type GLTFLoaderConstructor = typeof import("three-stdlib").GLTFLoader;
 type Object3D = InstanceType<ThreeModule["Object3D"]>;
 type Vector3 = InstanceType<ThreeModule["Vector3"]>;
 
@@ -30,7 +30,7 @@ function getModules() {
       "modules",
       Promise.all([
         import("three"),
-        import("three/examples/jsm/loaders/GLTFLoader.js"),
+        import("three-stdlib"),
       ]).then(([THREE, loaderModule]) => ({
         THREE,
         GLTFLoader: loaderModule.GLTFLoader,

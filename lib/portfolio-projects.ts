@@ -20,17 +20,24 @@ export type PortfolioStory = {
   cinematicImage: string;
   cinematicCopy: string;
   renders: string[];
+  additionalRenders?: string[];
   facts: Array<{ label: string; value: string }>;
 };
 
 const render = (fileName: string) =>
   getPortfolioAssetUrl(`ultra-real-renders/${fileName}`);
 
+const trifectaRender = (folder: "tula-current" | "serene-current", fileName: string) =>
+  getPortfolioAssetUrl(`trifecta/${folder}/${fileName}`);
+
 const walkthrough = (fileName: string) =>
   getPortfolioAssetUrl(`walkthrough/${fileName}`);
 
 const webApp = (fileName: string) =>
   getPortfolioAssetUrl(`web-apps/${fileName}`);
+
+const tulaAsset = (fileName: string) =>
+  getPortfolioAssetUrl(`tula/${fileName}`);
 
 export const PORTFOLIO_STORIES: PortfolioStory[] = [
   {
@@ -65,6 +72,20 @@ export const PORTFOLIO_STORIES: PortfolioStory[] = [
       render("07_CricketCloseup2.-0001.avif"),
       render("CineShot12.0000.avif"),
     ],
+    additionalRenders: [
+      trifectaRender("tula-current", "CineShot06.0000.avif"),
+      trifectaRender("tula-current", "CineShot07.0299.avif"),
+      trifectaRender("tula-current", "CineShot08.0000.avif"),
+      trifectaRender("tula-current", "CineShot09.0024.avif"),
+      trifectaRender("tula-current", "CineShot10.0000.avif"),
+      trifectaRender("tula-current", "CineShot10.0300.avif"),
+      trifectaRender("serene-current", "01_CarView.0000.avif"),
+      trifectaRender("serene-current", "CineShot01.0261.avif"),
+      trifectaRender("serene-current", "CineShot03.0000.avif"),
+      trifectaRender("serene-current", "CineShot04.0299.avif"),
+      trifectaRender("serene-current", "CineShot05.0000.avif"),
+      trifectaRender("serene-current", "CineShot13.0000.avif"),
+    ],
     facts: [
       { label: "Scale", value: "6 acres" },
       { label: "Architecture", value: "2 towers" },
@@ -83,8 +104,8 @@ export const PORTFOLIO_STORIES: PortfolioStory[] = [
     statement: "A seven-acre community told through landscape, movement, and quiet detail.",
     overview:
       "Tula Whisper of Trees is a seven-acre residential community defined by its landscape and rich variety of trees. The project experience was built to let that character lead—from the first frame to the interactive site and panoramic walkthrough.",
-    heroImage: walkthrough("walkthrough_tula.png"),
-    webAppImage: webApp("Tula%20Web%20app.png"),
+    heroImage: tulaAsset("drive-46-waterbody-bridge.jpg"),
+    webAppImage: tulaAsset("tula-webapp.png"),
     webAppUrl: "https://tula-peach.vercel.app/",
     webAppCopy:
       "An editorial web experience where landscape, architecture, amenities, and the project story unfold with calm, deliberate pacing.",
@@ -92,16 +113,22 @@ export const PORTFOLIO_STORIES: PortfolioStory[] = [
     walkthroughUrl: "https://tula-peach.vercel.app/exterior-walkthrough",
     walkthroughCopy:
       "The exterior walkthrough lets buyers move through a tree-rich environment and understand the relationship between homes and landscape.",
-    cinematicImage: "/Cinematic_Image_2.avif",
+    cinematicImage: tulaAsset("drive-swimming-pool.png"),
     cinematicCopy:
       "The cinematic direction keeps nature in the foreground, using atmosphere and restrained movement to make the place feel lived in.",
     renders: [
-      render("CineShot06.0000.avif"),
-      render("CineShot07.0299.avif"),
-      render("CineShot08.0000.avif"),
-      render("CineShot09.0024.avif"),
-      render("CineShot10.0000.avif"),
-      render("CineShot10.0300.avif"),
+      tulaAsset("supplied-19.png"),
+      tulaAsset("drive-07-cafeteria.jpg"),
+      tulaAsset("supplied-35.png"),
+      tulaAsset("drive-21-outdoor-gym.png"),
+      tulaAsset("drive-37-sports-area.png"),
+      tulaAsset("drive-47-yoga-space.png"),
+    ],
+    additionalRenders: [
+      tulaAsset("drive-02-amphitheater.png"),
+      tulaAsset("drive-17-kids-play-skating.jpg"),
+      tulaAsset("drive-46-waterbody-bridge.jpg"),
+      tulaAsset("supplied-31.png"),
     ],
     facts: [
       { label: "Scale", value: "7 acres" },
