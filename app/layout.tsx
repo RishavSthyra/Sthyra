@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import "lenis/dist/lenis.css";
 import "./globals.css";
 import LenisProvider from "@/components/providers/LenisProvider";
 import { HOME_SEO, SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/seo";
@@ -67,7 +68,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en" className="antialiased">
       <head>
         <link rel="preconnect" href="https://cdn.sthyra.com" crossOrigin="" />
         <link rel="preconnect" href="https://api.mapbox.com" crossOrigin="" />
@@ -89,7 +90,7 @@ export default function RootLayout({
           gtag('config', 'AW-18170775934');
         `}
       </Script>
-      <body className="min-h-full overflow-x-hidden bg-black font-sans text-white">
+      <body className="min-h-screen overflow-x-hidden bg-black font-sans text-white">
         <LenisProvider>{children}</LenisProvider>
       </body>
     </html>

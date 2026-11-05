@@ -3,8 +3,22 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useLayoutEffect, useRef, useState, type MouseEvent } from "react";
-import { FiArrowLeft, FiArrowRight, FiArrowUpRight } from "react-icons/fi";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+} from "react";
+import {
+  FiArrowLeft,
+  FiArrowRight,
+  FiArrowUpRight,
+  FiChevronLeft,
+  FiChevronRight,
+  FiMaximize2,
+  FiX,
+} from "react-icons/fi";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import HomePageFooter from "@/components/HomePageFooter";
@@ -15,26 +29,26 @@ type ProjectStoryExperienceProps = {
   nextProject: PortfolioStory;
 };
 
-const renderLayouts = [
-  "lg:col-span-7",
-  "lg:col-span-5 lg:mt-[8vw]",
-  "lg:col-span-5 lg:col-start-2 lg:mt-[2vw]",
-  "lg:col-span-6 lg:col-start-7",
-  "lg:col-span-8",
-  "lg:col-span-4 lg:mt-[7vw]",
-];
-
 export default function ProjectStoryExperience({
   project,
   nextProject,
 }: ProjectStoryExperienceProps) {
   const [isAdditionalGalleryOpen, setIsAdditionalGalleryOpen] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
   const rootRef = useRef<HTMLElement | null>(null);
+  const lightboxRef = useRef<HTMLDivElement | null>(null);
+  const lightboxCloseRef = useRef<HTMLButtonElement | null>(null);
+  const lightboxReturnFocusRef = useRef<HTMLElement | null>(null);
   const entranceRef = useRef<HTMLDivElement | null>(null);
   const exitRef = useRef<HTMLDivElement | null>(null);
   const exitLabelRef = useRef<HTMLParagraphElement | null>(null);
   const isLeavingRef = useRef(false);
   const router = useRouter();
+  const galleryImages = [
+    ...project.renders,
+    ...(project.additionalRenders ?? []),
+  ];
+  const isLightboxOpen = activeImageIndex !== null;
 
   useLayoutEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -202,6 +216,102 @@ export default function ProjectStoryExperience({
     };
   }, [project.slug]);
 
+  useEffect(() => {
+    const refreshFrame = window.requestAnimationFrame(() => {
+      ScrollTrigger.refresh();
+    });
+
+    return () => window.cancelAnimationFrame(refreshFrame);
+  }, [isAdditionalGalleryOpen]);
+
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    const focusFrame = window.requestAnimationFrame(() => {
+      lightboxCloseRef.current?.focus();
+    });
+
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setActiveImageIndex(null);
+        return;
+      }
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        setActiveImageIndex((index) =>
+          index === null
+            ? null
+            : (index - 1 + galleryImages.length) % galleryImages.length,
+        );
+        return;
+      }
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        setActiveImageIndex((index) =>
+          index === null ? null : (index + 1) % galleryImages.length,
+        );
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+
+      const focusableElements = Array.from(
+        lightboxRef.current?.querySelectorAll<HTMLElement>(
+          "button:not([disabled])",
+        ) ?? [],
+      );
+      if (focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      window.removeEventListener("keydown", handleKeyDown);
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+      lightboxReturnFocusRef.current?.focus();
+    };
+  }, [galleryImages.length, isLightboxOpen]);
+
+  const openLightbox = (index: number) => {
+    lightboxReturnFocusRef.current = document.activeElement as HTMLElement;
+    setActiveImageIndex(index);
+  };
+
+  const showPreviousImage = () => {
+    setActiveImageIndex((index) =>
+      index === null
+        ? null
+        : (index - 1 + galleryImages.length) % galleryImages.length,
+    );
+  };
+
+  const showNextImage = () => {
+    setActiveImageIndex((index) =>
+      index === null ? null : (index + 1) % galleryImages.length,
+    );
+  };
+
   const navigateWithTransition = (
     event: MouseEvent<HTMLAnchorElement>,
     href: string,
@@ -334,28 +444,37 @@ export default function ProjectStoryExperience({
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-x-5 gap-y-[5svh] lg:grid-cols-12">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             {project.renders.map((image, index) => (
               <figure
                 key={image}
                 data-render-frame
-                className={`m-0 ${renderLayouts[index]}`}
+                className="m-0 min-w-0"
               >
-                <div className="relative aspect-[4/3] overflow-hidden bg-[#ddd9d0]">
+                <button
+                  type="button"
+                  onClick={() => openLightbox(index)}
+                  aria-label={`Open ${project.name} architectural render ${index + 1}`}
+                  className="group/render relative block aspect-[4/3] w-full cursor-zoom-in overflow-hidden bg-[#ddd9d0] text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
+                >
                   <div
                     data-render-image
-                    className="absolute -inset-y-[6%] inset-x-0 will-change-transform"
+                    className="pointer-events-none absolute -inset-y-[6%] inset-x-0 will-change-transform"
                   >
                     <Image
                       src={image}
                       alt={`${project.name} architectural render ${index + 1}`}
                       fill
-                      sizes="(max-width: 1024px) 100vw, 66vw"
-                      unoptimized
+                      sizes="(max-width: 768px) 100vw, (max-width: 1536px) 50vw, 704px"
+                      loading="eager"
+                      fetchPriority={index < 2 ? "high" : "auto"}
                       className="object-cover"
                     />
                   </div>
-                </div>
+                  <span className="pointer-events-none absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center bg-[#faf9f5]/95 text-black opacity-0 transition-[opacity,transform] duration-300 group-hover/render:scale-105 group-hover/render:opacity-100 group-focus-visible/render:opacity-100">
+                    <FiMaximize2 className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                </button>
               </figure>
             ))}
           </div>
@@ -376,25 +495,35 @@ export default function ProjectStoryExperience({
 
               {isAdditionalGalleryOpen ? (
                 <>
-                  <div className="mt-[5svh] grid grid-cols-1 gap-x-5 gap-y-[5svh] lg:grid-cols-12">
+                  <div className="mt-[5svh] grid grid-cols-1 gap-5 md:grid-cols-2">
                     {project.additionalRenders.map((image, index) => (
                       <figure
                         key={image}
                         data-render-frame
-                        className={`m-0 ${renderLayouts[index % renderLayouts.length]}`}
+                        className="m-0 min-w-0"
                       >
-                        <div className="relative aspect-[4/3] overflow-hidden bg-[#ddd9d0]">
-                          <div data-render-image className="absolute -inset-y-[6%] inset-x-0 will-change-transform">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openLightbox(project.renders.length + index)
+                          }
+                          aria-label={`Open ${project.name} additional architectural render ${index + 1}`}
+                          className="group/render relative block aspect-[4/3] w-full cursor-zoom-in overflow-hidden bg-[#ddd9d0] text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
+                        >
+                          <div data-render-image className="pointer-events-none absolute -inset-y-[6%] inset-x-0 will-change-transform">
                             <Image
                               src={image}
                               alt={`${project.name} additional architectural render ${index + 1}`}
                               fill
-                              sizes="(max-width: 1024px) 100vw, 66vw"
-                              unoptimized
+                              sizes="(max-width: 768px) 100vw, (max-width: 1536px) 50vw, 704px"
+                              loading="eager"
                               className="object-cover"
                             />
                           </div>
-                        </div>
+                          <span className="pointer-events-none absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center bg-[#faf9f5]/95 text-black opacity-0 transition-[opacity,transform] duration-300 group-hover/render:scale-105 group-hover/render:opacity-100 group-focus-visible/render:opacity-100">
+                            <FiMaximize2 className="h-4 w-4" aria-hidden="true" />
+                          </span>
+                        </button>
                       </figure>
                     ))}
                   </div>
@@ -422,6 +551,7 @@ export default function ProjectStoryExperience({
         imageAlt={`${project.name} interactive web application`}
         href={project.webAppUrl}
         linkLabel="Open web app"
+        animateImage={false}
       />
 
       <ExperienceSection
@@ -435,49 +565,55 @@ export default function ProjectStoryExperience({
         reverse
       />
 
-      <section className="bg-[#faf9f5] px-4 py-[9svh] sm:px-7 lg:px-10 lg:py-[11svh]">
-        <div className="mx-auto w-full max-w-[88rem]">
-          <div className="grid items-end gap-8 lg:grid-cols-12">
-            <div className="lg:col-span-6 lg:col-start-2">
-              <p
-                data-story-reveal
-                className="mb-4 mt-0 text-[0.72rem] font-medium tracking-[0.04em] text-black/45"
-              >
-                Cinematic direction
-              </p>
-              <h2
-                data-section-title
-                className="m-0 max-w-[17ch] text-[clamp(2rem,3.25vw,3.4rem)] font-semibold leading-[0.96] tracking-[-0.048em]"
-              >
-                Built to be felt, not simply viewed.
-              </h2>
+      {project.cinematicVideo ? (
+        <section className="bg-[#faf9f5] px-4 py-[9svh] sm:px-7 lg:px-10 lg:py-[11svh]">
+          <div className="mx-auto w-full max-w-[88rem]">
+            <div className="grid items-end gap-8 lg:grid-cols-12">
+              <div className="lg:col-span-6 lg:col-start-2">
+                <p
+                  data-story-reveal
+                  className="mb-4 mt-0 text-[0.72rem] font-medium tracking-[0.04em] text-black/45"
+                >
+                  Cinematic direction
+                </p>
+                <h2
+                  data-section-title
+                  className="m-0 max-w-[17ch] text-[clamp(2rem,3.25vw,3.4rem)] font-semibold leading-[0.96] tracking-[-0.048em]"
+                >
+                  Built to be felt, not simply viewed.
+                </h2>
+              </div>
+              <div className="lg:col-span-4 lg:col-start-9">
+                <p
+                  data-story-reveal
+                  className="m-0 max-w-[32rem] text-[0.96rem] font-normal leading-[1.62] tracking-[-0.015em] text-black/68"
+                >
+                  {project.cinematicCopy}
+                </p>
+              </div>
             </div>
-            <div className="lg:col-span-4 lg:col-start-9">
-              <p
-                data-story-reveal
-                className="m-0 max-w-[32rem] text-[0.96rem] font-normal leading-[1.62] tracking-[-0.015em] text-black/68"
+            <div
+              data-render-frame
+              className="relative mt-12 aspect-[16/8] overflow-hidden bg-[#ddd9d0] lg:mt-16"
+            >
+              <video
+                autoPlay
+                controls
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                poster={project.cinematicImage}
+                aria-label={`${project.name} cinematic art direction`}
+                className="absolute inset-0 h-full w-full object-cover"
               >
-                {project.cinematicCopy}
-              </p>
+                <source src={project.cinematicVideo} type="video/mp4" />
+                Your browser does not support HTML video playback.
+              </video>
             </div>
           </div>
-          <div
-            data-render-frame
-            className="relative mt-12 aspect-[16/8] overflow-hidden bg-[#ddd9d0] lg:mt-16"
-          >
-            <div data-render-image className="absolute -inset-y-[6%] inset-x-0 will-change-transform">
-              <Image
-                src={project.cinematicImage}
-                alt={`${project.name} cinematic art direction`}
-                fill
-                sizes="100vw"
-                unoptimized={project.cinematicImage.startsWith("http")}
-                className="object-cover"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       <section className="bg-[#f3f1eb] px-4 pb-6 pt-[9svh] sm:px-7 lg:px-10 lg:pt-[11svh]">
         <div className="mx-auto mb-5 flex w-full max-w-[88rem] items-center justify-between">
@@ -545,6 +681,70 @@ export default function ProjectStoryExperience({
           className="m-0 max-w-[16ch] text-center text-[clamp(2.4rem,4.6vw,4.6rem)] font-semibold leading-[0.92] tracking-[-0.055em]"
         />
       </div>
+
+      {activeImageIndex !== null ? (
+        <div
+          ref={lightboxRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${project.name} image viewer`}
+          data-lenis-prevent
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setActiveImageIndex(null);
+            }
+          }}
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/94 px-4 py-16 text-white backdrop-blur-md sm:px-8 sm:py-20"
+        >
+          <button
+            ref={lightboxCloseRef}
+            type="button"
+            onClick={() => setActiveImageIndex(null)}
+            aria-label="Close image viewer"
+            className="absolute right-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-black/35 text-white transition-colors hover:bg-white hover:text-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:right-8 sm:top-7"
+          >
+            <FiX className="h-5 w-5" aria-hidden="true" />
+          </button>
+
+          {galleryImages.length > 1 ? (
+            <>
+              <button
+                type="button"
+                onClick={showPreviousImage}
+                aria-label="View previous image"
+                className="absolute left-3 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-black/40 text-white transition-colors hover:bg-white hover:text-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:left-7 sm:h-14 sm:w-14"
+              >
+                <FiChevronLeft className="h-6 w-6" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={showNextImage}
+                aria-label="View next image"
+                className="absolute right-3 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-black/40 text-white transition-colors hover:bg-white hover:text-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:right-7 sm:h-14 sm:w-14"
+              >
+                <FiChevronRight className="h-6 w-6" aria-hidden="true" />
+              </button>
+            </>
+          ) : null}
+
+          <div className="relative h-full max-h-[82svh] w-full max-w-[90rem]">
+            <Image
+              key={galleryImages[activeImageIndex]}
+              src={galleryImages[activeImageIndex]}
+              alt={`${project.name} architectural render ${activeImageIndex + 1} of ${galleryImages.length}`}
+              fill
+              sizes="95vw"
+              loading="eager"
+              fetchPriority="high"
+              className="select-none object-contain"
+            />
+          </div>
+
+          <p className="absolute bottom-5 left-1/2 m-0 -translate-x-1/2 text-[0.72rem] font-medium tracking-[0.12em] text-white/70 sm:bottom-7">
+            {String(activeImageIndex + 1).padStart(2, "0")} / {String(galleryImages.length).padStart(2, "0")}
+          </p>
+        </div>
+      ) : null}
     </main>
   );
 }
@@ -558,6 +758,7 @@ type ExperienceSectionProps = {
   href: string;
   linkLabel: string;
   reverse?: boolean;
+  animateImage?: boolean;
 };
 
 function ExperienceSection({
@@ -569,6 +770,7 @@ function ExperienceSection({
   href,
   linkLabel,
   reverse = false,
+  animateImage = true,
 }: ExperienceSectionProps) {
   return (
     <section className="border-t border-black/10 bg-[#f3f1eb] px-4 py-[9svh] sm:px-7 lg:px-10 lg:py-[11svh]">
@@ -622,7 +824,10 @@ function ExperienceSection({
               : "lg:col-span-7 lg:col-start-6"
           }`}
         >
-          <div data-experience-image className="absolute inset-0 will-change-transform">
+          <div
+            data-experience-image={animateImage ? "" : undefined}
+            className="absolute inset-0 will-change-transform"
+          >
             <Image
               src={image}
               alt={imageAlt}

@@ -18,6 +18,7 @@ export type PortfolioStory = {
   walkthroughUrl: string;
   walkthroughCopy: string;
   cinematicImage: string;
+  cinematicVideo?: string;
   cinematicCopy: string;
   renders: string[];
   additionalRenders?: string[];
@@ -38,6 +39,9 @@ const webApp = (fileName: string) =>
 
 const tulaAsset = (fileName: string) =>
   getPortfolioAssetUrl(`tula/${fileName}`);
+
+const aadhyaRender = (fileName: string) =>
+  `/portfolio/aadhya-serene/renders/${fileName}`;
 
 export const PORTFOLIO_STORIES: PortfolioStory[] = [
   {
@@ -62,6 +66,7 @@ export const PORTFOLIO_STORIES: PortfolioStory[] = [
     walkthroughCopy:
       "A panoramic exterior journey connects arrival, landscape, amenities, and the movement between key locations across the development.",
     cinematicImage: "/Cinematic_Image_1.avif",
+    cinematicVideo: "https://cdn.sthyra.com/videos/INTERIOR.MP4",
     cinematicCopy:
       "Measured camera language, material detail, and changing light turn the development into a launch narrative rather than a sequence of views.",
     renders: [
@@ -161,12 +166,23 @@ export const PORTFOLIO_STORIES: PortfolioStory[] = [
     cinematicCopy:
       "Cinematic compositions give the compact development a distinct identity while keeping the architecture and everyday experience believable.",
     renders: [
-      render("01_CarView.0000.avif"),
-      render("CineShot01.0261.avif"),
-      render("CineShot03.0000.avif"),
-      render("CineShot04.0299.avif"),
-      render("CineShot05.0000.avif"),
-      render("CineShot13.0000.avif"),
+      aadhyaRender("02-home-first-frame.avif"),
+      aadhyaRender("09-hero-new.avif"),
+      aadhyaRender("03-club-house-2.avif"),
+      aadhyaRender("01-ball-pool.avif"),
+      aadhyaRender("08-swimming-pool.avif"),
+      aadhyaRender("10-hero-kitchen.avif"),
+    ],
+    additionalRenders: [
+      aadhyaRender("04-badminton.avif"),
+      aadhyaRender("05-basketball.avif"),
+      aadhyaRender("06-gym.avif"),
+      aadhyaRender("07-kids-play-area-2.avif"),
+      aadhyaRender("11-interior-hall.avif"),
+      aadhyaRender("12-interior-1.avif"),
+      aadhyaRender("13-interior-2.avif"),
+      aadhyaRender("14-interior-3.avif"),
+      aadhyaRender("15-interior-4.avif"),
     ],
     facts: [
       { label: "Scale", value: "1.5 acres" },

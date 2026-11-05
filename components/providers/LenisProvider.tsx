@@ -26,8 +26,10 @@ export default function LenisProvider({ children }: LenisProviderProps) {
 
     const lenis = new Lenis({
       autoRaf: false,
+      content: document.body,
       duration: 1.08,
       smoothWheel: true,
+      stopInertiaOnNavigate: true,
       wheelMultiplier: 0.94,
       touchMultiplier: 1,
       prevent: (node) =>
